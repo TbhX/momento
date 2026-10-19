@@ -1,0 +1,4 @@
+/* No caching of authenticated pages, API replies or user data. */
+self.addEventListener('install',event=>{self.skipWaiting()});
+self.addEventListener('activate',event=>{event.waitUntil(self.clients.claim())});
+self.addEventListener('fetch',event=>{if(event.request.mode==='navigate')event.respondWith(fetch(event.request).catch(()=>new Response('<!doctype html><html lang="fr"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Momento · Hors connexion</title><body style="font-family:system-ui;background:#fff8f5;color:#71324d;padding:40px"><h1>Retrouvons-nous en ligne.</h1><p>Momento nécessite une connexion Internet pour vos rencontres et votre compte.</p><a href="/">Réessayer</a></body></html>',{headers:{'Content-Type':'text/html;charset=utf-8','Cache-Control':'no-store'}})))});

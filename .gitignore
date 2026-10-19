@@ -1,0 +1,10 @@
+node_modules/
+dist/
+worker/index.js
+.env*
+production-dist/
+pages-dist/
+.wrangler/
+.dev.vars*
+deploy/worker.production.jsonc
+wrangler.jsonc

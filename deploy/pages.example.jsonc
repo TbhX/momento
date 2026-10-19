@@ -1,0 +1,30 @@
+{
+  // Optional: copy to wrangler.jsonc at repository root, then fill your own IDs.
+  // For Git integration, settings may instead be configured in the Pages dashboard.
+  "name": "momento",
+  "pages_build_output_dir": "./pages-dist",
+  "compatibility_date": "2026-10-19",
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "momento-production",
+    "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+    "migrations_dir": "./drizzle"
+  }],
+  "r2_buckets": [{"binding": "BUCKET", "bucket_name": "momento-production-private"}],
+  "vars": {
+    "MOMENTO_APP_ORIGIN": "https://REPLACE_WITH_YOUR_PAGES_OR_CUSTOM_DOMAIN",
+    "SUPABASE_URL": "https://REPLACE_WITH_MOMENTO_PROJECT_REF.supabase.co",
+    "AUTH_OAUTH_PROVIDERS": "google,apple,facebook",
+    "AUTH_SMS_ENABLED": "false",
+    "AUTH_SMS_DAILY_BUDGET": "20",
+    "MOMENTO_ADMIN_USER_IDS": "",
+    "VIDEO_PROVIDER": "livekit",
+    "LIVE_EVENTS_ENABLED": "false",
+    "VIDEO_VALIDATED": "false",
+    "LEGAL_VALIDATED": "false"
+  }
+  // Secrets are configured in Pages, never committed:
+  // SUPABASE_PUBLISHABLE_KEY, AUTH_COOKIE_SECRET,
+  // LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, Stripe TEST credentials.
+  // ASSETS is automatically provided by Pages; do not create that binding manually.
+}

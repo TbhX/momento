@@ -1,0 +1,37 @@
+{
+  // Copy to worker.production.jsonc (ignored by Git), then fill your own IDs.
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "momento-production",
+  "main": "../production-dist/worker.js",
+  "compatibility_date": "2026-10-19",
+  "workers_dev": true,
+  "assets": {
+    "directory": "../production-dist/public",
+    "binding": "PUBLIC_ASSETS",
+    "run_worker_first": true,
+    "not_found_handling": "none"
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "momento-production",
+    "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+    "migrations_dir": "../drizzle"
+  }],
+  "r2_buckets": [{"binding": "BUCKET", "bucket_name": "momento-production-private"}],
+  "vars": {
+    "MOMENTO_APP_ORIGIN": "https://REPLACE_WITH_YOUR_DOMAIN",
+    "SUPABASE_URL": "https://REPLACE_WITH_MOMENTO_PROJECT_REF.supabase.co",
+    "AUTH_OAUTH_PROVIDERS": "google,apple,facebook",
+    "AUTH_SMS_ENABLED": "false",
+    "AUTH_SMS_DAILY_BUDGET": "20",
+    "MOMENTO_ADMIN_USER_IDS": "",
+    "VIDEO_PROVIDER": "livekit",
+    "LIVE_EVENTS_ENABLED": "false",
+    "VIDEO_VALIDATED": "false",
+    "LEGAL_VALIDATED": "false"
+  },
+  // Secrets are entered with Wrangler secret put, never in this file:
+  // SUPABASE_PUBLISHABLE_KEY, AUTH_COOKIE_SECRET (32+ random chars),
+  // LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, and Stripe TEST keys.
+  "observability": {"enabled": false}
+}

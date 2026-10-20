@@ -2,7 +2,7 @@
 
 Application de rencontres audio/vidéo, sources **TbhX/momento**, déployée avec **Cloudflare Pages** : [momento-7se.pages.dev](https://momento-7se.pages.dev/). Le propriétaire a rendu le dépôt public pour connecter Cloudflare. La marque affichée dans l’application reste Momento.
 
-La version autonome ne demande aucun compte ChatGPT. **La page est accessible, mais les comptes et rencontres réelles ne sont pas encore ouverts** : Supabase Auth et les stockages restent à connecter, les nouveaux salons restent des simulations. L’organisation Supabase Momento a été créée ; la nouvelle base est bloquée par le quota de projets gratuits du compte. Son schéma préparé est décrit dans [SUPABASE_SETUP.md](SUPABASE_SETUP.md). L’état détaillé est dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
+La version autonome ne demande aucun compte ChatGPT. **La page est accessible, mais les comptes et rencontres réelles ne sont pas encore ouverts** : Supabase Auth et les stockages restent à connecter, les nouveaux salons restent des simulations. L’organisation Supabase Momento a été créée ; le connecteur refuse encore l’accès nécessaire à son projet. Le quota, qui avait aussi bloqué la création, reste à revérifier après correction de cet accès. Son schéma préparé est décrit dans [SUPABASE_SETUP.md](SUPABASE_SETUP.md). La liste courante des travaux et critères de lancement est dans [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md) ; [LAUNCH_READINESS.md](LAUNCH_READINESS.md) conserve les validations et limites historiques.
 
 ## Installation et contrôle
 
@@ -39,7 +39,7 @@ L’accès de l’application **Cloudflare Workers and Pages** au dépôt **Mome
 
 | Service | Usage actuel de la cible autonome |
 | --- | --- |
-| Supabase Auth | Identité : Google, Apple, Facebook et SMS, selon fournisseurs activés |
+| Supabase Auth | OAuth préparé ; Google et e-mail/mot de passe prioritaires, parcours mot de passe à implémenter ; SMS désactivé |
 | Cloudflare D1, binding `DB` | Données métier et limites serveur |
 | Cloudflare R2 privé, binding `BUCKET` | Profils et images |
 | Pages, binding automatique `ASSETS` | Pages et fichiers statiques |
@@ -59,6 +59,10 @@ Aucune clé réelle dans GitHub, dans les pages ou dans le bundle navigateur. Le
 Les aperçus de branches doivent utiliser une configuration et des données de test séparées, avec une origine et des redirections adaptées. Les secrets et données de production ne sont pas destinés aux builds de PR externes. Ne pas autoriser automatiquement toutes les URL `*.pages.dev` comme retours OAuth.
 
 Aucune application native, vente réelle ni session publique n’est activée par le déploiement de cette page.
+
+## Suivi quotidien
+
+Une tâche est activée chaque matin vers 8 h, heure de Paris, à partir du 21 octobre 2026, pour les améliorations de code vérifiées et leur déploiement GitHub/Cloudflare. Le propriétaire a autorisé les push de routine ; les résultats et blocages doivent être consignés dans [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md). Cette tâche ne remplace pas les accès externes manquants ni les validations nécessaires à l’ouverture publique.
 
 ## Autres cibles
 

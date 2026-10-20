@@ -1,6 +1,8 @@
 # Momento — état de la bêta privée
 
-État actuel au 20 octobre 2026 : la cible autonome est accessible sur `https://momento-7se.pages.dev/` ; connexion et services métier restent fermés faute de configuration. L’organisation Supabase Momento est créée en Free, la création de sa base est bloquée par le quota du compte. Le schéma préparé est dans `supabase/schemas/` et testé localement ; il ne remplace pas encore D1/R2. Les sections ci-dessous conservent les validations et limites du prototype Sites privé. Ce document ne vaut pas validation juridique ni autorisation d’ouverture des rencontres.
+État actuel au 20 octobre 2026 : la cible autonome est accessible sur `https://momento-7se.pages.dev/` ; connexion et services métier restent fermés faute de configuration. L’organisation Supabase Momento est créée en Free ; le connecteur ne voit encore que Volteo et refuse les opérations sur Momento. Le propriétaire indique avoir préparé Supabase après le blocage de quota ; sa disponibilité reste à revérifier avec le bon accès. Le schéma préparé est dans `supabase/schemas/` et testé localement ; il ne remplace pas encore D1/R2. Les sections ci-dessous conservent les validations et limites du prototype Sites privé. Ce document ne vaut pas validation juridique ni autorisation d’ouverture des rencontres.
+
+La liste courante et priorisée des travaux est [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md). Google et e-mail/mot de passe sont les connexions demandées ; le SMS reste désactivé sans solution gratuite établie. La tâche quotidienne GitHub/Cloudflare est activée à partir du 21 octobre 2026. Les anciennes limites Premium et offres mentionnées dans l’historique ne doivent pas être réintroduites comme règles de l’offre actuelle.
 
 ## Implémenté
 

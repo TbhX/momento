@@ -1,6 +1,8 @@
 # Connexion Momento sans ChatGPT
 
-État du 20 octobre 2026 : **l’hébergement autonome Pages est déployé** sur `https://momento-7se.pages.dev/`. Les fournisseurs de connexion et les stockages ne sont pas encore configurés. L’organisation Supabase Momento existe ; la création de son projet est bloquée par le quota gratuit du compte. Le site Sites existant demeure une bêta privée distincte avec sa connexion ChatGPT.
+État du 20 octobre 2026 : **l’hébergement autonome Pages est déployé** sur `https://momento-7se.pages.dev/`. Les fournisseurs de connexion et les stockages ne sont pas encore configurés. L’organisation Supabase Momento existe ; le connecteur refuse toujours les opérations sur cette organisation. La disponibilité du quota, qui avait bloqué la création auparavant, reste à revérifier après correction de l’accès. Le site Sites existant demeure une bêta privée distincte avec sa connexion ChatGPT.
+
+Choix confirmé par le propriétaire : **Google et adresse e-mail + mot de passe**. Le parcours e-mail/mot de passe, sa confirmation et sa récupération restent à implémenter. Le SMS est conditionné à l’existence d’un service réellement gratuit ; il reste désactivé et aucun fournisseur payant n’est souscrit. Apple/Facebook sont des possibilités ultérieures. La feuille de route courante est [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md).
 
 ## Architecture et données
 
@@ -17,6 +19,7 @@ Le code métier commun reçoit uniquement l’identité vérifiée par le serveu
 | Connexion | Code | Activation externe nécessaire |
 | --- | --- | --- |
 | Google | OAuth PKCE + retour serveur | Client OAuth Google, écran Momento, identifiant/secret dans Supabase |
+| E-mail + mot de passe | À implémenter : inscription, confirmation, connexion et récupération | Projet dédié, expéditeur SMTP de production et redirections exactes ; tests réels d’envoi/récupération |
 | Apple | OAuth PKCE + retour serveur | Services ID et clé Apple, fournisseur Supabase, renouvellement de la clé selon Apple |
 | Facebook | OAuth PKCE + retour serveur | Application Meta, configuration/validation fournisseur selon son usage |
 | SMS | Saisie du numéro E.164, code à 6 chiffres | Fournisseur SMS dans Supabase, pays autorisés, dépenses plafonnées, contrôle anti-abus avant ouverture |

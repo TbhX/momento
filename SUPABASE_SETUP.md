@@ -1,8 +1,8 @@
 # Base Supabase Momento
 
-L’organisation **Momento** a été créée en offre Free le 20 octobre 2026. **Aucun projet/base Momento n’a été créé** : Supabase refuse un nouveau projet parce que le propriétaire a atteint sa limite de deux projets gratuits actifs, comptés sur l’ensemble de ses organisations. Une nouvelle organisation ne réinitialise pas cette limite.
+L’organisation **Momento** a été créée en offre Free le 20 octobre 2026. **Aucun projet/base Momento n’a été créé par nos tentatives.** La création avait été bloquée par la limite de projets gratuits actifs sur l’ensemble du compte. Le propriétaire indique maintenant que Supabase est prêt ; la disponibilité réelle de l’emplacement reste à vérifier, car l’accès connecté à Momento est encore refusé.
 
-Le schéma ci-dessous est préparé et testé dans un Postgres embarqué PGlite. Il n’a pas été appliqué à Volteo. Le connecteur Supabase ne voit actuellement que l’organisation Volteo ; il faudra aussi autoriser son accès à Momento pour administrer le nouveau projet avec ce connecteur.
+Le schéma ci-dessous est préparé et testé dans un Postgres embarqué PGlite. Il n’a pas été appliqué à Volteo. Le connecteur Supabase ne voit actuellement que l’organisation Volteo. Les opérations de coût et de création sur l’organisation Momento (`ihyvwxutvbldkgsomhcp`) répondent « You do not have permission to perform this action ». Reconnecter Supabase en autorisant Momento et les opérations nécessaires, puis relire la liste de projets avant toute création pour éviter un doublon. Ne pas transmettre de clé dans le chat et ne pas réutiliser Volteo. Voir aussi [les permissions Supabase](https://supabase.com/docs/guides/platform/personal-access-tokens).
 
 ## Modèle préparé
 
@@ -33,7 +33,7 @@ Le test utilise `@electric-sql/pglite` **0.5.10**, avec identités et rôles syn
 
 ## Mise en place quand un emplacement est disponible
 
-1. Identifier le projet inutilisé à mettre en pause, ou choisir explicitement une offre payante après devis. Aucune pause, suppression ou souscription n’a été effectuée.
+1. Corriger l’accès à Momento, puis vérifier la disponibilité et le coût. Le propriétaire indique avoir préparé Supabase ; ne pas conclure que le quota est toujours bloqué ou débloqué sans le relire. Aucune pause, suppression ou souscription n’a été effectuée par l’agent.
 2. Créer le projet **Momento** dans l’organisation **Momento**, région Paris (`eu-west-3`), et confirmer son identifiant. Ne pas utiliser les clés ou la base Volteo.
 3. Le projet utilise des schémas déclaratifs : modifier `supabase/schemas/`, puis utiliser les commandes disponibles de la CLI pour générer et revoir une migration. Le dossier ne contient encore aucune migration distante appliquée. Contrôler aussi les droits de colonnes et schémas : le diff déclaratif ne suit pas toutes les modifications de privilèges. Appliquer séparément les données de référence de `seed.sql`.
 4. Exécuter `supabase/tests/access.sql` seulement sur une base de développement vide du bon projet. La transaction est annulée. Exécuter ensuite les advisors Supabase sécurité/performance et un test Data API avec deux vrais comptes de test.

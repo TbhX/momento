@@ -5,7 +5,7 @@
 ## Ce qui fonctionne déjà
 
 - Dépôt de référence `TbhX/momento`, branche `main`, et hébergement autonome [Cloudflare Pages](https://momento-7se.pages.dev/), sans obligation de compte ChatGPT pour les futurs utilisateurs.
-- Build avec tests automatiques ; un push sur `main` a bien déclenché et terminé un déploiement Pages. Le dernier ensemble validé contient 139 tests réussis.
+- Build avec tests automatiques ; un push sur `main` a bien déclenché et terminé un déploiement Pages. Le dernier ensemble validé contient 144 tests réussis.
 - Interface responsive et PWA installable ; photo, arrière-plans et vue vidéo à deux préparés. Les essais sur appareils et les appels réels restent à faire.
 - Adaptateur Supabase Auth serveur pour OAuth, e-mail/mot de passe et SMS conditionnel ; cookies HttpOnly, contrôle d’origine et retrait des en-têtes d’identité falsifiables. Inscription, confirmation/renvoi et récupération sont implémentés ; les fournisseurs réels ne sont pas connectés.
 - Projet Supabase dédié Momento créé en Free à Paris ; schéma de 27 tables avec RLS installé, thèmes initialisés et tests SQL réussis à distance. Paramètres de connexion serveur enregistrés dans Pages ; aucun accès métier anonyme.
@@ -53,7 +53,7 @@ Les ventes réelles sont désactivées. `readiness.payments` vaut encore `false`
 
 ## Choix de connexion et deuxième étape
 
-- **Connexions retenues : Google et adresse e-mail + mot de passe.** Apple/Facebook sont des possibilités ultérieures, sans priorité sur ce socle.
+- **Choix courant : adresse e-mail + mot de passe simples.** Google est reporté. Le mode sans confirmation est préparé mais attend l’accord explicite du propriétaire avant réglage Supabase et activation ; aucune récupération par e-mail n’est disponible sans SMTP. Le parcours avec confirmation/récupération reste prévu pour plus tard.
 - **SMS conditionnel uniquement** : il reste désactivé tant qu’une solution réellement gratuite et adaptée à la production n’a pas été établie. Aucune offre d’essai n’est assimilée à un service gratuit permanent, aucun abonnement ni SMS payant n’est activé.
 - **Applications iPhone/Android** : après validation du site, préparer le paquet applicatif, les comptes développeur, la politique de confidentialité, les parcours de suppression et les exigences actuelles d’authentification/achats des stores. Une PWA installable n’est pas une application déjà publiée sur les stores.
 - **Rencontres physiques** : conserver exclusivement le teaser « Bientôt ». Aucun partenaire, lieu, créneau ou achat avant la mise en place réelle des partenariats.
@@ -92,3 +92,9 @@ Les deux migrations de compte et de médias ont été appliquées sous les versi
 Validation locale : **139 tests réussis** et **build Pages réussi**. Les deux scripts SQL d’accès/comptes ont réussi sur PostgreSQL distant avec rollback. Le vérificateur explicite a ensuite réussi les **sept contrôles contre les vraies API**, en exécutant le Worker compilé localement : connexion de deux identités jetables confirmées administrativement, profils persistants et isolés, JPEG privé, décor persistant, export isolé, refus après révocation via Worker/Data API/Storage et suppression complète profil/médias/Auth. Aucun e-mail ni SMS n’a été envoyé. Le nettoyage a été confirmé séparément par lecture SQL : zéro identité Auth, profil ou objet média ; admissions toujours fermées. Cela ne constitue pas une validation HTTP du déploiement Cloudflare, d’OAuth Google, de SMTP ou d’un téléphone réel.
 
 Les advisors ne signalent pas d’erreur de schéma ; les remarques RLS privées et index inutilisés restent informatives. L’avertissement Auth de protection contre les mots de passe compromis est documenté et demande une décision compatible avec Free avant ouverture du mot de passe au public. Google reste sans identifiants ; SMTP attend un domaine d’expéditeur. Les autres API métier répondent explicitement que la fonction n’est pas prête. Prochaine priorité réalisable : salons et relations persistants, tout en conservant les inscriptions publiques, la vidéo réelle et les ventes fermées jusqu’à validation.
+
+### Livraison du 20 octobre — mode e-mail et mot de passe simple préparé
+
+À la demande du propriétaire, un mode `basic` est ajouté sans dépendance à SMTP ni Google : inscription immédiate avec mot de passe, session HttpOnly puis profil. Il annonce une adresse non vérifiée et l’absence de récupération par e-mail. Les liens de récupération et renvoi sont refusés dans ce mode, y compris côté API. Le client temporaire d’inscription utilise la clé publiable, sans PKCE/persistance ni retour OAuth ; le client SSR reprend la session et vérifie l’identité. Quotas, mot de passe fort, CSRF, contrôle des sessions et RLS sont conservés. Les comptes existants ne reçoivent aucun droit issu de leur e-mail.
+
+Validation : **144 tests locaux réussis** et build Pages réussi. Cinq nouveaux tests couvrent cohérence avec le réglage Supabase, inscription sans flux e-mail, cookies et identité vérifiée auprès d’Auth, reconnexion, refus de session invalide, liens inactifs, quotas, et message exact dans le formulaire. Aucun essai réel du nouveau mode n’a été effectué : Supabase exige encore la confirmation, `AUTH_EMAIL_ENABLED=false`. La confirmation explicite du propriétaire est attendue avant désactivation de la vérification d’adresse dans le tableau de bord, puis activation et test jetable. Aucune promesse de récupération de mot de passe n’est affichée. Les salons et ventes réels restent fermés.

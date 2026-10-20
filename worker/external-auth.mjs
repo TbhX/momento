@@ -1,4 +1,5 @@
 import {createServerClient,parseCookieHeader,serializeCookieHeader} from '@supabase/ssr';
+import {createClient} from '@supabase/supabase-js';
 import {usesSupabaseData,hasServerKey,serverRPC,requireActiveSession,reserveRecovery} from './supabase-server.mjs';
 import {supabaseAccountAPI} from './supabase-account.mjs';
 
@@ -19,13 +20,15 @@ export function externalAuthConfiguration(env){
  if(!/^sb_publishable_[A-Za-z0-9_-]{12,}$/.test(env.SUPABASE_PUBLISHABLE_KEY||''))issues.push('publishable_key');
  if(usesSupabaseData(env)&&!hasServerKey(env))issues.push('server_key');
  try{origin=new URL(env.MOMENTO_APP_ORIGIN);if(origin.protocol!=='https:'||origin.origin!==env.MOMENTO_APP_ORIGIN||origin.username||origin.password)throw 0}catch{issues.push('app_origin')}
- const providers=String(env.AUTH_OAUTH_PROVIDERS||'google').split(',').map(s=>s.trim()).filter((p,i,a)=>OAUTH_PROVIDERS.includes(p)&&a.indexOf(p)===i);
+ const providers=String(env.AUTH_OAUTH_PROVIDERS??'google').split(',').map(s=>s.trim()).filter((p,i,a)=>OAUTH_PROVIDERS.includes(p)&&a.indexOf(p)===i);
  const dailyBudget=Number(env.AUTH_SMS_DAILY_BUDGET||20);
  const guarded=(usesSupabaseData(env)?hasServerKey(env):!!env.DB)&&String(env.AUTH_COOKIE_SECRET||'').length>=32;
  const sms=env.AUTH_SMS_ENABLED==='true'&&guarded&&Number.isInteger(dailyBudget)&&dailyBudget>=1&&dailyBudget<=500;
  const emailBudget=Number(env.AUTH_EMAIL_DAILY_BUDGET||20);
+ const emailMode=env.AUTH_EMAIL_MODE||'confirmed';
+ if(!['confirmed','basic'].includes(emailMode))issues.push('email_mode');
  const email=env.AUTH_EMAIL_ENABLED==='true'&&guarded&&Number.isInteger(emailBudget)&&emailBudget>=1&&emailBudget<=500;
- return{configured:issues.length===0,issues,url:supabaseURL?.origin,origin:origin?.origin,providers,sms,dailyBudget,email,emailBudget};
+ return{configured:issues.length===0,issues,url:supabaseURL?.origin,origin:origin?.origin,providers,sms,dailyBudget,email,emailBudget,emailMode};
 }
 
 function cookieContext(request,config){
@@ -94,22 +97,40 @@ async function countAttempt(env,label,subject,limit,period){
 const clientIP=request=>request.headers.get('CF-Connecting-IP')||'unknown'; // Trusted on the Cloudflare standalone target; never X-Forwarded-For.
 function verifiedIdentity(user){if(!user||user.is_anonymous||(!user.email_confirmed_at&&!user.phone_confirmed_at)||!user.aud||user.aud!=='authenticated'||! /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id))return null;return{id:'supabase:'+user.id,email:user.email_confirmed_at?user.email||'':''}}
 async function enabledProviders(config){
- try{const r=await fetch(config.url+'/auth/v1/settings',{headers:{apikey:config.key},signal:AbortSignal.timeout(10000)});if(!r.ok)throw 0;const settings=await r.json();return{providers:config.providers.filter(p=>settings.external?.[p]===true),sms:config.sms&&settings.external?.phone===true,email:config.email&&settings.external?.email===true&&settings.mailer_autoconfirm===false}}catch{throw authFailure('auth_provider_unavailable',503)}
+ try{const r=await fetch(config.url+'/auth/v1/settings',{headers:{apikey:config.key},signal:AbortSignal.timeout(10000)});if(!r.ok)throw 0;const settings=await r.json();const email=config.email&&settings.external?.email===true&&settings.mailer_autoconfirm===(config.emailMode==='basic');return{providers:config.providers.filter(p=>settings.external?.[p]===true),sms:config.sms&&settings.external?.phone===true,email,emailMode:config.emailMode,emailRecovery:email&&config.emailMode==='confirmed'}}catch{throw authFailure('auth_provider_unavailable',503)}
+}
+
+async function basicSignUp(config,context,env,email,password){
+ // SSR forces PKCE, which cannot be combined with autoconfirm. This transient
+ // publishable-key client performs only password signup, with no URL redirect,
+ // persistence or browser tokens. The SSR client stores the resulting session
+ // in the existing HttpOnly cookies and verifies it with the Auth server.
+ const client=createClient(config.url,config.key,{auth:{flowType:'implicit',persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},global:{fetch:(input,init={})=>fetch(input,{...init,signal:AbortSignal.timeout(10000)})}});
+ const {data,error}=await client.auth.signUp({email,password});
+ emailProviderError(error,{concealAccount:true});
+ if(error)return responseJSON({accepted:true,next:'signin'});
+ if(!data?.session||!verifiedIdentity(data.user))throw authFailure('email_unavailable',503);
+ const stored=await context.supabase.auth.setSession({access_token:data.session.access_token,refresh_token:data.session.refresh_token});
+ if(stored.error||stored.data?.user?.id!==data.user.id){clearIdentityCookies(context);throw authFailure('email_unavailable',503)}
+ const checked=await context.supabase.auth.getUser();
+ if(checked.error||!verifiedIdentity(checked.data?.user)||checked.data.user.id!==data.user.id){clearIdentityCookies(context);throw authFailure('invalid_credentials',401)}
+ await requireActiveSession(env,context,data.user.id);
+ return responseJSON({authenticated:true,next:'profile',emailVerified:false});
 }
 
 async function authenticationRoute(request,env,config,context){
  const path=new URL(request.url).pathname;
  if(path==='/api/auth/config'&&request.method==='GET'){
-  if(!config.configured)return responseJSON({mode:'supabase',configured:false,providers:[],sms:false,email:false,recovery:false});
+  if(!config.configured)return responseJSON({mode:'supabase',configured:false,providers:[],sms:false,email:false,emailRecovery:false,recovery:false});
   const providers=await enabledProviders(config);let recovery=false;
-  if(providers.email&&context.jar.get(RECOVERY_COOKIE))try{await recoveryGrant(context,env);recovery=true}catch{context.put(RECOVERY_COOKIE,'',{maxAge:0})}
+  if(providers.emailRecovery&&context.jar.get(RECOVERY_COOKIE))try{await recoveryGrant(context,env);recovery=true}catch{context.put(RECOVERY_COOKIE,'',{maxAge:0})}
   return responseJSON({mode:'supabase',configured:true,...providers,recovery});
  }
  if(!config.configured)throw authFailure('auth_not_configured',503);
  const auth=context.supabase.auth;
  if(path==='/api/auth/recovery/callback'&&request.method==='GET'){
   let flow;
-  try{if(!config.email)throw 0;flow=await readEmailRecord(env,context.jar.get(EMAIL_FLOW_COOKIE),'recover',600000);if(flow.verifier!==await verifierFingerprint(context,env))throw 0}catch{context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});return Response.redirect(config.origin+'/?authError=recovery_expired',303)}
+  try{if(!config.email||config.emailMode==='basic')throw 0;flow=await readEmailRecord(env,context.jar.get(EMAIL_FLOW_COOKIE),'recover',600000);if(flow.verifier!==await verifierFingerprint(context,env))throw 0}catch{context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});return Response.redirect(config.origin+'/?authError=recovery_expired',303)}
   context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});
   const url=new URL(request.url),code=url.searchParams.get('code'),flowId=url.searchParams.get('sb_flow_id');
   if(!code||code.length>2048)return Response.redirect(config.origin+'/?authError=recovery_expired',303);
@@ -129,6 +150,7 @@ async function authenticationRoute(request,env,config,context){
  checkMutation(request,config.origin);
  if(path.startsWith('/api/auth/email/')){
   if(!config.email||!(await enabledProviders(config)).email)throw authFailure('email_not_enabled',409);
+  if(config.emailMode==='basic'&&!['/api/auth/email/signup','/api/auth/email/signin'].includes(path))throw authFailure('email_links_not_enabled',409);
   if(path==='/api/auth/email/password'){
    const {password}=await limitedJSON(request);validPassword(password,{newPassword:true});
    await countAttempt(env,'password-ip',clientIP(request),10,900000);
@@ -157,6 +179,7 @@ async function authenticationRoute(request,env,config,context){
   if(path==='/api/auth/email/signup'){
    const password=validPassword(body.password,{newPassword:true});await emailSendLimits(request,env,config,email);
    context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});context.put(RECOVERY_COOKIE,'',{maxAge:0});
+   if(config.emailMode==='basic')return basicSignUp(config,context,env,email,password);
    const {data,error}=await auth.signUp({email,password,options:{emailRedirectTo:config.origin+'/api/auth/callback'}});emailProviderError(error,{concealAccount:true});
    if(data?.session){try{await auth.signOut({scope:'local'})}finally{clearIdentityCookies(context)}throw authFailure('email_not_enabled',409)}
    return responseJSON({accepted:true,next:'confirm_email'});

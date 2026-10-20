@@ -8,8 +8,9 @@
     "MOMENTO_APP_ORIGIN": "https://REPLACE_WITH_YOUR_PAGES_OR_CUSTOM_DOMAIN",
     "SUPABASE_URL": "https://REPLACE_WITH_MOMENTO_PROJECT_REF.supabase.co",
     "SUPABASE_DATA_ENABLED": "true",
-    "AUTH_OAUTH_PROVIDERS": "google",
+    "AUTH_OAUTH_PROVIDERS": "",
     "AUTH_EMAIL_ENABLED": "false",
+    "AUTH_EMAIL_MODE": "basic",
     "AUTH_EMAIL_DAILY_BUDGET": "20",
     "AUTH_SMS_ENABLED": "false",
     "AUTH_SMS_DAILY_BUDGET": "20",
@@ -23,5 +24,6 @@
   // SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY, AUTH_COOKIE_SECRET,
   // LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, Stripe TEST credentials.
   // ASSETS is automatically provided by Pages; do not create that binding manually.
+  // Basic mode also requires upstream autoconfirm and explicit owner approval.
   // Account routes use Postgres/Storage. Unported legacy D1/R2 services remain closed.
 }

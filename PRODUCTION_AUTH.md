@@ -4,7 +4,7 @@ La cible autonome est [Cloudflare Pages](https://momento-7se.pages.dev/) et le p
 
 Les comptes/profils, consentements, photos et décors privés, compteurs Auth et autorisations de récupération sont portés vers Postgres/Storage. Les deux migrations sont décrites dans [SUPABASE_SETUP.md](SUPABASE_SETUP.md). Les salons, relations et achats réels restent à raccorder ; ils ne deviennent pas opérationnels par ce portage.
 
-**Google et l’inscription e-mail restent fermés.** Le client Google n’est pas configuré ; sa console n’est pas accessible dans le navigateur de cette session. Le propriétaire a indiqué ne posséder aucun domaine d’expéditeur : aucun SMTP de production n’est vérifié. Les modèles français sont préparés dans `supabase/templates/`. Le SMS demeure désactivé, sans fournisseur payant souscrit.
+**Le choix courant est e-mail et mot de passe simples ; Google est reporté et l’inscription reste fermée jusqu’au réglage du fournisseur.** Le client Google n’est pas configuré ; sa console n’est pas accessible dans le navigateur de cette session. Le propriétaire a indiqué ne posséder aucun domaine d’expéditeur : aucun SMTP de production n’est vérifié. Les modèles français sont préparés dans `supabase/templates/`. Le SMS demeure désactivé, sans fournisseur payant souscrit.
 
 ## Paramètres serveur
 
@@ -65,10 +65,18 @@ L’export `/api/me/export` utilise le client RLS du membre pour les tables pers
 
 ## Vérifications et lancement
 
-La suite locale comprend **139 tests**, avec rejeu des schémas et migrations dans PGlite, règles d’accès/quota, API Auth simulée, DOM et compte Postgres/Storage. Les scripts SQL ont aussi été exécutés sur le projet distant avec identités synthétiques et rollback. Ils ne valident pas Google, la délivrabilité, un appel vidéo ou un appareil réel.
+La suite locale comprend **144 tests**, avec rejeu des schémas et migrations dans PGlite, règles d’accès/quota, API Auth simulée, DOM et compte Postgres/Storage. Les scripts SQL ont aussi été exécutés sur le projet distant avec identités synthétiques et rollback. Ils ne valident pas Google, la délivrabilité, un appel vidéo ou un appareil réel.
 
 `scripts/verify-supabase-accounts.mjs` teste le Worker compilé contre les vrais services Auth/Postgres/Storage avec deux comptes jetables confirmés administrativement, sans envoyer d’e-mail. Exécution explicite : `node scripts/verify-supabase-accounts.mjs --allow-disposable-accounts --env-file <fichier-json-prive>`. Ce fichier fournit les variables serveur usuelles et ne doit jamais être versionné. Le résultat réel et les éventuelles limites sont consignés dans [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md).
 
 Avant lancement : Google et SMTP testés réellement, protections fournisseur et anti-abus, portage des salons/relations/boutique, modération et droits payants, purge/restauration, identité et contact de l’exploitant, puis essais Safari iOS/Chrome Android. Les drapeaux de sessions, vidéo, juridique et paiements restent fermés.
 
 Références : [Google Supabase](https://supabase.com/docs/guides/auth/social-login/auth-google), [SMTP](https://supabase.com/docs/guides/auth/auth-smtp), [sessions](https://supabase.com/docs/guides/auth/sessions), [clés modernes](https://supabase.com/docs/guides/api/api-keys), [sécuriser Storage](https://supabase.com/docs/guides/storage/security/access-control).
+
+## Mode simple sans SMTP — préparé le 20 octobre
+
+`AUTH_EMAIL_MODE=basic` sélectionne un parcours immédiat. Il n’est offert que si Pages active l’e-mail et que Supabase publie `external.email=true` et `mailer_autoconfirm=true`. Un réglage inconnu ou incohérent ferme le parcours. Les routes de confirmation, renvoi, récupération et changement via lien sont refusées ; aucun message de confirmation/récupération n’est promis. L’interface explique l’absence de vérification d’adresse et de récupération. Google/SMS ne sont pas proposés quand leurs paramètres sont désactivés.
+
+La documentation Supabase précise que PKCE ne se combine pas avec autoconfirm. L’inscription simple utilise donc un client temporaire **à clé publiable**, sans persistance/auto-refresh, avec `flowType=implicit` et sans URL de retour. Le résultat reste exclusivement serveur : le client SSR importe la session dans les cookies HttpOnly, vérifie l’utilisateur auprès d’Auth et le contrôle de session actif demeure requis. Aucun token n’est renvoyé au navigateur. La réponse signale `emailVerified=false` : la date auto-confirmée du fournisseur ne prouve pas la propriété de l’adresse. Les contrôles de mot de passe, CSRF et quotas d’inscription restent appliqués. Aucun accès administrateur ou rapprochement de comptes par e-mail n’est introduit.
+
+**Activation non effectuée** : désactiver la confirmation d’adresse affaiblit une protection d’identité ; cette modification du tableau de bord exige une confirmation explicite au moment de l’action selon la politique de contrôle du navigateur. Le propriétaire doit confirmer ce mode avant sauvegarde du réglage puis activation Pages. Il faudra ensuite vérifier une inscription réelle sans envoi, connexion, déconnexion et suppression d’un compte jetable. Les tests actuels sont locaux avec fournisseur simulé : ils ne prouvent pas ce parcours réel dans le nouveau mode. Les rencontres et ventes restent fermées.

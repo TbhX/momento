@@ -18,7 +18,7 @@ function fixture(){const calls=[],options={},usedCodes=new Set();let challenge=n
  const token=()=>({access_token:['eyJhbGciOiJIUzI1NiJ9',Buffer.from(JSON.stringify({sub:currentUser.id,exp:Math.floor(Date.now()/1000)+3600,session_id:sid})).toString('base64url'),'fixture'].join('.'),refresh_token:'fixture-refresh-token',expires_in:3600,token_type:'bearer',user:currentUser});
  return{calls,token,options,setUser(value){currentUser=value},setSession(value){sid=value},rejectUser(){rejectUser=true},get otpCalls(){return otpCalls},get verifyCalls(){return verifyCalls},fetch:async(input,init={})=>{const url=new URL(typeof input==='string'?input:input.url),body=init.body?JSON.parse(init.body):null;calls.push({path:url.pathname,query:url.searchParams,body,method:init.method||'GET'});
   if(url.pathname==='/auth/v1/settings')return authResponse({external:{google:true,apple:false,facebook:true,phone:true,email:true},mailer_autoconfirm:options.autoconfirm===true});
-  if(url.pathname==='/auth/v1/signup'){challenge=body.code_challenge;if(options.signupError)return authResponse({msg:'Account exists',code:'user_already_exists'},{status:422});return authResponse({id:uuid,email:body.email,identities:[{provider:'email'}]})}
+  if(url.pathname==='/auth/v1/signup'){challenge=body.code_challenge;if(options.signupError)return authResponse({msg:'Account exists',code:'user_already_exists'},{status:422});if(options.autoconfirm&&!options.noSignupSession)return authResponse(token());return authResponse({id:uuid,email:body.email,identities:[{provider:'email'}]})}
   if(url.pathname==='/auth/v1/recover'){challenge=body.code_challenge;if(options.recoveryError)return authResponse({msg:'Unknown account',code:'user_not_found'},{status:404});return authResponse({})}
   if(url.pathname==='/auth/v1/resend'){challenge=body.code_challenge;return authResponse({})}
   if(url.pathname==='/auth/v1/token'&&url.searchParams.get('grant_type')==='password'){if(body.password!=='A unique fixture phrase 2026'||body.email!=='member@example.test')return authResponse({msg:'invalid credentials',code:options.signinCode||'invalid_credentials'},{status:400});return authResponse(token())}
@@ -173,4 +173,40 @@ test('unconfirmed credentials cannot retain a newly issued session, while a conf
 }));
 test('password update reports failed global revocation accurately and still clears local cookies',async()=>withFixture(async f=>{
  const env=emailSetup(),browser=await beginRecovery(f,env);f.options.logoutError=true;const response=await worker.fetch(request('/api/auth/email/password',{password},browser.header()),env);assert.equal(response.status,200);assert.deepEqual(await response.json(),{passwordUpdated:true,otherSessionsRevoked:false});browser.apply(response);assert.equal(browser.values.size,0);
+}));
+
+test('basic password signup requires matching upstream mode, uses no mail PKCE or server key, and creates HttpOnly session cookies',async()=>withFixture(async f=>{
+ const env={...emailSetup(),AUTH_EMAIL_MODE:'basic',AUTH_OAUTH_PROVIDERS:'',AUTH_SMS_ENABLED:'false'},browser=jar();
+ assert.equal((await(await worker.fetch(request('/api/auth/config'),env)).json()).email,false);
+ assert.equal((await worker.fetch(request('/api/auth/email/signup',{email:user.email,password}),env)).status,409);
+ assert.equal(f.calls.some(c=>c.path==='/auth/v1/signup'),false);
+ f.options.autoconfirm=true;
+ const config=await(await worker.fetch(request('/api/auth/config'),env)).json();assert.equal(config.email,true);assert.equal(config.emailMode,'basic');assert.equal(config.emailRecovery,false);assert.deepEqual(config.providers,[]);assert.equal(config.sms,false);
+ const response=await worker.fetch(request('/api/auth/email/signup',{email:user.email,password,role:'admin',redirectTo:'https://evil.example'}),env);assert.equal(response.status,200);const payload=await response.json();assert.deepEqual(payload,{authenticated:true,next:'profile',emailVerified:false});assert.doesNotMatch(JSON.stringify(payload),/access_token|refresh_token/);browser.apply(response);
+ const sent=f.calls.find(c=>c.path==='/auth/v1/signup');assert.equal(sent.body.email,user.email);assert.equal(sent.body.password,password);assert.equal(sent.body.code_challenge??null,null);assert.equal(sent.query.has('redirect_to'),false);assert.equal(sent.body.role,undefined);
+ assert.ok(response.headers.getSetCookie().some(c=>c.startsWith('__Host-momento-auth=')&&/HttpOnly/.test(c)&&/Secure/.test(c)));
+ assert.equal((await worker.fetch(request('/api/me',undefined,browser.header()),env)).status,200);
+ assert.equal(f.calls.some(c=>/recover|resend|authorize/.test(c.path)),false);
+ const logout=await worker.fetch(request('/api/auth/logout',{},browser.header()),env);assert.equal(logout.status,200);browser.apply(logout);assert.equal(browser.values.size,0);
+ browser.apply(await worker.fetch(request('/api/auth/email/signin',{email:user.email,password}),env));assert.equal((await worker.fetch(request('/api/me',undefined,browser.header()),env)).status,200);
+}));
+test('basic mode blocks all email links and recovery callbacks without upstream mail calls',async()=>withFixture(async f=>{
+ const env={...emailSetup(),AUTH_EMAIL_MODE:'basic'};f.options.autoconfirm=true;
+ for(const action of ['recover','resend','password']){const response=await worker.fetch(request('/api/auth/email/'+action,{email:user.email,password}),env);assert.equal(response.status,409);assert.deepEqual(await response.json(),{error:'email_links_not_enabled'})}
+ const callback=await worker.fetch(request('/api/auth/recovery/callback?code=unused'),env);assert.equal(callback.headers.get('location'),origin+'/?authError=recovery_expired');
+ assert.equal(f.calls.some(c=>['/auth/v1/recover','/auth/v1/resend','/auth/v1/token','/auth/v1/user'].includes(c.path)),false);
+}));
+test('basic signup enforces password and shared signup quotas, conceals existing accounts and refuses a missing session',async()=>withFixture(async f=>{
+ const env={...emailSetup(),AUTH_EMAIL_MODE:'basic',AUTH_EMAIL_DAILY_BUDGET:'2'};f.options.autoconfirm=true;
+ assert.equal((await worker.fetch(request('/api/auth/email/signup',{email:user.email,password:'short'}),env)).status,400);
+ f.options.signupError=true;const existing=await worker.fetch(request('/api/auth/email/signup',{email:user.email,password}),env);assert.equal(existing.status,200);assert.deepEqual(await existing.json(),{accepted:true,next:'signin'});assert.equal(existing.headers.getSetCookie().some(c=>c.startsWith('__Host-momento-auth=')&&!c.includes('Max-Age=0')),false);
+ f.options.signupError=false;f.options.noSignupSession=true;assert.equal((await worker.fetch(request('/api/auth/email/signup',{email:'other@example.test',password}),env)).status,503);
+ assert.equal((await worker.fetch(request('/api/auth/email/signup',{email:'third@example.test',password}),env)).status,429);assert.equal(f.calls.filter(c=>c.path==='/auth/v1/signup').length,2);
+ assert.equal(externalAuthConfiguration({...env,AUTH_EMAIL_MODE:'unknown'}).configured,false);
+}));
+
+ test('basic signup never keeps cookies when Auth cannot verify the new identity',async()=>withFixture(async f=>{
+ const env={...emailSetup(),AUTH_EMAIL_MODE:'basic'};f.options.autoconfirm=true;f.rejectUser();
+ const response=await worker.fetch(request('/api/auth/email/signup',{email:user.email,password}),env);assert.equal(response.status,503);
+ const browser=jar();browser.apply(response);assert.equal(browser.values.size,0);assert.equal((await worker.fetch(request('/api/me',undefined,browser.header()),env)).status,401);
 }));

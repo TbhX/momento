@@ -9,6 +9,7 @@ export const accountFailure=(code,status=503)=>Object.assign(new Error(code),{mo
 export function serverClient(env){
  if(!hasServerKey(env))throw accountFailure('account_not_configured');
  return createClient(env.SUPABASE_URL,env.SUPABASE_SECRET_KEY,{
+  db:{retry:false},
   auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
   global:{fetch:(input,init={})=>fetch(input,{...init,signal:AbortSignal.timeout(10000)})}
  });

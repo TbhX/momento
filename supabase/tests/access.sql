@@ -86,7 +86,7 @@ select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting(
 do $$ begin
  begin perform public.enter_room('00000000-0000-4000-8000-000000000101','audio',gen_random_uuid()); raise exception 'Room capacity was exceeded'; exception when invalid_parameter_value then if sqlerrm <> 'room_full' then raise; end if; end;
  if (select count(*) from public.room_preview('00000000-0000-4000-8000-000000000101')) <> 2 then raise exception 'Free member cannot preview room'; end if;
- insert into public.blocks(actor_id,target_id) values(auth.uid(),'00000000-0000-4000-8000-00000000000b');
+ perform public.block_peer('00000000-0000-4000-8000-00000000000b');
  if (select count(*) from public.room_preview('00000000-0000-4000-8000-000000000101')) <> 1 then raise exception 'Blocked member remained in preview'; end if;
  if (select count(*) from public.matches) <> 0 or (select count(*) from public.messages) <> 0 then raise exception 'Blocking did not revoke access'; end if;
 end $$;

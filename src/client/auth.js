@@ -61,5 +61,5 @@ const MomentoAuth=(()=>{
  }
  function logoutMarkup(label='Se déconnecter',className='secondary'){return configuration.mode==='sites'?`<a class="${className}" href="/signout-with-chatgpt?returnTo=%2F" target="_top" onclick="clearLocalBeforeLogout()">${label}</a>`:`<button type="button" class="${className}" onclick="MomentoAuth.logout()">${label}</button>`}
  async function logout(){try{await request('logout',{});clearLocalBeforeLogout();location.replace('/')}catch(e){if(typeof toast==='function')toast(e.message)}}
- return{init,markup,bind,logoutMarkup,logout,standalone,recovering,mustRecover,selectMode:setEmailMode};
+ return{init,markup,bind,logoutMarkup,logout,standalone,recovering,mustRecover,selectMode:setEmailMode,emailEnabled:()=>configuration.email===true};
 })();

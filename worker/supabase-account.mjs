@@ -1,4 +1,5 @@
 import {accountFailure,serverClient,serverRPC} from './supabase-server.mjs';
+import {supabaseCommunityAPI} from './supabase-community.mjs';
 
 const BUCKET='momento-media';
 const BACKGROUNDS=['none','blur','rose','night','studio','custom'];
@@ -157,6 +158,10 @@ export async function supabaseAccountAPI(request,env,context,userId,{readJSON,me
   const status=await userRPC(context.supabase,'account_status');
   return reply({...status,readiness:{video:false,payments:false,legal:false,enabled:false},realSessions:false});
  }
- if(path.startsWith('/api/service/'))throw accountFailure('feature_not_ready');
+ if(path.startsWith('/api/service/')){
+  const response=await supabaseCommunityAPI(request,env,{context,origin,readJSON});
+  if(response)return response;
+  throw accountFailure('feature_not_ready');
+ }
  return reply({error:'not_found'},404);
 }

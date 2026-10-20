@@ -36,6 +36,7 @@ function cookieContext(request,config){
  const outgoing=new Map();
  const put=(name,value,options={})=>{jar.set(name,value);outgoing.set(name,serializeCookieHeader(name,value,{...options,...COOKIE_OPTIONS,...(options.maxAge===0?{maxAge:0,expires:new Date(0)}:{})}))};
  const supabase=createServerClient(config.url,config.key,{
+  db:{retry:false},
   cookieOptions:{name:AUTH_COOKIE,...COOKIE_OPTIONS},
   global:{fetch:(input,init={})=>fetch(input,{...init,signal:AbortSignal.timeout(10000)})},
   cookies:{getAll:()=>[...jar].map(([name,value])=>({name,value})),setAll(cookies){for(const c of cookies)put(c.name,c.value,{...c.options,...(c.name.includes('code-verifier')&&c.options?.maxAge!==0?{maxAge:600}:{})})}}

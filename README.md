@@ -1,8 +1,8 @@
 # Momento
 
-Application de rencontres audio/vidéo, hébergée dans le dépôt GitHub privé **TbhX/momento** et un hébergement **Cloudflare Pages**. La marque affichée dans l’application reste Momento.
+Application de rencontres audio/vidéo, sources **TbhX/momento**, déployée avec **Cloudflare Pages** : [momento-7se.pages.dev](https://momento-7se.pages.dev/). Le propriétaire a rendu le dépôt public pour connecter Cloudflare. La marque affichée dans l’application reste Momento.
 
-La version autonome ne demande aucun compte ChatGPT. **Cette base n’est pas encore une application de rencontres ouverte au public** : les nouveaux salons restent des simulations, et les fournisseurs réels sont à configurer. L’état détaillé est dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
+La version autonome ne demande aucun compte ChatGPT. **La page est accessible, mais les comptes et rencontres réelles ne sont pas encore ouverts** : Supabase Auth et les stockages restent à connecter, les nouveaux salons restent des simulations. L’organisation Supabase Momento a été créée ; la nouvelle base est bloquée par le quota de projets gratuits du compte. Son schéma préparé est décrit dans [SUPABASE_SETUP.md](SUPABASE_SETUP.md). L’état détaillé est dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
 
 ## Installation et contrôle
 
@@ -29,9 +29,9 @@ La sortie Pages est **`pages-dist`**. Elle contient les pages, les assets, un `_
 | Variable de build `NODE_VERSION` | `22` |
 | Variable de build `PNPM_VERSION` | `11.25.0` |
 
-Créer le projet Pages en choisissant l’intégration GitHub, puis autoriser le dépôt. Après configuration, chaque push sur la branche de production déclenche un build et un déploiement Pages. Une erreur de test interrompt la commande avant compilation. Aucun jeton Cloudflare n’est nécessaire dans le dépôt pour ce flux.
+Le projet Pages `momento` a été créé avec ces réglages et son premier déploiement a réussi. L’origine serveur est `https://momento-7se.pages.dev`. Après autorisation GitHub, les push sur la branche de production déclenchent un build et un déploiement Pages. Une erreur de test interrompt la commande avant compilation. Aucun jeton Cloudflare n’est nécessaire dans le dépôt pour ce flux. Les prévisualisations automatiques sont désactivées tant qu’un environnement distinct n’est pas configuré.
 
-Les mises à jour peuvent être poussées par le connecteur GitHub une fois que le dépôt lui est accessible et que ses droits d’écriture sont confirmés. Ne pas confondre le dépôt privé de source Sites avec ce nouveau dépôt GitHub. Le dépôt a été créé par son propriétaire, puis passé en privé avant ce transfert. Les futures modifications demandées sont à tester, committer et pousser sur ce dépôt, avec les droits d’écriture déjà autorisés.
+Les mises à jour demandées sont à tester, committer et pousser avec le connecteur GitHub autorisé. Ne pas confondre le dépôt de source Sites avec ce dépôt GitHub. Un dépôt privé est compatible avec Pages à condition d’autoriser son accès dans l’application GitHub Cloudflare Workers and Pages ; le mode public n’est pas une obligation technique.
 
 ## Services à connecter
 
@@ -56,7 +56,7 @@ Aucune clé réelle dans GitHub, dans les pages ou dans le bundle navigateur. Le
 
 Les aperçus de branches doivent utiliser une configuration et des données de test séparées, avec une origine et des redirections adaptées. Les secrets et données de production ne sont pas destinés aux builds de PR externes. Ne pas autoriser automatiquement toutes les URL `*.pages.dev` comme retours OAuth.
 
-Le dépôt doit être privé lors du transfert initial, conformément au choix par défaut de cette préparation. Aucune application native, vente réelle ni session publique n’est activée par la création du dépôt.
+Aucune application native, vente réelle ni session publique n’est activée par le déploiement de cette page.
 
 ## Autres cibles
 

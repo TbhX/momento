@@ -1,6 +1,6 @@
 # Connexion Momento sans ChatGPT
 
-État du 20 octobre 2026 : adaptateur et parcours implémentés, contrôles automatisés disponibles. **L’hébergement autonome et les fournisseurs ne sont pas activés.** Le site Sites existant demeure une bêta privée avec sa connexion ChatGPT ; sa publication ne constitue pas le déploiement autonome décrit ici.
+État du 20 octobre 2026 : **l’hébergement autonome Pages est déployé** sur `https://momento-7se.pages.dev/`. Les fournisseurs de connexion et les stockages ne sont pas encore configurés. L’organisation Supabase Momento existe ; la création de son projet est bloquée par le quota gratuit du compte. Le site Sites existant demeure une bêta privée distincte avec sa connexion ChatGPT.
 
 ## Architecture et données
 
@@ -8,7 +8,7 @@ Le build autonome utilise Supabase Auth pour l’identité uniquement, Cloudflar
 
 `node scripts/build.mjs --standalone` produit `production-dist/worker.js` et `production-dist/public/`. Les fichiers vidéo lourds sont des assets statiques ; ils ne gonflent pas le script serveur. `deploy/worker.example.jsonc` décrit les bindings à configurer dans le compte Cloudflare du propriétaire. Le stockage D1/R2 géré par Sites n’est pas implicitement exporté ni accessible dans ce compte.
 
-Pour le choix **Cloudflare Pages + GitHub**, `pnpm run build:pages` produit `pages-dist/` avec `_worker.js` et le binding automatique Pages `ASSETS`. Les réglages Git et de build sont dans [README.md](README.md), et le modèle optionnel est `deploy/pages.example.jsonc`. Le dépôt GitHub choisi par le propriétaire est **TbhX/momento**, privé ; la marque de l’application reste Momento. Le dépôt et l’hébergement Pages sont deux éléments distincts : le premier transfert ne déploie pas automatiquement un projet Pages non connecté.
+Pour le choix **Cloudflare Pages + GitHub**, `pnpm run build:pages` produit `pages-dist/` avec `_worker.js` et le binding automatique Pages `ASSETS`. Les réglages Git et de build sont dans [README.md](README.md), et le modèle optionnel est `deploy/pages.example.jsonc`. Le dépôt GitHub choisi par le propriétaire est **TbhX/momento**, devenu public sur sa décision ; la marque de l’application reste Momento. Le projet Pages `momento` est relié à ce dépôt et sa première compilation distante a réussi. Le schéma Postgres préparé n’a pas été appliqué au projet Volteo ni substitué aux adaptateurs D1/R2.
 
 Le code métier commun reçoit uniquement l’identité vérifiée par le serveur. En autonome, tous les en-têtes entrants `oai-authenticated-*` sont supprimés, puis remplacés après `supabase.auth.getUser()` par l’identité retournée par Supabase. Les comptes utilisent `supabase:<uuid>`. Les données de la bêta Sites restent séparées ; **aucune fusion par email**. Une reprise éventuelle des comptes doit prouver la possession des deux identités.
 

@@ -1,6 +1,6 @@
 # Momento — état de la bêta privée
 
-Version préparée le 17 octobre 2026. Le site reste privé. Ce document ne vaut pas validation juridique ni autorisation d’ouverture.
+État actuel au 20 octobre 2026 : la cible autonome est accessible sur `https://momento-7se.pages.dev/` ; connexion et services métier restent fermés faute de configuration. L’organisation Supabase Momento est créée en Free, la création de sa base est bloquée par le quota du compte. Le schéma préparé est dans `supabase/schemas/` et testé localement ; il ne remplace pas encore D1/R2. Les sections ci-dessous conservent les validations et limites du prototype Sites privé. Ce document ne vaut pas validation juridique ni autorisation d’ouverture des rencontres.
 
 ## Implémenté
 

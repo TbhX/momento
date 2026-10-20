@@ -33,6 +33,8 @@ Le projet Pages `momento` a été créé avec ces réglages et son premier dépl
 
 Les mises à jour demandées sont à tester, committer et pousser avec le connecteur GitHub autorisé. Ne pas confondre le dépôt de source Sites avec ce dépôt GitHub. Un dépôt privé est compatible avec Pages à condition d’autoriser son accès dans l’application GitHub Cloudflare Workers and Pages ; le mode public n’est pas une obligation technique.
 
+L’accès de l’application **Cloudflare Workers and Pages** au dépôt **Momento** a été enregistré le 20 octobre 2026, avec l’accord du propriétaire. Les déploiements de production sont configurés sur `main`. Vérifier le résultat du build Cloudflare après chaque mise à jour.
+
 ## Services à connecter
 
 | Service | Usage actuel de la cible autonome |

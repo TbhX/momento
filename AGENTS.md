@@ -8,4 +8,6 @@ Cloudflare Pages attend `pages-dist`, avec `_worker.js`. Le code serveur vérifi
 
 Le projet Pages `momento` est déployé sur `https://momento-7se.pages.dev/`. L’organisation Supabase `Momento` est créée en Free, mais le projet/base est bloqué par le quota global de projets gratuits. Le connecteur Supabase ne voit encore que Volteo : ne pas y appliquer le schéma Momento. `supabase/schemas/` contient l’état déclaratif préparé et testé localement, pas une base distante déjà créée. Voir `SUPABASE_SETUP.md` avant toute application.
 
+L’accès de l’application GitHub Cloudflare Workers and Pages à Momento est enregistré avec l’accord du propriétaire. Les push sur `main` sont configurés pour déclencher Pages ; vérifier le statut du déploiement après chaque mise à jour et signaler tout échec.
+
 Les secrets restent dans les paramètres serveur Cloudflare/Supabase. Ne jamais versionner de clé réelle, `.env`, `.dev.vars`, export de données personnelles ou sortie de compilation. Le fichier `deploy/pages.example.jsonc` est un modèle à compléter, pas une configuration de production déjà active.

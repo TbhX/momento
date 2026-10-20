@@ -1,4 +1,4 @@
--- Desired state for a NEW, dedicated Momento project. Not applied remotely yet.
+-- Desired schema for the dedicated Momento project; see migrations for applied history.
 -- Auth identities belong to auth.users; no password, email or video token here.
 create schema if not exists private;
 

@@ -2,7 +2,7 @@
 
 Application de rencontres audio/vidéo, sources **TbhX/momento**, déployée avec **Cloudflare Pages** : [momento-7se.pages.dev](https://momento-7se.pages.dev/). Le propriétaire a rendu le dépôt public pour connecter Cloudflare. La marque affichée dans l’application reste Momento.
 
-La version autonome ne demande aucun compte ChatGPT. **La page est accessible, mais les comptes et rencontres réelles ne sont pas encore ouverts** : Supabase Auth et les stockages restent à connecter, les nouveaux salons restent des simulations. L’organisation Supabase Momento a été créée ; le connecteur refuse encore l’accès nécessaire à son projet. Le quota, qui avait aussi bloqué la création, reste à revérifier après correction de cet accès. Son schéma préparé est décrit dans [SUPABASE_SETUP.md](SUPABASE_SETUP.md). La liste courante des travaux et critères de lancement est dans [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md) ; [LAUNCH_READINESS.md](LAUNCH_READINESS.md) conserve les validations et limites historiques.
+La version autonome ne demande aucun compte ChatGPT. **La page est déployée, mais les comptes et rencontres réelles ne sont pas encore ouverts** : Google/SMTP et le portage des API métier restent à terminer ; les nouveaux salons restent des simulations. Le projet Supabase dédié **Momento** est créé en offre Free, à Paris, avec ses 27 tables protégées par RLS et vérifiées à distance. Les paramètres de connexion serveur sont enregistrés dans Pages. Les preuves et limites figurent dans [SUPABASE_SETUP.md](SUPABASE_SETUP.md). La liste courante des travaux et critères de lancement est dans [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md) ; [LAUNCH_READINESS.md](LAUNCH_READINESS.md) conserve les validations et limites historiques.
 
 ## Installation et contrôle
 
@@ -40,19 +40,20 @@ L’accès de l’application **Cloudflare Workers and Pages** au dépôt **Mome
 | Service | Usage actuel de la cible autonome |
 | --- | --- |
 | Supabase Auth | OAuth et e-mail/mot de passe implémentés ; Google et e-mail prioritaires, fournisseurs réels à configurer ; SMS désactivé |
+| Supabase Database | Projet dédié `yhtngbkjqffkhfjadjzp`, schéma installé et tests SQL distants réussis ; portage des API métier encore nécessaire |
 | Cloudflare D1, binding `DB` | Données métier et limites serveur |
 | Cloudflare R2 privé, binding `BUCKET` | Profils et images |
 | Pages, binding automatique `ASSETS` | Pages et fichiers statiques |
 | LiveKit | Appels vidéo, après validation réelle |
 | Stripe | Paiements de test ; ventes réelles désactivées |
 
-L’ajout de Supabase **ne migre pas encore les données D1/R2 vers Supabase Database/Storage**. Cette migration serait un chantier distinct. Aucun projet Supabase existant n’est réutilisé par supposition.
+L’installation du schéma Supabase **ne migre pas les API ni les données D1/R2 vers Supabase Database/Storage**. Ce portage explicite est la prochaine étape de persistance ; les bindings D1/R2 du Worker ne sont actuellement pas configurés sur Pages.
 
-Configurer les bindings D1/R2 dans Pages et appliquer les migrations `drizzle/` dans cette D1. Elles ne s’exécutent pas lors du build. Le stockage du prototype Sites ne devient pas automatiquement celui de Pages. `deploy/pages.example.jsonc` donne un modèle optionnel ; le copier et le remplir seulement après identification du projet. La configuration réelle n’est pas versionnée par défaut.
+Le Worker actuel exigerait les bindings D1/R2 et les migrations `drizzle/` appliquées dans D1 ; elles ne s’exécutent pas lors du build. La cible retenue nécessite leur portage vers le projet Supabase dédié. Le stockage du prototype Sites ne devient pas automatiquement celui de Pages. `deploy/pages.example.jsonc` donne un modèle optionnel ; la configuration réelle n’est pas versionnée par défaut.
 
-Configurer dans Pages l’origine HTTPS exacte (`MOMENTO_APP_ORIGIN`), l’URL du projet Supabase (`SUPABASE_URL`), les identifiants administrateurs et les secrets requis. [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md) décrit les fournisseurs, les redirections, les cookies et les limites avant ouverture.
+L’origine HTTPS exacte (`MOMENTO_APP_ORIGIN`), l’URL Supabase (`SUPABASE_URL`), la clé publiable moderne et le secret de cookies sont enregistrés dans Pages. Aucun administrateur réel n’est créé automatiquement. [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md) décrit les fournisseurs, les redirections et les limites avant ouverture.
 
-L’inscription e-mail, la confirmation et son renvoi, la connexion et la récupération du mot de passe sont implémentés. Ils exigent `AUTH_EMAIL_ENABLED=true`, le secret serveur, le compteur D1 et la confirmation d’adresse activée dans Supabase. Ils restent **désactivés** sans configuration et validation réelle. Les modèles prêts à configurer sont dans `supabase/templates/`. La suite actuelle comporte 129 tests réussis ; les tests Auth/SMTP simulés et DOM ne prouvent pas l’envoi réel ni une validation sur téléphone.
+L’inscription e-mail, la confirmation et son renvoi, la connexion et la récupération du mot de passe sont implémentés. Ils exigent `AUTH_EMAIL_ENABLED=true`, le secret serveur, le compteur D1 et la confirmation d’adresse activée dans Supabase. Ils restent **désactivés** sans configuration et validation réelle. Les modèles prêts à configurer sont dans `supabase/templates/`. La suite actuelle comporte 130 tests réussis, avec rejeu du schéma déclaratif et des migrations ; les tests Auth/SMTP simulés et DOM ne prouvent pas l’envoi réel ni une validation sur téléphone.
 
 ## Secrets et environnements
 
@@ -64,7 +65,7 @@ Aucune application native, vente réelle ni session publique n’est activée pa
 
 ## Suivi quotidien
 
-Une tâche est activée chaque matin vers 8 h, heure de Paris, à partir du 21 octobre 2026, pour les améliorations de code vérifiées et leur déploiement GitHub/Cloudflare. Le propriétaire a autorisé les push de routine ; les résultats et blocages doivent être consignés dans [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md). Cette tâche ne remplace pas les accès externes manquants ni les validations nécessaires à l’ouverture publique.
+Une tâche est activée chaque matin vers 8 h, heure de Paris, à partir du 21 octobre 2026, pour les améliorations vérifiées, leur déploiement GitHub/Cloudflare et le projet Supabase dédié Momento. Le propriétaire a autorisé les push de routine ; les résultats et blocages doivent être consignés dans [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md). Cette tâche ne remplace pas les accès externes manquants ni les validations nécessaires à l’ouverture publique.
 
 ## Autres cibles
 

@@ -65,7 +65,7 @@ L’export `/api/me/export` utilise le client RLS du membre pour les tables pers
 
 ## Vérifications et lancement
 
-La suite locale comprend **144 tests**, avec rejeu des schémas et migrations dans PGlite, règles d’accès/quota, API Auth simulée, DOM et compte Postgres/Storage. Les scripts SQL ont aussi été exécutés sur le projet distant avec identités synthétiques et rollback. Ils ne valident pas Google, la délivrabilité, un appel vidéo ou un appareil réel.
+La suite locale comprend **148 tests**, avec rejeu des schémas et migrations dans PGlite, règles d’accès/quota, API Auth simulée, DOM et compte Postgres/Storage. Les scripts SQL ont aussi été exécutés sur le projet distant avec identités synthétiques et rollback. Ils ne valident pas Google, la délivrabilité, un appel vidéo ou un appareil réel.
 
 `scripts/verify-supabase-accounts.mjs` teste le Worker compilé contre les vrais services Auth/Postgres/Storage avec deux comptes jetables confirmés administrativement, sans envoyer d’e-mail. Exécution explicite : `node scripts/verify-supabase-accounts.mjs --allow-disposable-accounts --env-file <fichier-json-prive>`. Ce fichier fournit les variables serveur usuelles et ne doit jamais être versionné. Le résultat réel et les éventuelles limites sont consignés dans [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md).
 

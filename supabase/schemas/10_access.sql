@@ -1,7 +1,7 @@
 -- All privileged functions are private, use an empty search_path and derive
 -- the actor from auth.uid(). No authorization depends on user_metadata.
 create function private.is_active_member() returns boolean language sql stable security definer set search_path = '' as $$
-  select (select auth.uid()) is not null and exists(select 1 from public.profiles where id = (select auth.uid()) and status = 'active');
+  select (select auth.uid()) is not null and private.has_active_session() and exists(select 1 from public.profiles where id = (select auth.uid()) and status = 'active');
 $$;
 create function private.is_blocked(other_id uuid) returns boolean language sql stable security definer set search_path = '' as $$
   select (select auth.uid()) is not null and exists(select 1 from public.blocks where
@@ -126,7 +126,7 @@ begin
 end $$;
 create function private.leave_room() returns void language plpgsql security definer set search_path = '' as $$
 begin
-  if auth.uid() is null then raise exception 'authentication_required' using errcode = '42501'; end if;
+  if auth.uid() is null or not private.has_active_session() then raise exception 'authentication_required' using errcode = '42501'; end if;
   update public.room_presence set active = false where user_id = auth.uid();
 end $$;
 create function private.heartbeat_room(p_entry uuid) returns boolean language plpgsql security definer set search_path = '' as $$

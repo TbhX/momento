@@ -2,7 +2,7 @@
 
 Application de rencontres audio/vidéo, sources **TbhX/momento**, déployée avec **Cloudflare Pages** : [momento-7se.pages.dev](https://momento-7se.pages.dev/). Le propriétaire a rendu le dépôt public pour connecter Cloudflare. La marque affichée dans l’application reste Momento.
 
-La version autonome ne demande aucun compte ChatGPT. **La page est déployée, mais les comptes et rencontres réelles ne sont pas encore ouverts** : Google/SMTP et le portage des API métier restent à terminer ; les nouveaux salons restent des simulations. Le projet Supabase dédié **Momento** est créé en offre Free, à Paris, avec ses 27 tables protégées par RLS et vérifiées à distance. Les paramètres de connexion serveur sont enregistrés dans Pages. Les preuves et limites figurent dans [SUPABASE_SETUP.md](SUPABASE_SETUP.md). La liste courante des travaux et critères de lancement est dans [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md) ; [LAUNCH_READINESS.md](LAUNCH_READINESS.md) conserve les validations et limites historiques.
+La version autonome ne demande aucun compte ChatGPT. **La page est déployée, mais l’inscription publique et les rencontres réelles restent fermées** : le client Google et un expéditeur d’e-mails doivent encore être configurés. Les comptes, profils, consentements, photos et arrière-plans privés utilisent désormais Supabase ; les nouveaux salons restent des simulations. Le projet dédié **Momento** est en Free à Paris, avec 27 tables protégées par RLS. Les paramètres serveur sont enregistrés dans Pages. Les preuves et limites figurent dans [SUPABASE_SETUP.md](SUPABASE_SETUP.md). La liste courante des travaux est [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md) ; [LAUNCH_READINESS.md](LAUNCH_READINESS.md) conserve aussi l’historique.
 
 ## Installation et contrôle
 
@@ -40,20 +40,22 @@ L’accès de l’application **Cloudflare Workers and Pages** au dépôt **Mome
 | Service | Usage actuel de la cible autonome |
 | --- | --- |
 | Supabase Auth | OAuth et e-mail/mot de passe implémentés ; Google et e-mail prioritaires, fournisseurs réels à configurer ; SMS désactivé |
-| Supabase Database | Projet dédié `yhtngbkjqffkhfjadjzp`, schéma installé et tests SQL distants réussis ; portage des API métier encore nécessaire |
-| Cloudflare D1, binding `DB` | Données métier et limites serveur |
-| Cloudflare R2 privé, binding `BUCKET` | Profils et images |
+| Supabase Database | Profils, consentements, références d’images, compteurs Auth, autorisations de récupération et statut du compte |
+| Supabase Storage | Bucket `momento-media` privé, JPEG nettoyés, téléchargement propriétaire ou interlocuteur autorisé |
+| D1/R2 historiques | Adaptateurs du prototype conservés ; services non portés fermés sur Pages |
 | Pages, binding automatique `ASSETS` | Pages et fichiers statiques |
 | LiveKit | Appels vidéo, après validation réelle |
 | Stripe | Paiements de test ; ventes réelles désactivées |
 
-L’installation du schéma Supabase **ne migre pas les API ni les données D1/R2 vers Supabase Database/Storage**. Ce portage explicite est la prochaine étape de persistance ; les bindings D1/R2 du Worker ne sont actuellement pas configurés sur Pages.
+`SUPABASE_DATA_ENABLED=true` sélectionne les routes de compte Postgres/Storage ; il exige la clé moderne serveur `SUPABASE_SECRET_KEY`, distincte du client à cookies. Les lectures de profil et les écritures autorisées utilisent le JWT du membre et RLS. La clé privilégiée est réservée aux opérations serveur contrôlées : compteurs, vérification de session, écriture de JPEG nettoyés et suppression de l’identité. Aucun repli D1/R2 n’a lieu dans ce mode.
 
-Le Worker actuel exigerait les bindings D1/R2 et les migrations `drizzle/` appliquées dans D1 ; elles ne s’exécutent pas lors du build. La cible retenue nécessite leur portage vers le projet Supabase dédié. Le stockage du prototype Sites ne devient pas automatiquement celui de Pages. `deploy/pages.example.jsonc` donne un modèle optionnel ; la configuration réelle n’est pas versionnée par défaut.
+Les autres API du salon, relations et boutique restent à porter. Elles refusent les actions non implémentées au lieu d’appeler une D1 non configurée. Le statut vient de Postgres ; les sessions et paiements réels restent fermés. Aucune donnée du prototype Sites n’est importée ni fusionnée par e-mail. `deploy/pages.example.jsonc` décrit la cible de compte actuelle sans bindings D1/R2.
 
-L’origine HTTPS exacte (`MOMENTO_APP_ORIGIN`), l’URL Supabase (`SUPABASE_URL`), la clé publiable moderne et le secret de cookies sont enregistrés dans Pages. Aucun administrateur réel n’est créé automatiquement. [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md) décrit les fournisseurs, les redirections et les limites avant ouverture.
+L’origine HTTPS exacte, l’URL Supabase, les deux clés modernes et le secret de cookies sont enregistrés côté serveur Pages. Les secrets sont chiffrés et ne figurent pas dans le code navigateur. Aucun administrateur réel n’est créé automatiquement : les rôles du nouveau backend proviennent de `private.admin_roles`. [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md) décrit les fournisseurs et les limites avant ouverture.
 
-L’inscription e-mail, la confirmation et son renvoi, la connexion et la récupération du mot de passe sont implémentés. Ils exigent `AUTH_EMAIL_ENABLED=true`, le secret serveur, le compteur D1 et la confirmation d’adresse activée dans Supabase. Ils restent **désactivés** sans configuration et validation réelle. Les modèles prêts à configurer sont dans `supabase/templates/`. La suite actuelle comporte 130 tests réussis, avec rejeu du schéma déclaratif et des migrations ; les tests Auth/SMTP simulés et DOM ne prouvent pas l’envoi réel ni une validation sur téléphone.
+L’inscription e-mail, la confirmation/renvoi et la récupération sont implémentés avec compteurs Postgres et autorisation à usage unique. `AUTH_EMAIL_ENABLED` reste **false** : le propriétaire n’a pas encore de domaine d’expéditeur et aucun SMTP de production n’est configuré. Les modèles sont dans `supabase/templates/`. Google est préparé avec les retours exacts ; son client reste à créer/configurer. La suite comporte **139 tests** ; les essais sur appareils et la délivrabilité restent à valider.
+
+La révocation des sessions est vérifiée par le Worker **et** dans les politiques/RPC Postgres. Les membres ne disposent d’aucun accès direct à Storage ; toutes les images passent par le Worker après autorisation. Un JWT copié ne doit pas retrouver les données via la Data API après déconnexion. La suppression ferme d’abord le profil, retire les images puis l’identité Auth ; une suppression interrompue peut être reprise depuis l’écran de compte. L’export JSON applique RLS et refuse les exports trop volumineux plutôt que les tronquer. Ces protections ont aussi été vérifiées contre les vraies API avec deux comptes jetables, supprimés après essai.
 
 ## Secrets et environnements
 

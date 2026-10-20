@@ -1,4 +1,6 @@
 import {createServerClient,parseCookieHeader,serializeCookieHeader} from '@supabase/ssr';
+import {usesSupabaseData,hasServerKey,serverRPC,requireActiveSession,reserveRecovery} from './supabase-server.mjs';
+import {supabaseAccountAPI} from './supabase-account.mjs';
 
 // Only the standalone build imports this adapter. Sites keeps its platform identity.
 const OAUTH_PROVIDERS=['google','apple','facebook'];
@@ -15,10 +17,11 @@ export function externalAuthConfiguration(env){
  let supabaseURL,origin;const issues=[];
  try{supabaseURL=new URL(env.SUPABASE_URL);if(supabaseURL.protocol!=='https:'||!/^https:\/\/[a-z0-9]{20}\.supabase\.co\/$/.test(supabaseURL.href))throw 0}catch{issues.push('supabase_url')}
  if(!/^sb_publishable_[A-Za-z0-9_-]{12,}$/.test(env.SUPABASE_PUBLISHABLE_KEY||''))issues.push('publishable_key');
+ if(usesSupabaseData(env)&&!hasServerKey(env))issues.push('server_key');
  try{origin=new URL(env.MOMENTO_APP_ORIGIN);if(origin.protocol!=='https:'||origin.origin!==env.MOMENTO_APP_ORIGIN||origin.username||origin.password)throw 0}catch{issues.push('app_origin')}
  const providers=String(env.AUTH_OAUTH_PROVIDERS||'google').split(',').map(s=>s.trim()).filter((p,i,a)=>OAUTH_PROVIDERS.includes(p)&&a.indexOf(p)===i);
  const dailyBudget=Number(env.AUTH_SMS_DAILY_BUDGET||20);
- const guarded=!!env.DB&&String(env.AUTH_COOKIE_SECRET||'').length>=32;
+ const guarded=(usesSupabaseData(env)?hasServerKey(env):!!env.DB)&&String(env.AUTH_COOKIE_SECRET||'').length>=32;
  const sms=env.AUTH_SMS_ENABLED==='true'&&guarded&&Number.isInteger(dailyBudget)&&dailyBudget>=1&&dailyBudget<=500;
  const emailBudget=Number(env.AUTH_EMAIL_DAILY_BUDGET||20);
  const email=env.AUTH_EMAIL_ENABLED==='true'&&guarded&&Number.isInteger(emailBudget)&&emailBudget>=1&&emailBudget<=500;
@@ -62,6 +65,7 @@ function clearIdentityCookies(context){for(const name of context.jar.keys())if(n
 async function recoveryGrant(context,env){
  const grant=await readEmailRecord(env,context.jar.get(RECOVERY_COOKIE),'password',900000);
  const {data,error}=await context.supabase.auth.getUser();if(error||!verifiedIdentity(data?.user)||data.user.id!==grant.user)throw authFailure('recovery_expired',401);
+ await requireActiveSession(env,context,data.user.id);
  const {data:session}=await context.supabase.auth.getSession();if(!grant.session||sessionId(session?.session)!==grant.session)throw authFailure('recovery_expired',401);return grant;
 }
 function emailProviderError(error,{concealAccount=false}={}){if(!error)return;if(concealAccount&&['user_already_exists','email_exists','user_not_found'].includes(error.code))return;if(error.status===429)throw authFailure('too_many_attempts',429);if(error.code==='weak_password'||error.code==='same_password')throw authFailure('invalid_password');throw authFailure('email_unavailable',503)}
@@ -75,8 +79,13 @@ async function readPhone(env,value){
  try{const data=JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));if(data.expires<=Date.now()||data.expires>Date.now()+300000||!/^\+[1-9]\d{7,14}$/.test(data.phone)||typeof data.nonce!=='string')throw 0;return data}catch{throw authFailure('phone_challenge_expired',401)}
 }
 async function countAttempt(env,label,subject,limit,period){
- if(!env.DB||String(env.AUTH_COOKIE_SECRET||'').length<32)throw authFailure('auth_not_configured',503);
+ if((usesSupabaseData(env)?!hasServerKey(env):!env.DB)||String(env.AUTH_COOKIE_SECRET||'').length<32)throw authFailure('auth_not_configured',503);
  const now=Date.now(),key='auth:'+label+':'+Math.floor(now/period)+':'+await hmac(env.AUTH_COOKIE_SECRET,subject);
+ if(usesSupabaseData(env)){
+  const count=await serverRPC(env,'server_auth_attempt',{p_key:key,p_expires_at:new Date(now+period*2).toISOString()});
+  if(!Number.isInteger(count)||count>limit)throw authFailure('too_many_attempts',429);
+  return;
+ }
  const row=await env.DB.prepare('INSERT INTO rate_limits(key,count,expires_at) VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1 RETURNING count').bind(key,now+period*2).first();
  if(!row||row.count>limit)throw authFailure('too_many_attempts',429);
  // Expired identifiers are not retained indefinitely on a low-traffic installation.
@@ -124,10 +133,10 @@ async function authenticationRoute(request,env,config,context){
    const {password}=await limitedJSON(request);validPassword(password,{newPassword:true});
    await countAttempt(env,'password-ip',clientIP(request),10,900000);
    const grant=await recoveryGrant(context,env),key='auth:recovery-use:'+await hmac(env.AUTH_COOKIE_SECRET,grant.nonce);
-   const claim=await env.DB.prepare('INSERT INTO rate_limits(key,count,expires_at) VALUES(?,1,?) ON CONFLICT(key) DO NOTHING RETURNING key').bind(key,grant.expires).first();
+   const claim=await reserveRecovery(env,key,grant.expires);
    if(!claim)throw authFailure('recovery_expired',401);
    const {error}=await auth.updateUser({password});
-   if(error){if(['weak_password','same_password'].includes(error.code)){await env.DB.prepare('DELETE FROM rate_limits WHERE key=?').bind(key).run();throw authFailure('invalid_password')}clearIdentityCookies(context);throw authFailure('recovery_expired',401)}
+   if(error){if(['weak_password','same_password'].includes(error.code)){await reserveRecovery(env,key,grant.expires,true);throw authFailure('invalid_password')}clearIdentityCookies(context);throw authFailure('recovery_expired',401)}
    let revoked=false;try{const result=await auth.signOut({scope:'global'});revoked=!result.error}catch{}
    clearIdentityCookies(context);return responseJSON({passwordUpdated:true,otherSessionsRevoked:revoked});
   }
@@ -195,7 +204,7 @@ async function authenticationRoute(request,env,config,context){
  throw authFailure('not_found',404);
 }
 
-export function withExternalAuth(application,{staticHeaders={},staticBinding='PUBLIC_ASSETS'}={}){return{async fetch(request,env,ctx){
+export function withExternalAuth(application,{staticHeaders={},staticBinding='PUBLIC_ASSETS',mediaCodec}={}){return{async fetch(request,env,ctx){
  const url=new URL(request.url),authPath=url.pathname.startsWith('/api/auth/');
  const headers=new Headers(request.headers);
  // External requests can forge platform headers. Remove them before EVERY route.
@@ -212,6 +221,12 @@ export function withExternalAuth(application,{staticHeaders={},staticBinding='PU
   if(!config.configured)throw authFailure('auth_not_configured',503);
   const {data,error}=await context.supabase.auth.getUser();const identity=verifiedIdentity(data?.user);
   if(error||!identity)throw authFailure('authentication_required',401);
+  await requireActiveSession(env,context,data.user.id);
+  if(usesSupabaseData(env)){
+   const response=await supabaseAccountAPI(clean,env,context,data.user.id,{readJSON:limitedJSON,mediaCodec,origin:config.origin});
+   if(url.pathname==='/api/me'&&clean.method==='DELETE'&&response.ok)clearIdentityCookies(context);
+   return context.finish(response);
+  }
   headers.set('oai-authenticated-user-id',identity.id);if(identity.email)headers.set('oai-authenticated-user-email',identity.email);
   const authenticated=new Request(clean,{headers});
   return context.finish(await application.fetch(authenticated,{...env,MOMENTO_IDENTITY_PROVIDER:'supabase'},ctx));

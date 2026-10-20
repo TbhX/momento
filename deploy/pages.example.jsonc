@@ -4,16 +4,10 @@
   "name": "momento",
   "pages_build_output_dir": "./pages-dist",
   "compatibility_date": "2026-10-19",
-  "d1_databases": [{
-    "binding": "DB",
-    "database_name": "momento-production",
-    "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
-    "migrations_dir": "./drizzle"
-  }],
-  "r2_buckets": [{"binding": "BUCKET", "bucket_name": "momento-production-private"}],
   "vars": {
     "MOMENTO_APP_ORIGIN": "https://REPLACE_WITH_YOUR_PAGES_OR_CUSTOM_DOMAIN",
     "SUPABASE_URL": "https://REPLACE_WITH_MOMENTO_PROJECT_REF.supabase.co",
+    "SUPABASE_DATA_ENABLED": "true",
     "AUTH_OAUTH_PROVIDERS": "google",
     "AUTH_EMAIL_ENABLED": "false",
     "AUTH_EMAIL_DAILY_BUDGET": "20",
@@ -26,7 +20,8 @@
     "LEGAL_VALIDATED": "false"
   }
   // Secrets are configured in Pages, never committed:
-  // SUPABASE_PUBLISHABLE_KEY, AUTH_COOKIE_SECRET,
+  // SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY, AUTH_COOKIE_SECRET,
   // LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, Stripe TEST credentials.
   // ASSETS is automatically provided by Pages; do not create that binding manually.
+  // Account routes use Postgres/Storage. Unported legacy D1/R2 services remain closed.
 }

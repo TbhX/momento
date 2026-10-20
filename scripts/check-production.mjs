@@ -1,6 +1,6 @@
 import {access,stat} from 'node:fs/promises';
 import {externalAuthConfiguration} from '../worker/external-auth.mjs';
-const config=externalAuthConfiguration({...process.env,DB:true});
+const config=externalAuthConfiguration(process.env);
 const missing=[...config.issues];
 if(String(process.env.AUTH_COOKIE_SECRET||'').length<32)missing.push('auth_cookie_secret');
 if(process.env.AUTH_SMS_ENABLED==='true'&&!config.sms)missing.push('sms_configuration');

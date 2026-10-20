@@ -1,84 +1,74 @@
-# Connexion Momento sans ChatGPT
+# Connexion et comptes Momento sans ChatGPT
 
-État du 20 octobre 2026 : **l’hébergement autonome Pages est déployé** sur `https://momento-7se.pages.dev/`. Le projet Supabase dédié Momento `yhtngbkjqffkhfjadjzp` est créé en Free à Paris ; ses 27 tables avec RLS sont installées et testées à distance. L’URL du projet, la clé publiable moderne et le secret de cookies sont enregistrés côté serveur Pages. Google, SMTP et les stockages utilisés par les API restent à raccorder. Le site Sites existant demeure une bêta privée distincte avec sa connexion ChatGPT.
+La cible autonome est [Cloudflare Pages](https://momento-7se.pages.dev/) et le projet Supabase Momento `yhtngbkjqffkhfjadjzp`, organisation `ihyvwxutvbldkgsomhcp`, Free à Paris. Aucun compte ChatGPT n’est nécessaire aux utilisateurs de Momento. Le prototype Sites garde sa connexion et ses données distinctes.
 
-Choix confirmé par le propriétaire : **Google et adresse e-mail + mot de passe**. Le parcours e-mail/mot de passe, sa confirmation et sa récupération sont implémentés et testés localement, mais ne sont pas encore configurés pour un usage réel. Le SMS est conditionné à l’existence d’un service réellement gratuit ; il reste désactivé et aucun fournisseur payant n’est souscrit. Apple/Facebook sont des possibilités ultérieures. La feuille de route courante est [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md).
+Les comptes/profils, consentements, photos et décors privés, compteurs Auth et autorisations de récupération sont portés vers Postgres/Storage. Les deux migrations sont décrites dans [SUPABASE_SETUP.md](SUPABASE_SETUP.md). Les salons, relations et achats réels restent à raccorder ; ils ne deviennent pas opérationnels par ce portage.
 
-## Architecture et données
+**Google et l’inscription e-mail restent fermés.** Le client Google n’est pas configuré ; sa console n’est pas accessible dans le navigateur de cette session. Le propriétaire a indiqué ne posséder aucun domaine d’expéditeur : aucun SMTP de production n’est vérifié. Les modèles français sont préparés dans `supabase/templates/`. Le SMS demeure désactivé, sans fournisseur payant souscrit.
 
-Le build autonome utilise Supabase Auth pour l’identité, Cloudflare D1 pour les données métier et R2 privé pour les profils/images. Il ne nécessite ni compte ni abonnement ChatGPT. Ces adaptateurs D1/R2 ne sont pas encore configurés dans Pages ni portés vers Postgres/Storage. Le nouveau projet dédié appartient à l’organisation Momento `ihyvwxutvbldkgsomhcp` ; les autres projets Supabase n’ont pas été modifiés. Voir [SUPABASE_SETUP.md](SUPABASE_SETUP.md) pour la migration installée et les vérifications distantes.
+## Paramètres serveur
 
-`node scripts/build.mjs --standalone` produit `production-dist/worker.js` et `production-dist/public/`. Les fichiers vidéo lourds sont des assets statiques ; ils ne gonflent pas le script serveur. `deploy/worker.example.jsonc` décrit les bindings à configurer dans le compte Cloudflare du propriétaire. Le stockage D1/R2 géré par Sites n’est pas implicitement exporté ni accessible dans ce compte.
+`SUPABASE_DATA_ENABLED=true` sélectionne le backend de compte Postgres/Storage et exige une clé moderne `SUPABASE_SECRET_KEY`. La clé publiable `SUPABASE_PUBLISHABLE_KEY` sert au client de session et aux accès RLS. Le client privilégié est créé séparément, sans persistance ni renouvellement de session ; il ne reçoit jamais les cookies du membre. Les clés et `AUTH_COOKIE_SECRET` aléatoire sont chiffrés dans Pages, pas dans les sources ou les assets navigateur.
 
-Pour le choix **Cloudflare Pages + GitHub**, `pnpm run build:pages` produit `pages-dist/` avec `_worker.js` et le binding automatique Pages `ASSETS`. Les réglages Git et de build sont dans [README.md](README.md), et le modèle optionnel est `deploy/pages.example.jsonc`. Le dépôt GitHub choisi par le propriétaire est **TbhX/momento**, devenu public sur sa décision ; la marque de l’application reste Momento. Le projet Pages `momento` est relié à ce dépôt et sa première compilation distante a réussi. Le schéma Postgres préparé n’a pas été appliqué au projet Volteo ni substitué aux adaptateurs D1/R2.
+Le serveur vérifie l’identité par `auth.getUser()`, refuse les comptes anonymes/non confirmés, puis contrôle le `session_id` réel. Les en-têtes entrants `oai-authenticated-*` sont supprimés sur toutes les routes. Les identités Postgres sont les UUID Supabase vérifiés ; `accountRef` conserve le préfixe `supabase:` pour isoler le stockage local. Aucune fusion par adresse e-mail.
 
-Le code métier commun reçoit uniquement l’identité vérifiée par le serveur. En autonome, tous les en-têtes entrants `oai-authenticated-*` sont supprimés, puis remplacés après `supabase.auth.getUser()` par l’identité retournée par Supabase. Les comptes utilisent `supabase:<uuid>`. Les données de la bêta Sites restent séparées ; **aucune fusion par email**. Une reprise éventuelle des comptes doit prouver la possession des deux identités.
+Les rôles du nouveau backend proviennent de `private.admin_roles`. Aucun compte administrateur n’est créé automatiquement et `user_metadata` ne donne aucun privilège. L’ancien adaptateur utilise encore sa liste d’UUID serveur ; ses API ne sont pas activées par la présence d’un rôle Postgres.
 
-## Moyens de connexion
+## Retours Auth enregistrés
 
-| Connexion | Code | Activation externe nécessaire |
-| --- | --- | --- |
-| Google | OAuth PKCE + retour serveur | Client OAuth Google, écran Momento, identifiant/secret dans Supabase |
-| E-mail + mot de passe | Inscription, confirmation/renvoi, connexion et récupération PKCE serveur | Projet dédié, expéditeur SMTP de production et redirections exactes ; tests réels d’envoi/récupération |
-| Apple | OAuth PKCE + retour serveur | Services ID et clé Apple, fournisseur Supabase, renouvellement de la clé selon Apple |
-| Facebook | OAuth PKCE + retour serveur | Application Meta, configuration/validation fournisseur selon son usage |
-| SMS | Saisie du numéro E.164, code à 6 chiffres | Fournisseur SMS dans Supabase, pays autorisés, dépenses plafonnées, contrôle anti-abus avant ouverture |
-
-Seuls les moyens activés dans Supabase **et** autorisés côté serveur sont proposés. Si rien n’est configuré, aucun bouton n’annonce une connexion fonctionnelle. Les parcours ne demandent ni contacts, ni publication sur les réseaux sociaux. Apple est préparé pour la future version iPhone ; la conformité et les achats des applications natives restent à traiter séparément.
-
-La connexion Google n’exige pas d’envoi de SMS. Les SMS ont un coût fournisseur : aucun abonnement SMS, crédit payant ou envoi réel n’a été déclenché ici. Le mode SMS est désactivé par défaut. Le quota Momento ne plafonne que les requêtes passant par Momento : le point d’entrée Auth Supabase reste joignable avec la clé publiable. Il faut donc aussi configurer la protection et le budget **chez Supabase et le fournisseur SMS**, et activer leur protection contre les robots avant ouverture publique. Il n’est pas correct de promettre un SMS gratuit et illimité.
-
-## Réglages d’activation
-
-1. Utiliser le projet Supabase dédié Momento `yhtngbkjqffkhfjadjzp` et le projet Pages `momento` déjà créés. Vérifier les identifiants avant modification ; ne pas créer de doublon ni reprendre les clés d’une autre application.
-2. Choisir l’URL HTTPS finale. Renseigner exactement cette origine dans `MOMENTO_APP_ORIGIN`, et ajouter uniquement `https://<domaine>/api/auth/callback` à la liste de redirections Supabase. Supprimer les redirections de développement en production.
-3. Configurer Google dans Google Auth Platform avec `openid`, email et profil uniquement. L’URI de retour Google est `https://<ref>.supabase.co/auth/v1/callback`, **différente** de l’URL de retour Momento. Le client ID/secret Google se stocke dans le fournisseur Google de Supabase, jamais dans le navigateur ou le dépôt.
-4. Activer les fournisseurs Apple/Facebook désirés dans Supabase et dans leurs consoles. `AUTH_OAUTH_PROVIDERS=google,apple,facebook` définit la liste autorisée par Momento. Le fournisseur Supabase doit aussi être réellement actif.
-5. `SUPABASE_URL`, la clé moderne `SUPABASE_PUBLISHABLE_KEY` et `AUTH_COOKIE_SECRET` aléatoire sont enregistrés dans Pages ; les deux dernières variables sont chiffrées. Aucune clé `service_role` n’est nécessaire à la connexion. Configurer `MOMENTO_ADMIN_USER_IDS` avec les UUID Supabase des seuls administrateurs identifiés, sans attribuer de rôle automatiquement. Un e-mail ou une métadonnée de profil ne donne aucun rôle.
-6. Porter les API métier, les médias et les compteurs du Worker de D1/R2 vers Postgres/Storage avant leur activation sur la cible Supabase. Le schéma installé ne remplace pas les adaptateurs. Les secrets LiveKit/Stripe de test passent par le gestionnaire de secrets ; aucun identifiant du stockage Sites n’est réutilisé implicitement. Les sessions et paiements réels restent fermés.
-7. Pour les SMS seulement : configurer le fournisseur et ses plafonds, des pays autorisés, les numéros de test et l’anti-abus Supabase. Après validation, `AUTH_SMS_ENABLED=true` et `AUTH_SMS_DAILY_BUDGET` entre 1 et 500 (20 par défaut). Chaque tentative d’envoi réserve un budget, même en cas d’échec.
-8. Tester d’abord une publication autonome restreinte au pilote : navigation anonyme de l’accueil, Google/Apple/Facebook, refus d’autorisation, SMS de test puis réel autorisé, expiration, déconnexion, plusieurs appareils, partage/vol de lien PKCE et absence d’accès à un autre compte. Tester ensuite les webhooks Stripe signés sur l’origine autonome sans barrière ChatGPT.
-
-Les sessions passent par des cookies `__Host-`, Secure, HttpOnly, SameSite=Lax, sans domaine parent. Le navigateur appelle seulement les API Momento ; aucun SDK Supabase navigateur, JWT ou refresh token dans localStorage. Les réponses d’identité sont sans cache. Le retour OAuth est fixé à l’origine configurée ; aucun `returnTo` arbitraire n’est accepté. Les mutations exigent Origin et marqueur CSRF. Les codes PKCE sont échangés côté serveur.
-
-## Parcours e-mail et mot de passe
-
-Le code est livré ; **aucun SMTP ni fournisseur réel n’a été activé**. Le service d’e-mail de démonstration Supabase ne doit pas servir d’infrastructure d’envoi pour l’ouverture publique.
-
-| Route serveur | Fonction |
+| Réglage | Valeur |
 | --- | --- |
-| `POST /api/auth/email/signup` | Inscription, mot de passe de 12 à 64 caractères et 72 octets maximum, confirmation requise |
-| `POST /api/auth/email/resend` | Nouveau lien de confirmation et nouveau défi PKCE, sans redemander le mot de passe |
-| `GET /api/auth/callback` | Échange de code PKCE pour confirmation/connexion ; refuse un flux de récupération sur ce retour ordinaire |
-| `POST /api/auth/email/signin` | Connexion, adresse confirmée obligatoire, erreur générique pour adresse/mot de passe incorrect ou adresse non confirmée |
-| `POST /api/auth/email/recover` | Demande de lien, acquittement générique et intention de récupération signée liée au navigateur |
-| `GET /api/auth/recovery/callback` | Vérifie l’intention, le défi PKCE et l’adresse ; crée une autorisation de changement liée à l’UUID et à la session |
-| `POST /api/auth/email/password` | Consomme cette autorisation une fois, change le mot de passe et demande une déconnexion globale |
+| Site URL et origine Momento | `https://momento-7se.pages.dev` |
+| Connexion/confirmation | `https://momento-7se.pages.dev/api/auth/callback` |
+| Récupération | `https://momento-7se.pages.dev/api/auth/recovery/callback` |
+| Retour Google à renseigner dans son client Web | `https://yhtngbkjqffkhfjadjzp.supabase.co/auth/v1/callback` |
 
-Configuration, uniquement sur le bon projet :
+Ces deux retours Momento exacts sont enregistrés dans Supabase, sans wildcard. Le retour Google est différent de celui de l’application. Une origine de prévisualisation exige un environnement de test distinct ; ne pas autoriser toutes les URL `*.pages.dev`.
 
-1. Activer le fournisseur e-mail **avec confirmation d’adresse**. Si Supabase annonce une confirmation automatique, Momento masque et refuse ce parcours. Aucun email/client ne donne un rôle admin.
-2. Configurer le SMTP, un expéditeur réel et ses protections DNS. Copier les modèles [confirmation.html](supabase/templates/confirmation.html) et [recovery.html](supabase/templates/recovery.html) dans les modèles Supabase correspondants. Conserver `{{ .ConfirmationURL }}` : ne pas remplacer par une URL de session ni introduire un jeton dans le JavaScript. Sujets proposés : « Confirmez votre adresse — Momento » et « Choisissez un nouveau mot de passe — Momento ».
-3. Configurer Site URL sur `https://momento-7se.pages.dev`, avec exactement ces deux retours : `https://momento-7se.pages.dev/api/auth/callback` et `https://momento-7se.pages.dev/api/auth/recovery/callback`. Ne pas autoriser un domaine de retour fourni par l’utilisateur.
-4. Disposer du binding `DB` et de sa table `rate_limits`, puis du secret `AUTH_COOKIE_SECRET` de 32 caractères aléatoires ou plus. Cette partie utilise encore D1 : Postgres ne remplace pas implicitement les requêtes SQLite.
-5. Après configuration dans un environnement de test, activer `AUTH_EMAIL_ENABLED=true` avec `AUTH_EMAIL_DAILY_BUDGET=20` (entre 1 et 500). Laisser la valeur `false` sur l’hébergement public tant que l’envoi et tous les parcours réels ne sont pas validés. La clé reste publiable côté serveur ; aucune clé d’administration Auth n’est requise pour ces opérations.
+Pour Google : préparer un client OAuth **Web application** nommé Momento, origine JavaScript de l’application, retour Supabase ci-dessus et seulement `openid`, e-mail et profil. Les champs Client IDs/Client Secret du fournisseur Google Supabase sont encore vides. Les renseigner dans le tableau de bord, jamais dans le chat ni le dépôt. Garder les vérifications de nonce et l’exigence d’e-mail. `AUTH_OAUTH_PROVIDERS=google` et l’état réel du fournisseur contrôlent l’affichage du bouton ; aucun faux bouton fonctionnel.
 
-Les liens sont liés au navigateur d’origine et aux cookies PKCE, valables dix minutes côté Momento. Une ouverture sur un autre appareil demande de refaire la demande depuis cet appareil. Après ouverture d’un lien de récupération valide, le formulaire dispose de quinze minutes. Son autorisation est signée, liée à l’identité et à la session vérifiées et consommée par insertion atomique unique. Un rejeu ou deux requêtes concurrentes ne peuvent pas appliquer deux changements. Un refus explicite du fournisseur pour mot de passe insuffisant permet de corriger le formulaire ; une opération dont l’issue est incertaine demande un nouveau lien.
+Pour l’e-mail : configurer un expéditeur SMTP de production et ses protections DNS, confirmer les adresses et installer les modèles de confirmation/récupération avec `{{ .ConfirmationURL }}`. Le service de démonstration Supabase ne constitue pas l’infrastructure d’envoi d’une ouverture publique. Après essais réels, activer `AUTH_EMAIL_ENABLED=true` et `AUTH_EMAIL_DAILY_BUDGET=20`. Cette activation n’a pas été effectuée.
 
-Envois : 1 par minute et 3 par heure/adresse, 5 par heure/IP, plus le budget quotidien partagé entre inscription, renvoi et récupération. Connexions : 10 par quinze minutes/adresse et 20/IP. Les compteurs ne contiennent que des identifiants HMAC ; pas d’e-mail, IP ni mot de passe en clair. Les limites natives et la protection anti-robots Supabase restent à configurer : le filtrage Momento ne remplace pas ceux du fournisseur. Les messages génériques réduisent l’énumération des comptes sans constituer une garantie contre tous les canaux temporels du fournisseur.
+## Parcours Auth implémentés
 
-Le mot de passe traverse uniquement l’API HTTPS et Supabase, n’est pas enregistré par Momento et est effacé des champs après soumission. Les formulaires prévoient les gestionnaires de mots de passe, leur confirmation et un affichage volontaire. Après changement réussi, les cookies locaux sont effacés et une nouvelle connexion est demandée. Si la déconnexion globale échoue, la réponse et l’interface l’indiquent ; elles ne prétendent pas avoir fermé toutes les connexions. Comme déjà indiqué, la révocation du refresh token ne supprime pas immédiatement un JWT copié : le contrôle strict des sessions sensibles reste nécessaire.
+| Route | Fonction |
+| --- | --- |
+| `POST /api/auth/oauth` | Démarrage OAuth PKCE pour un fournisseur réellement activé |
+| `POST /api/auth/email/signup` | Inscription avec confirmation obligatoire ; mot de passe de 12 à 64 caractères et 72 octets maximum |
+| `POST /api/auth/email/resend` | Nouveau lien et défi PKCE sans réutiliser le mot de passe |
+| `POST /api/auth/email/signin` | Adresse confirmée et mot de passe ; erreur générique sans divulgation du compte |
+| `GET /api/auth/callback` | Échange PKCE serveur ; refuse un flux de récupération sur ce retour ordinaire |
+| `POST /api/auth/email/recover` | Acquittement générique et intention signée liée au navigateur/adresse |
+| `GET /api/auth/recovery/callback` | Vérifie intention, défi, type et adresse ; autorisation liée à l’UUID et à la session |
+| `POST /api/auth/email/password` | Consomme l’autorisation une fois, modifie le mot de passe et demande une déconnexion globale |
+| `POST /api/auth/logout` | Révocation de la session et effacement des cookies locaux |
 
-Vérification : suite de **130 tests** réussis, dont tests serveur avec un Auth simulé, tests DOM avec `jsdom` 26.1.0 et rejeux du schéma/migrations ; aucun message réel envoyé. Tester encore la délivrabilité, les liens sur appareils réels, les refus et reprises, ainsi que la suppression/révocation complète du compte avant ouverture.
+Les cookies sont `__Host-`, Secure, HttpOnly, SameSite=Lax ; aucun JWT/refresh token dans localStorage ou réponse JSON. Mutations avec Origin et marqueur CSRF, corps JSON borné, redirections fixées côté serveur. Les mots de passe ne sont pas enregistrés par Momento et sont effacés des formulaires après soumission.
 
-Le SMS lie le numéro à un cookie signé de cinq minutes. Les compteurs D1 limitent les envois par IP, numéro et jour, et les vérifications par défi et IP. Les clés des compteurs sont des HMAC ; numéro, IP et code ne sont pas journalisés. Le code SMS n’est jamais enregistré par Momento. Ces contrôles complètent ceux du fournisseur ; ils ne les remplacent pas.
+Les liens sont liés au navigateur d’origine et valables dix minutes côté Momento ; l’autorisation de modification dure quinze minutes. Une insertion unique dans `private.rate_limits` empêche le rejeu, y compris concurrent. Une erreur explicite de mot de passe insuffisant permet la correction ; une issue incertaine impose un nouveau lien. Une révocation globale non confirmée reste signalée par l’interface.
 
-## Limites avant lancement professionnel
+Les compteurs utilisent des HMAC : pas d’e-mail, d’IP ou de mot de passe en clair. Envois : un par minute et trois par heure/adresse, cinq par heure/IP, budget quotidien partagé entre inscription/renvoi/récupération. Connexions : dix par quinze minutes/adresse et vingt/IP. Les RPC de compteur et de récupération sont réservés au rôle serveur ; les membres ne peuvent ni les appeler ni s’accorder un crédit. Les protections natives Supabase doivent aussi être configurées avant ouverture : un client direct ne passe pas nécessairement par le Worker.
 
-Cette livraison prépare **l’authentification indépendante**. Elle ne transforme pas les salons fictifs en sessions multi-utilisateurs. Les amis, invitations, quotas et crédits du nouveau salon doivent encore devenir des transactions serveur ; les essais caméra sur téléphones, ordonnanceur vidéo, modération, mentions légales, webhooks et ventes réelles restent à valider.
+## Session et accès aux données
 
-« Supprimer mon profil Momento » efface les données métier, pas l’utilisateur dans Supabase Auth. Avant production, prévoir une suppression complète avec révocation des sessions et effacement de l’identité via un chemin serveur privilégié contrôlé. Le support doit disposer d’un canal réel pour traiter ces demandes ; aucune adresse fictive n’est ajoutée. Le texte de confidentialité du build autonome décrit cette limite.
+Une déconnexion ne rend pas à elle seule un JWT copié cryptographiquement invalide. Le Worker vérifie donc l’existence et l’échéance de la session. Postgres applique aussi `private.has_active_session()` dans les politiques restrictives et les RPC sensibles. Les médias sont accessibles uniquement par le Worker, après contrôle de session et d’autorisation ; aucune politique membre ne permet un téléchargement direct Storage. Un ancien JWT ne doit pas retrouver les données en contournant Momento par la Data API. Une seule nouvelle tentative est permise pour une erreur temporaire du contrôle de session en lecture ; aucun compteur ou autre mutation n’est rejoué automatiquement.
 
-Les tests automatisés utilisent un serveur Auth simulé ; un succès n’établit ni que les clés réelles soient configurées, ni qu’un OAuth réel ou un SMS ait été validé. Pas de validation navigateur/GPU/appareil revendiquée.
+Les profils restent privés et les écritures autorisées sont limitées. `save_profile` dérive l’acteur d’`auth.uid()`, valide majorité déclarée/prénom/ville et conserve le consentement de confidentialité. Les préférences de découverte et relations des salons d’essai restent locales : ne pas les présenter comme des relations serveur entre vrais membres.
 
-Références : [Google Supabase](https://supabase.com/docs/guides/auth/social-login/auth-google), [SMS Supabase](https://supabase.com/docs/guides/auth/phone-login), [sessions et révocation](https://supabase.com/docs/guides/auth/sessions), [cookies serveur](https://supabase.com/docs/guides/auth/server-side/creating-a-client), [assets Cloudflare](https://developers.cloudflare.com/workers/static-assets/binding/).
+## Images, export et suppression
+
+Le bucket `momento-media` est privé et limité aux JPEG, un Mio maximum. Le Worker retire les métadonnées et contrôle format, taille et dimensions avant upload avec la clé serveur. Les objets ont un chemin lié à l’UUID ; les téléchargements et téléversements directs Storage sont refusés aux membres. Le Worker lit une référence propriétaire sous RLS puis sert l’image avec un contrôle de session et sans cache ; les uploads passent par le nettoyage JPEG. La photo d’un interlocuteur exige une rencontre active ou un match autorisé, sans blocage ni suspension. Aucun lien public permanent ou liste de photos n’est créé.
+
+L’export `/api/me/export` utilise le client RLS du membre pour les tables personnelles. Il refuse une réponse atteignant 500 lignes dans une table ou dépassant deux Mio, afin d’éviter une troncature silencieuse ; les exports volumineux et la restitution complète des médias restent à industrialiser avant ouverture publique.
+
+`DELETE /api/me` ferme le profil, retire les images de son répertoire puis supprime l’identité Supabase Auth et ses données liées. Les cookies sont effacés après réussite. Une étape échouée ne déclenche pas un faux message de succès : le compte reste fermé aux rencontres et la suppression peut être reprise depuis la connexion. Les identités externes Google/ChatGPT ne sont pas supprimées. Les imports interrompus et délais de sauvegardes doivent aussi disposer d’un suivi/purge avant ouverture publique.
+
+## Vérifications et lancement
+
+La suite locale comprend **139 tests**, avec rejeu des schémas et migrations dans PGlite, règles d’accès/quota, API Auth simulée, DOM et compte Postgres/Storage. Les scripts SQL ont aussi été exécutés sur le projet distant avec identités synthétiques et rollback. Ils ne valident pas Google, la délivrabilité, un appel vidéo ou un appareil réel.
+
+`scripts/verify-supabase-accounts.mjs` teste le Worker compilé contre les vrais services Auth/Postgres/Storage avec deux comptes jetables confirmés administrativement, sans envoyer d’e-mail. Exécution explicite : `node scripts/verify-supabase-accounts.mjs --allow-disposable-accounts --env-file <fichier-json-prive>`. Ce fichier fournit les variables serveur usuelles et ne doit jamais être versionné. Le résultat réel et les éventuelles limites sont consignés dans [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md).
+
+Avant lancement : Google et SMTP testés réellement, protections fournisseur et anti-abus, portage des salons/relations/boutique, modération et droits payants, purge/restauration, identité et contact de l’exploitant, puis essais Safari iOS/Chrome Android. Les drapeaux de sessions, vidéo, juridique et paiements restent fermés.
+
+Références : [Google Supabase](https://supabase.com/docs/guides/auth/social-login/auth-google), [SMTP](https://supabase.com/docs/guides/auth/auth-smtp), [sessions](https://supabase.com/docs/guides/auth/sessions), [clés modernes](https://supabase.com/docs/guides/api/api-keys), [sécuriser Storage](https://supabase.com/docs/guides/storage/security/access-control).

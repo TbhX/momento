@@ -4,6 +4,7 @@ insert into auth.users(id,email) values
  ('00000000-0000-4000-8000-00000000000a','a@momento.test'),
  ('00000000-0000-4000-8000-00000000000b','b@momento.test'),
  ('00000000-0000-4000-8000-00000000000c','c@momento.test');
+insert into auth.sessions(id,user_id,not_after) select id,id,now()+interval '1 day' from auth.users where email like '%@momento.test';
 insert into public.profiles(id,display_name,age,city,terms_version,privacy_version)
  select id,'Test member',28,'Paris','test-v1','test-v1' from auth.users where email like '%@momento.test';
 insert into public.rooms(id,title,capacity,opens_at,closes_at,status) values
@@ -20,7 +21,8 @@ do $$ begin
 end $$;
 set local role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-00000000000a',true);
-select set_config('request.jwt.claims','{"user_metadata":{"role":"admin"}}',true);
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('request.jwt.claim.sub'),'session_id',current_setting('request.jwt.claim.sub'))::text,true);
+select set_config('request.jwt.claims',(current_setting('request.jwt.claims')::jsonb||'{"user_metadata":{"role":"admin"}}'::jsonb)::text,true);
 do $$ begin
  if (select count(*) from public.profiles) <> 1 then raise exception 'Cross-account profile access'; end if;
  if (select count(*) from public.matches) <> 1 or (select count(*) from public.messages) <> 1 then raise exception 'Mutual match should be readable'; end if;
@@ -74,10 +76,13 @@ do $$ begin
  begin perform public.enter_room('00000000-0000-4000-8000-000000000101','audio',gen_random_uuid()); raise exception 'Expired Premium still allowed entry'; exception when insufficient_privilege then null; end;
 end $$;
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-00000000000b',true);
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('request.jwt.claim.sub'),'session_id',current_setting('request.jwt.claim.sub'))::text,true);
 select public.enter_room('00000000-0000-4000-8000-000000000101','audio',gen_random_uuid());
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-00000000000c',true);
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('request.jwt.claim.sub'),'session_id',current_setting('request.jwt.claim.sub'))::text,true);
 select public.enter_room('00000000-0000-4000-8000-000000000101','video',gen_random_uuid());
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-00000000000a',true);
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('request.jwt.claim.sub'),'session_id',current_setting('request.jwt.claim.sub'))::text,true);
 do $$ begin
  begin perform public.enter_room('00000000-0000-4000-8000-000000000101','audio',gen_random_uuid()); raise exception 'Room capacity was exceeded'; exception when invalid_parameter_value then if sqlerrm <> 'room_full' then raise; end if; end;
  if (select count(*) from public.room_preview('00000000-0000-4000-8000-000000000101')) <> 2 then raise exception 'Free member cannot preview room'; end if;
@@ -86,6 +91,7 @@ do $$ begin
  if (select count(*) from public.matches) <> 0 or (select count(*) from public.messages) <> 0 then raise exception 'Blocking did not revoke access'; end if;
 end $$;
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-00000000000b',true);
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('request.jwt.claim.sub'),'session_id',current_setting('request.jwt.claim.sub'))::text,true);
 do $$ begin
  if (select count(*) from public.blocks) <> 0 then raise exception 'Blocker identity leaked'; end if;
  if (select count(*) from public.matches) <> 0 or (select count(*) from public.messages) <> 0 then raise exception 'Reciprocal blocking not enforced'; end if;

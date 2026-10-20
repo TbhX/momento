@@ -2,7 +2,7 @@
 
 État du 20 octobre 2026 : **l’hébergement autonome Pages est déployé** sur `https://momento-7se.pages.dev/`. Les fournisseurs de connexion et les stockages ne sont pas encore configurés. L’organisation Supabase Momento existe ; le connecteur refuse toujours les opérations sur cette organisation. La disponibilité du quota, qui avait bloqué la création auparavant, reste à revérifier après correction de l’accès. Le site Sites existant demeure une bêta privée distincte avec sa connexion ChatGPT.
 
-Choix confirmé par le propriétaire : **Google et adresse e-mail + mot de passe**. Le parcours e-mail/mot de passe, sa confirmation et sa récupération restent à implémenter. Le SMS est conditionné à l’existence d’un service réellement gratuit ; il reste désactivé et aucun fournisseur payant n’est souscrit. Apple/Facebook sont des possibilités ultérieures. La feuille de route courante est [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md).
+Choix confirmé par le propriétaire : **Google et adresse e-mail + mot de passe**. Le parcours e-mail/mot de passe, sa confirmation et sa récupération sont implémentés et testés localement, mais ne sont pas encore configurés pour un usage réel. Le SMS est conditionné à l’existence d’un service réellement gratuit ; il reste désactivé et aucun fournisseur payant n’est souscrit. Apple/Facebook sont des possibilités ultérieures. La feuille de route courante est [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md).
 
 ## Architecture et données
 
@@ -19,7 +19,7 @@ Le code métier commun reçoit uniquement l’identité vérifiée par le serveu
 | Connexion | Code | Activation externe nécessaire |
 | --- | --- | --- |
 | Google | OAuth PKCE + retour serveur | Client OAuth Google, écran Momento, identifiant/secret dans Supabase |
-| E-mail + mot de passe | À implémenter : inscription, confirmation, connexion et récupération | Projet dédié, expéditeur SMTP de production et redirections exactes ; tests réels d’envoi/récupération |
+| E-mail + mot de passe | Inscription, confirmation/renvoi, connexion et récupération PKCE serveur | Projet dédié, expéditeur SMTP de production et redirections exactes ; tests réels d’envoi/récupération |
 | Apple | OAuth PKCE + retour serveur | Services ID et clé Apple, fournisseur Supabase, renouvellement de la clé selon Apple |
 | Facebook | OAuth PKCE + retour serveur | Application Meta, configuration/validation fournisseur selon son usage |
 | SMS | Saisie du numéro E.164, code à 6 chiffres | Fournisseur SMS dans Supabase, pays autorisés, dépenses plafonnées, contrôle anti-abus avant ouverture |
@@ -40,6 +40,36 @@ La connexion Google n’exige pas d’envoi de SMS. Les SMS ont un coût fournis
 8. Tester d’abord une publication autonome restreinte au pilote : navigation anonyme de l’accueil, Google/Apple/Facebook, refus d’autorisation, SMS de test puis réel autorisé, expiration, déconnexion, plusieurs appareils, partage/vol de lien PKCE et absence d’accès à un autre compte. Tester ensuite les webhooks Stripe signés sur l’origine autonome sans barrière ChatGPT.
 
 Les sessions passent par des cookies `__Host-`, Secure, HttpOnly, SameSite=Lax, sans domaine parent. Le navigateur appelle seulement les API Momento ; aucun SDK Supabase navigateur, JWT ou refresh token dans localStorage. Les réponses d’identité sont sans cache. Le retour OAuth est fixé à l’origine configurée ; aucun `returnTo` arbitraire n’est accepté. Les mutations exigent Origin et marqueur CSRF. Les codes PKCE sont échangés côté serveur.
+
+## Parcours e-mail et mot de passe
+
+Le code est livré ; **aucun SMTP ni fournisseur réel n’a été activé**. Le service d’e-mail de démonstration Supabase ne doit pas servir d’infrastructure d’envoi pour l’ouverture publique.
+
+| Route serveur | Fonction |
+| --- | --- |
+| `POST /api/auth/email/signup` | Inscription, mot de passe de 12 à 64 caractères et 72 octets maximum, confirmation requise |
+| `POST /api/auth/email/resend` | Nouveau lien de confirmation et nouveau défi PKCE, sans redemander le mot de passe |
+| `GET /api/auth/callback` | Échange de code PKCE pour confirmation/connexion ; refuse un flux de récupération sur ce retour ordinaire |
+| `POST /api/auth/email/signin` | Connexion, adresse confirmée obligatoire, erreur générique pour adresse/mot de passe incorrect ou adresse non confirmée |
+| `POST /api/auth/email/recover` | Demande de lien, acquittement générique et intention de récupération signée liée au navigateur |
+| `GET /api/auth/recovery/callback` | Vérifie l’intention, le défi PKCE et l’adresse ; crée une autorisation de changement liée à l’UUID et à la session |
+| `POST /api/auth/email/password` | Consomme cette autorisation une fois, change le mot de passe et demande une déconnexion globale |
+
+Configuration, uniquement sur le bon projet :
+
+1. Activer le fournisseur e-mail **avec confirmation d’adresse**. Si Supabase annonce une confirmation automatique, Momento masque et refuse ce parcours. Aucun email/client ne donne un rôle admin.
+2. Configurer le SMTP, un expéditeur réel et ses protections DNS. Copier les modèles [confirmation.html](supabase/templates/confirmation.html) et [recovery.html](supabase/templates/recovery.html) dans les modèles Supabase correspondants. Conserver `{{ .ConfirmationURL }}` : ne pas remplacer par une URL de session ni introduire un jeton dans le JavaScript. Sujets proposés : « Confirmez votre adresse — Momento » et « Choisissez un nouveau mot de passe — Momento ».
+3. Configurer Site URL sur `https://momento-7se.pages.dev`, avec exactement ces deux retours : `https://momento-7se.pages.dev/api/auth/callback` et `https://momento-7se.pages.dev/api/auth/recovery/callback`. Ne pas autoriser un domaine de retour fourni par l’utilisateur.
+4. Disposer du binding `DB` et de sa table `rate_limits`, puis du secret `AUTH_COOKIE_SECRET` de 32 caractères aléatoires ou plus. Cette partie utilise encore D1 : Postgres ne remplace pas implicitement les requêtes SQLite.
+5. Après configuration dans un environnement de test, activer `AUTH_EMAIL_ENABLED=true` avec `AUTH_EMAIL_DAILY_BUDGET=20` (entre 1 et 500). Laisser la valeur `false` sur l’hébergement public tant que l’envoi et tous les parcours réels ne sont pas validés. La clé reste publiable côté serveur ; aucune clé d’administration Auth n’est requise pour ces opérations.
+
+Les liens sont liés au navigateur d’origine et aux cookies PKCE, valables dix minutes côté Momento. Une ouverture sur un autre appareil demande de refaire la demande depuis cet appareil. Après ouverture d’un lien de récupération valide, le formulaire dispose de quinze minutes. Son autorisation est signée, liée à l’identité et à la session vérifiées et consommée par insertion atomique unique. Un rejeu ou deux requêtes concurrentes ne peuvent pas appliquer deux changements. Un refus explicite du fournisseur pour mot de passe insuffisant permet de corriger le formulaire ; une opération dont l’issue est incertaine demande un nouveau lien.
+
+Envois : 1 par minute et 3 par heure/adresse, 5 par heure/IP, plus le budget quotidien partagé entre inscription, renvoi et récupération. Connexions : 10 par quinze minutes/adresse et 20/IP. Les compteurs ne contiennent que des identifiants HMAC ; pas d’e-mail, IP ni mot de passe en clair. Les limites natives et la protection anti-robots Supabase restent à configurer : le filtrage Momento ne remplace pas ceux du fournisseur. Les messages génériques réduisent l’énumération des comptes sans constituer une garantie contre tous les canaux temporels du fournisseur.
+
+Le mot de passe traverse uniquement l’API HTTPS et Supabase, n’est pas enregistré par Momento et est effacé des champs après soumission. Les formulaires prévoient les gestionnaires de mots de passe, leur confirmation et un affichage volontaire. Après changement réussi, les cookies locaux sont effacés et une nouvelle connexion est demandée. Si la déconnexion globale échoue, la réponse et l’interface l’indiquent ; elles ne prétendent pas avoir fermé toutes les connexions. Comme déjà indiqué, la révocation du refresh token ne supprime pas immédiatement un JWT copié : le contrôle strict des sessions sensibles reste nécessaire.
+
+Vérification : suite de **129 tests** réussis, dont tests serveur avec un Auth simulé et tests DOM avec `jsdom` 26.1.0 ; aucun message réel envoyé. Tester encore la délivrabilité, les liens sur appareils réels, les refus et reprises, ainsi que la suppression/révocation complète du compte avant ouverture.
 
 Le SMS lie le numéro à un cookie signé de cinq minutes. Les compteurs D1 limitent les envois par IP, numéro et jour, et les vérifications par défi et IP. Les clés des compteurs sont des HMAC ; numéro, IP et code ne sont pas journalisés. Le code SMS n’est jamais enregistré par Momento. Ces contrôles complètent ceux du fournisseur ; ils ne les remplacent pas.
 

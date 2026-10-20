@@ -4,6 +4,8 @@
 
 La liste courante et priorisée des travaux est [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md). Google et e-mail/mot de passe sont les connexions demandées ; le SMS reste désactivé sans solution gratuite établie. La tâche quotidienne GitHub/Cloudflare est activée à partir du 21 octobre 2026. Les anciennes limites Premium et offres mentionnées dans l’historique ne doivent pas être réintroduites comme règles de l’offre actuelle.
 
+Livraison e-mail du 20 octobre : inscription, confirmation/renvoi, connexion et récupération implémentés, modèles français et protections serveur inclus. **129 tests locaux réussis**, build Pages vérifié ; SMTP, Supabase et parcours sur appareils réels restent à configurer/valider. `AUTH_EMAIL_ENABLED` reste désactivé par défaut. Voir le protocole et ses limites dans [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md).
+
 ## Implémenté
 
 - Connexion Sites/ChatGPT et inscription Momento obligatoire ; prénom, majorité déclarée, âge, ville.

@@ -39,7 +39,7 @@ L’accès de l’application **Cloudflare Workers and Pages** au dépôt **Mome
 
 | Service | Usage actuel de la cible autonome |
 | --- | --- |
-| Supabase Auth | OAuth préparé ; Google et e-mail/mot de passe prioritaires, parcours mot de passe à implémenter ; SMS désactivé |
+| Supabase Auth | OAuth et e-mail/mot de passe implémentés ; Google et e-mail prioritaires, fournisseurs réels à configurer ; SMS désactivé |
 | Cloudflare D1, binding `DB` | Données métier et limites serveur |
 | Cloudflare R2 privé, binding `BUCKET` | Profils et images |
 | Pages, binding automatique `ASSETS` | Pages et fichiers statiques |
@@ -51,6 +51,8 @@ L’ajout de Supabase **ne migre pas encore les données D1/R2 vers Supabase Dat
 Configurer les bindings D1/R2 dans Pages et appliquer les migrations `drizzle/` dans cette D1. Elles ne s’exécutent pas lors du build. Le stockage du prototype Sites ne devient pas automatiquement celui de Pages. `deploy/pages.example.jsonc` donne un modèle optionnel ; le copier et le remplir seulement après identification du projet. La configuration réelle n’est pas versionnée par défaut.
 
 Configurer dans Pages l’origine HTTPS exacte (`MOMENTO_APP_ORIGIN`), l’URL du projet Supabase (`SUPABASE_URL`), les identifiants administrateurs et les secrets requis. [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md) décrit les fournisseurs, les redirections, les cookies et les limites avant ouverture.
+
+L’inscription e-mail, la confirmation et son renvoi, la connexion et la récupération du mot de passe sont implémentés. Ils exigent `AUTH_EMAIL_ENABLED=true`, le secret serveur, le compteur D1 et la confirmation d’adresse activée dans Supabase. Ils restent **désactivés** sans configuration et validation réelle. Les modèles prêts à configurer sont dans `supabase/templates/`. La suite actuelle comporte 129 tests réussis ; les tests Auth/SMTP simulés et DOM ne prouvent pas l’envoi réel ni une validation sur téléphone.
 
 ## Secrets et environnements
 

@@ -4,6 +4,8 @@ import {createServerClient,parseCookieHeader,serializeCookieHeader} from '@supab
 const OAUTH_PROVIDERS=['google','apple','facebook'];
 const AUTH_COOKIE='__Host-momento-auth';
 const PHONE_COOKIE='__Host-momento-phone';
+const EMAIL_FLOW_COOKIE='__Host-momento-email-flow';
+const RECOVERY_COOKIE='__Host-momento-recovery';
 const COOKIE_OPTIONS={path:'/',secure:true,httpOnly:true,sameSite:'lax'};
 const AUTH_HEADERS={'Cache-Control':'private, no-store','Pragma':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Vary':'Cookie','Strict-Transport-Security':'max-age=31536000'};
 const authFailure=(code,status=400)=>Object.assign(new Error(code),{status,momentoAuthError:true});
@@ -16,8 +18,11 @@ export function externalAuthConfiguration(env){
  try{origin=new URL(env.MOMENTO_APP_ORIGIN);if(origin.protocol!=='https:'||origin.origin!==env.MOMENTO_APP_ORIGIN||origin.username||origin.password)throw 0}catch{issues.push('app_origin')}
  const providers=String(env.AUTH_OAUTH_PROVIDERS||'google').split(',').map(s=>s.trim()).filter((p,i,a)=>OAUTH_PROVIDERS.includes(p)&&a.indexOf(p)===i);
  const dailyBudget=Number(env.AUTH_SMS_DAILY_BUDGET||20);
- const sms=env.AUTH_SMS_ENABLED==='true'&&!!env.DB&&String(env.AUTH_COOKIE_SECRET||'').length>=32&&Number.isInteger(dailyBudget)&&dailyBudget>=1&&dailyBudget<=500;
- return{configured:issues.length===0,issues,url:supabaseURL?.origin,origin:origin?.origin,providers,sms,dailyBudget};
+ const guarded=!!env.DB&&String(env.AUTH_COOKIE_SECRET||'').length>=32;
+ const sms=env.AUTH_SMS_ENABLED==='true'&&guarded&&Number.isInteger(dailyBudget)&&dailyBudget>=1&&dailyBudget<=500;
+ const emailBudget=Number(env.AUTH_EMAIL_DAILY_BUDGET||20);
+ const email=env.AUTH_EMAIL_ENABLED==='true'&&guarded&&Number.isInteger(emailBudget)&&emailBudget>=1&&emailBudget<=500;
+ return{configured:issues.length===0,issues,url:supabaseURL?.origin,origin:origin?.origin,providers,sms,dailyBudget,email,emailBudget};
 }
 
 function cookieContext(request,config){
@@ -41,6 +46,26 @@ async function limitedJSON(request){
 function checkMutation(request,origin){if(request.method!=='POST')throw authFailure('method_not_allowed',405);if(request.headers.get('Origin')!==origin||request.headers.get('X-Momento-Request')!=='1'||request.headers.get('Sec-Fetch-Site')==='cross-site')throw authFailure('invalid_origin',403)}
 const b64=bytes=>btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 async function hmac(secret,value){const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);return b64(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(value)))}
+async function signedEmailRecord(env,data){const payload=b64(new TextEncoder().encode(JSON.stringify(data)));return payload+'.'+await hmac(env.AUTH_COOKIE_SECRET,'email:'+payload)}
+async function readEmailRecord(env,value,kind,lifetime){
+ if(typeof value!=='string'||value.length>2048)throw authFailure('recovery_expired',401);
+ const [payload,signature,...rest]=value.split('.');const expected=await hmac(env.AUTH_COOKIE_SECRET,'email:'+payload);
+ if(rest.length||!signature||signature.length!==expected.length)throw authFailure('recovery_expired',401);
+ let diff=0;for(let i=0;i<expected.length;i++)diff|=signature.charCodeAt(i)^expected.charCodeAt(i);if(diff)throw authFailure('recovery_expired',401);
+ try{const record=JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));if(record.kind!==kind||!Number.isFinite(record.expires)||record.expires<=Date.now()||record.expires>Date.now()+lifetime||typeof record.nonce!=='string')throw 0;return record}catch{throw authFailure('recovery_expired',401)}
+}
+function normalizedEmail(value){if(typeof value!=='string')throw authFailure('invalid_email');const email=value.trim().toLowerCase();if(email.length>254||! /^[^\s@\x00-\x1f\x7f]+@[^\s@\x00-\x1f\x7f]+\.[^\s@\x00-\x1f\x7f]+$/.test(email))throw authFailure('invalid_email');return email}
+function validPassword(value,{newPassword=false}={}){if(typeof value!=='string'||value.length<1||value.length>1024)throw authFailure('invalid_password');if(newPassword&&([...value].length<12||[...value].length>64||new TextEncoder().encode(value).length>72))throw authFailure('invalid_password');return value}
+async function verifierFingerprint(context,env){const values=[...context.jar].filter(([name,value])=>name.startsWith(AUTH_COOKIE)&&name.includes('code-verifier')&&value).sort(([a],[b])=>a.localeCompare(b));if(!values.length)throw authFailure('recovery_expired',401);return hmac(env.AUTH_COOKIE_SECRET,JSON.stringify(values))}
+function sessionId(session){try{const payload=JSON.parse(atob(session.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return typeof payload.session_id==='string'&&/^[0-9a-f-]{36}$/i.test(payload.session_id)?payload.session_id:null}catch{return null}}
+function clearIdentityCookies(context){for(const name of context.jar.keys())if(name.startsWith(AUTH_COOKIE)||[PHONE_COOKIE,EMAIL_FLOW_COOKIE,RECOVERY_COOKIE].includes(name))context.put(name,'',{maxAge:0})}
+async function recoveryGrant(context,env){
+ const grant=await readEmailRecord(env,context.jar.get(RECOVERY_COOKIE),'password',900000);
+ const {data,error}=await context.supabase.auth.getUser();if(error||!verifiedIdentity(data?.user)||data.user.id!==grant.user)throw authFailure('recovery_expired',401);
+ const {data:session}=await context.supabase.auth.getSession();if(!grant.session||sessionId(session?.session)!==grant.session)throw authFailure('recovery_expired',401);return grant;
+}
+function emailProviderError(error,{concealAccount=false}={}){if(!error)return;if(concealAccount&&['user_already_exists','email_exists','user_not_found'].includes(error.code))return;if(error.status===429)throw authFailure('too_many_attempts',429);if(error.code==='weak_password'||error.code==='same_password')throw authFailure('invalid_password');throw authFailure('email_unavailable',503)}
+async function emailSendLimits(request,env,config,email){await countAttempt(env,'email-send-ip',clientIP(request),5,3600000);await countAttempt(env,'email-send-address',email,3,3600000);await countAttempt(env,'email-send-minute',email,1,60000);await countAttempt(env,'email-send-budget','all',config.emailBudget,86400000)}
 async function signedPhone(env,phone){const data=b64(new TextEncoder().encode(JSON.stringify({phone,expires:Date.now()+300000,nonce:crypto.randomUUID()})));return data+'.'+await hmac(env.AUTH_COOKIE_SECRET,data)}
 async function readPhone(env,value){
  if(!value||value.length>1024)throw authFailure('phone_challenge_expired',401);
@@ -58,27 +83,81 @@ async function countAttempt(env,label,subject,limit,period){
  await env.DB.prepare('DELETE FROM rate_limits WHERE key LIKE ? AND expires_at<?').bind('auth:%',now).run();
 }
 const clientIP=request=>request.headers.get('CF-Connecting-IP')||'unknown'; // Trusted on the Cloudflare standalone target; never X-Forwarded-For.
-function verifiedIdentity(user){if(!user||user.is_anonymous||!user.aud||user.aud!=='authenticated'||! /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id))return null;return{id:'supabase:'+user.id,email:user.email_confirmed_at?user.email||'':''}}
+function verifiedIdentity(user){if(!user||user.is_anonymous||(!user.email_confirmed_at&&!user.phone_confirmed_at)||!user.aud||user.aud!=='authenticated'||! /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id))return null;return{id:'supabase:'+user.id,email:user.email_confirmed_at?user.email||'':''}}
 async function enabledProviders(config){
- try{const r=await fetch(config.url+'/auth/v1/settings',{headers:{apikey:config.key},signal:AbortSignal.timeout(10000)});if(!r.ok)throw 0;const settings=await r.json();return{providers:config.providers.filter(p=>settings.external?.[p]===true),sms:config.sms&&settings.external?.phone===true}}catch{throw authFailure('auth_provider_unavailable',503)}
+ try{const r=await fetch(config.url+'/auth/v1/settings',{headers:{apikey:config.key},signal:AbortSignal.timeout(10000)});if(!r.ok)throw 0;const settings=await r.json();return{providers:config.providers.filter(p=>settings.external?.[p]===true),sms:config.sms&&settings.external?.phone===true,email:config.email&&settings.external?.email===true&&settings.mailer_autoconfirm===false}}catch{throw authFailure('auth_provider_unavailable',503)}
 }
 
 async function authenticationRoute(request,env,config,context){
  const path=new URL(request.url).pathname;
  if(path==='/api/auth/config'&&request.method==='GET'){
-  if(!config.configured)return responseJSON({mode:'supabase',configured:false,providers:[],sms:false});
-  return responseJSON({mode:'supabase',configured:true,...await enabledProviders(config)});
+  if(!config.configured)return responseJSON({mode:'supabase',configured:false,providers:[],sms:false,email:false,recovery:false});
+  const providers=await enabledProviders(config);let recovery=false;
+  if(providers.email&&context.jar.get(RECOVERY_COOKIE))try{await recoveryGrant(context,env);recovery=true}catch{context.put(RECOVERY_COOKIE,'',{maxAge:0})}
+  return responseJSON({mode:'supabase',configured:true,...providers,recovery});
  }
  if(!config.configured)throw authFailure('auth_not_configured',503);
  const auth=context.supabase.auth;
+ if(path==='/api/auth/recovery/callback'&&request.method==='GET'){
+  let flow;
+  try{if(!config.email)throw 0;flow=await readEmailRecord(env,context.jar.get(EMAIL_FLOW_COOKIE),'recover',600000);if(flow.verifier!==await verifierFingerprint(context,env))throw 0}catch{context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});return Response.redirect(config.origin+'/?authError=recovery_expired',303)}
+  context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});
+  const url=new URL(request.url),code=url.searchParams.get('code'),flowId=url.searchParams.get('sb_flow_id');
+  if(!code||code.length>2048)return Response.redirect(config.origin+'/?authError=recovery_expired',303);
+  const {data,error}=await auth.exchangeCodeForSession(code,flowId?{flowId}:undefined);
+  if(error||data?.redirectType!=='recovery'||!verifiedIdentity(data?.user)||!data.user.email_confirmed_at||!sessionId(data.session)||flow.email!==await hmac(env.AUTH_COOKIE_SECRET,'address:'+normalizedEmail(data.user.email))){clearIdentityCookies(context);return Response.redirect(config.origin+'/?authError=recovery_expired',303)}
+  context.put(RECOVERY_COOKIE,await signedEmailRecord(env,{kind:'password',user:data.user.id,session:sessionId(data.session),nonce:crypto.randomUUID(),expires:Date.now()+900000}),{maxAge:900});
+  return Response.redirect(config.origin+'/?authFlow=recovery',303);
+ }
  if(path==='/api/auth/callback'&&request.method==='GET'){
-  const code=new URL(request.url).searchParams.get('code');
+  const url=new URL(request.url),code=url.searchParams.get('code'),flowId=url.searchParams.get('sb_flow_id');
   if(!code||code.length>2048)return Response.redirect(config.origin+'/?authError=cancelled',303);
-  const {data,error}=await auth.exchangeCodeForSession(code);
-  if(error||!verifiedIdentity(data.user))return Response.redirect(config.origin+'/?authError=failed',303);
+  const {data,error}=await auth.exchangeCodeForSession(code,flowId?{flowId}:undefined);
+  if(error||!verifiedIdentity(data.user)||data.redirectType==='recovery'){if(data?.redirectType==='recovery')clearIdentityCookies(context);return Response.redirect(config.origin+'/?authError=failed',303)}
+  context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});context.put(RECOVERY_COOKIE,'',{maxAge:0});
   return Response.redirect(config.origin+'/',303);
  }
  checkMutation(request,config.origin);
+ if(path.startsWith('/api/auth/email/')){
+  if(!config.email||!(await enabledProviders(config)).email)throw authFailure('email_not_enabled',409);
+  if(path==='/api/auth/email/password'){
+   const {password}=await limitedJSON(request);validPassword(password,{newPassword:true});
+   await countAttempt(env,'password-ip',clientIP(request),10,900000);
+   const grant=await recoveryGrant(context,env),key='auth:recovery-use:'+await hmac(env.AUTH_COOKIE_SECRET,grant.nonce);
+   const claim=await env.DB.prepare('INSERT INTO rate_limits(key,count,expires_at) VALUES(?,1,?) ON CONFLICT(key) DO NOTHING RETURNING key').bind(key,grant.expires).first();
+   if(!claim)throw authFailure('recovery_expired',401);
+   const {error}=await auth.updateUser({password});
+   if(error){if(['weak_password','same_password'].includes(error.code)){await env.DB.prepare('DELETE FROM rate_limits WHERE key=?').bind(key).run();throw authFailure('invalid_password')}clearIdentityCookies(context);throw authFailure('recovery_expired',401)}
+   let revoked=false;try{const result=await auth.signOut({scope:'global'});revoked=!result.error}catch{}
+   clearIdentityCookies(context);return responseJSON({passwordUpdated:true,otherSessionsRevoked:revoked});
+  }
+  if(!['/api/auth/email/signup','/api/auth/email/signin','/api/auth/email/recover','/api/auth/email/resend'].includes(path))throw authFailure('not_found',404);
+  const body=await limitedJSON(request),email=normalizedEmail(body.email);
+  if(path==='/api/auth/email/signin'){
+   const password=validPassword(body.password);await countAttempt(env,'email-login-ip',clientIP(request),20,900000);await countAttempt(env,'email-login-address',email,10,900000);
+   const {data,error}=await auth.signInWithPassword({email,password});
+   if(error?.status===429)throw authFailure('too_many_attempts',429);
+   if(error&&error.status>=500)throw authFailure('email_unavailable',503);
+   if(error||!verifiedIdentity(data?.user)||!data.user.email_confirmed_at){if(data?.session)clearIdentityCookies(context);throw authFailure('invalid_credentials',401)}
+   context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});context.put(RECOVERY_COOKIE,'',{maxAge:0});return responseJSON({authenticated:true});
+  }
+  if(path==='/api/auth/email/resend'){
+   await emailSendLimits(request,env,config,email);context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});context.put(RECOVERY_COOKIE,'',{maxAge:0});
+   const {error}=await auth.resend({type:'signup',email,options:{emailRedirectTo:config.origin+'/api/auth/callback'}});emailProviderError(error,{concealAccount:true});return responseJSON({accepted:true,next:'confirm_email'});
+  }
+  if(path==='/api/auth/email/signup'){
+   const password=validPassword(body.password,{newPassword:true});await emailSendLimits(request,env,config,email);
+   context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});context.put(RECOVERY_COOKIE,'',{maxAge:0});
+   const {data,error}=await auth.signUp({email,password,options:{emailRedirectTo:config.origin+'/api/auth/callback'}});emailProviderError(error,{concealAccount:true});
+   if(data?.session){try{await auth.signOut({scope:'local'})}finally{clearIdentityCookies(context)}throw authFailure('email_not_enabled',409)}
+   return responseJSON({accepted:true,next:'confirm_email'});
+  }
+  await emailSendLimits(request,env,config,email);context.put(RECOVERY_COOKIE,'',{maxAge:0});
+  const {error}=await auth.resetPasswordForEmail(email,{redirectTo:config.origin+'/api/auth/recovery/callback'});emailProviderError(error,{concealAccount:true});
+  if(!error)context.put(EMAIL_FLOW_COOKIE,await signedEmailRecord(env,{kind:'recover',nonce:crypto.randomUUID(),email:await hmac(env.AUTH_COOKIE_SECRET,'address:'+email),verifier:await verifierFingerprint(context,env),expires:Date.now()+600000}),{maxAge:600});
+  else context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});
+  return responseJSON({accepted:true,next:'recovery_email'});
+ }
  if(path==='/api/auth/oauth'){
   const {provider}=await limitedJSON(request);
   if(!config.providers.includes(provider)||!(await enabledProviders(config)).providers.includes(provider))throw authFailure('provider_not_enabled',409);
@@ -110,7 +189,7 @@ async function authenticationRoute(request,env,config,context){
  }
  if(path==='/api/auth/logout'){
   const {error}=await auth.signOut({scope:'local'});if(error&&error.name!=='AuthSessionMissingError'&&error.status!==401&&error.status!==403)throw authFailure('logout_unavailable',503);
-  for(const name of context.jar.keys())if(name===PHONE_COOKIE||name.startsWith(AUTH_COOKIE))context.put(name,'',{maxAge:0});
+  clearIdentityCookies(context);
   return responseJSON({signedOut:true});
  }
  throw authFailure('not_found',404);

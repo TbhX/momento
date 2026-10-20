@@ -14,7 +14,9 @@
   "vars": {
     "MOMENTO_APP_ORIGIN": "https://REPLACE_WITH_YOUR_PAGES_OR_CUSTOM_DOMAIN",
     "SUPABASE_URL": "https://REPLACE_WITH_MOMENTO_PROJECT_REF.supabase.co",
-    "AUTH_OAUTH_PROVIDERS": "google,apple,facebook",
+    "AUTH_OAUTH_PROVIDERS": "google",
+    "AUTH_EMAIL_ENABLED": "false",
+    "AUTH_EMAIL_DAILY_BUDGET": "20",
     "AUTH_SMS_ENABLED": "false",
     "AUTH_SMS_DAILY_BUDGET": "20",
     "MOMENTO_ADMIN_USER_IDS": "",

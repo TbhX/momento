@@ -24,8 +24,10 @@ Le build Pages produit `pages-dist` avec les fichiers du site et son Worker. Les
 
 ## Vérifications et disponibilité
 
-161 tests locaux réussis et build Pages réussi pour cette livraison. Le site publié affiche le formulaire d’inscription ouvert. La création d’un compte synthétique et l’enregistrement de son profil ont été confirmés en production. L’essai complet a été interrompu avant validation de la déconnexion/reconnexion ; le nettoyage de ce compte reste à clôturer. Aucun essai sur téléphone physique n’est revendiqué.
+168 tests locaux réussis et build Pages réussi pour cette livraison. Le formulaire public d’inscription est ouvert. Le compte synthétique du précédent essai a été supprimé après autorisation. Une identité organisateur a été préparée via Auth ; sa session provisoire est révoquée. Le propriétaire choisit lui-même son mot de passe avec un code privé à usage unique, puis complète son profil.
 
-Les profils, médias, catalogue de salons, amis, invitations, blocages et signalements disposent de données persistantes. Les appels réels, rotations, administration/modération, messages, exploitation et paiements restent à finaliser. Les rencontres publiques et ventes restent fermées. Les rencontres physiques sont annoncées uniquement comme une évolution future.
+L’espace organisateur propose les compteurs, une file de signalements paginée, leur prise en charge et classement, ainsi que suspension et rétablissement des profils par un administrateur. Les actions sont enregistrées. Les parcours de test Gratuit/Premium utilisent des profils fictifs et ne créent aucun abonnement.
+
+Les profils, médias, catalogue de salons, amis, invitations, blocages et signalements disposent de données persistantes. Les appels réels, rotations, messages, gestion complète des salons, exploitation et paiements restent à finaliser. Les rencontres publiques et ventes restent fermées. Les rencontres physiques restent un aperçu futur. La vérification du déploiement courant et les appareils physiques sont suivis séparément.
 
 Voir [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md), [SUPABASE_SETUP.md](SUPABASE_SETUP.md), [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md) et [LAUNCH_READINESS.md](LAUNCH_READINESS.md). Les détails opérationnels d’infrastructure sont conservés dans le suivi privé du projet.

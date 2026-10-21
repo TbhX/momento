@@ -1,11 +1,12 @@
 /* Public presentation and shared navigation. Protected pages still require a completed profile. */
 let publicView='home',pendingMemberPage='salon',experienceHistory=false;
-const experienceRoutes={home:'',signin:'connexion',signup:'inscription',salon:'salons',friends:'amis',videos:'invitations',shop:'boutique',profile:'profil',events:'sessions',bookings:'mes-sessions',matches:'mes-matchs',dates:'bientot',audit:'informations',admin:'admin'};
-const experienceTitles={home:'Le feeling commence par un bonjour',signin:'Se connecter',signup:'Créer mon compte',salon:'Les salons',friends:'Mes liens',videos:'Mes invitations',shop:'La boutique',profile:'Mon profil',events:'Les sessions',bookings:'Mes sessions',matches:'Mes matchs',dates:'Bientôt en vrai',audit:'Où en est Momento ?',admin:'Espace organisateur'};
+const experienceRoutes={home:'',signin:'connexion',signup:'inscription',salon:'salons',friends:'amis',videos:'invitations',shop:'boutique',profile:'profil',events:'sessions',bookings:'mes-sessions',matches:'mes-matchs',dates:'bientot',audit:'informations',admin:'admin',adminSetup:'activer-admin'};
+const experienceTitles={home:'Le feeling commence par un bonjour',signin:'Se connecter',signup:'Créer mon compte',salon:'Les salons',friends:'Mes liens',videos:'Mes invitations',shop:'La boutique',profile:'Mon profil',events:'Les sessions',bookings:'Mes sessions',matches:'Mes matchs',dates:'Bientôt en vrai',audit:'Où en est Momento ?',admin:'Espace organisateur',adminSetup:'Activer mon accès organisateur'};
 function normalizeExperiencePage(p){if(p==='offers')return'shop';return Object.hasOwn(experienceRoutes,p)?p:'home'}
 function experiencePageFromURL(){const hash=location.hash.slice(1);return Object.keys(experienceRoutes).find(k=>experienceRoutes[k]===hash)||'home'}
 function syncExperienceShell(view='member'){
  const publicPage=view==='home',authPage=view==='account';
+ document.querySelectorAll('[data-admin-nav]').forEach(el=>el.hidden=view!=='member'||!accountReady||!(typeof liveStatus!=='undefined'&&(liveStatus?.admin||liveStatus?.moderator)));
  document.body.classList.toggle('public-view',publicPage);document.body.classList.toggle('account-gated',authPage);
  document.querySelectorAll('[data-public-nav]').forEach(el=>el.hidden=!publicPage);
  document.querySelectorAll('[data-member-nav]').forEach(el=>el.hidden=publicPage||authPage||!accountReady);

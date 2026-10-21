@@ -17,6 +17,7 @@ let state;try{state=JSON.parse(localStorage.getItem('momento-v1'))||{profile:nul
 function save(){try{localStorage.setItem('momento-v1',JSON.stringify(state))}catch{toast('Stockage indisponible : vos changements restent dans cet onglet.')}$('#count').textContent=state.bookings.length}function escapeHTML(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function toast(t){$('#toast').textContent=t;$('#toast').style.display='block';setTimeout(()=>$('#toast').style.display='none',3500)}function stop(){mediaGeneration++;clearInterval(timer);timer=null;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}
 function go(p){
  p=typeof normalizeExperiencePage==='function'?normalizeExperiencePage(p):p;
+ if(p==='adminSetup'&&typeof renderAdminSetup==='function'){renderAdminSetup();return}
  if(p==='home'){renderHome();window.scrollTo(0,0);return}
  if(p==='signin'||p==='signup'){openAccount(p);return}
  if(p==='audit'||p==='dates'&&!accountReady){if(typeof leaveLiveRoom==='function')leaveLiveRoom();stop();page=p;publicView='info';syncExperienceShell(accountReady?'member':'home');setExperiencePage(p);p==='audit'?renderProjectStatus():renderPhysicalPreview();window.scrollTo(0,0);return}

@@ -28,6 +28,7 @@ for(const [label,sources] of [
   await db.exec(await readFile('supabase/tests/access.sql','utf8'));
   await db.exec(await readFile('supabase/tests/accounts.sql','utf8'));
   await db.exec(await readFile('supabase/tests/community.sql','utf8'));
+  if(sources.some(path=>path.includes('administration')))await db.exec(await readFile('supabase/tests/administration.sql','utf8'));
   assert.equal((await db.query('select count(*)::int as n from auth.users')).rows[0].n,0);
   assert.equal((await db.query('select admissions_enabled from private.runtime_settings')).rows[0].admissions_enabled,false);
  }finally{await db.close();}

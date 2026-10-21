@@ -2,6 +2,7 @@ import {createServerClient,parseCookieHeader,serializeCookieHeader} from '@supab
 import {createClient} from '@supabase/supabase-js';
 import {usesSupabaseData,hasServerKey,serverRPC,requireActiveSession,reserveRecovery} from './supabase-server.mjs';
 import {supabaseAccountAPI} from './supabase-account.mjs';
+import {activateAdministrator} from './admin-setup.mjs';
 
 // Only the standalone build imports this adapter. Sites keeps its platform identity.
 const OAUTH_PROVIDERS=['google','apple','facebook'];
@@ -159,6 +160,12 @@ async function authenticationRoute(request,env,config,context){
   return Response.redirect(config.origin+'/',303);
  }
  checkMutation(request,config.origin);
+ if(path==='/api/auth/admin-setup'){
+  const body=await limitedJSON(request);
+  const password=validPassword(body.password,{newPassword:true});
+  await countAttempt(env,'admin-setup-ip',clientIP(request),10,900000);
+  return responseJSON(await activateAdministrator(env,{token:body.token,password}));
+ }
  if(path.startsWith('/api/auth/email/')){
   const available=await enabledProviders(config);
   if(!available.email)throw authFailure('email_not_enabled',409);

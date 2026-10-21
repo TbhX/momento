@@ -1,20 +1,22 @@
 # Momento — travaux de production
 
-## Livraison courante : comptes Supabase
+## Livraison courante : accès organisateur et modération
 
 Le propriétaire choisit Supabase pour gérer les utilisateurs et autorise l’ouverture simple par e-mail/mot de passe. L’achat du domaine est reporté.
 
 La cible Supabase suit désormais l’activation du fournisseur e-mail et l’autorisation de créer de nouveaux comptes. Le double interrupteur de l’hébergement a été retiré pour cette cible. Une fermeture des inscriptions laisse les membres existants se connecter ; les réglages inconnus ou indisponibles refusent les nouvelles créations. L’accueil et le formulaire affichent ces états.
 
-Le mode de départ n’effectue pas de vérification d’adresse et ne propose pas de récupération par e-mail ; l’interface annonce ces limites. Google et SMS restent reportés. Aucune modification de schéma, de rôle, de clé, d’offre payante ou de service externe.
+Le mode de départ n’effectue pas de vérification d’adresse et ne propose pas de récupération par e-mail ; l’interface annonce ces limites. Google et SMS restent reportés. Aucun service payant n’est activé.
 
-Validation : 161 tests locaux et build Pages réussis. Le formulaire d’inscription ouvert est visible sur le site publié. La création d’un compte synthétique et de son profil a été confirmée en production. L’essai a été interrompu : déconnexion/reconnexion et nettoyage restent à clôturer. Les essais complets des livraisons précédentes restent distincts ; aucun essai actuel sur téléphone physique n’est revendiqué.
+L’accès organisateur est désormais contrôlé par un rôle privé et une activation à code unique. Le propriétaire choisit son mot de passe sur le site. L’espace propose compteurs, signalements paginés, prise en charge et classement, suspension/rétablissement réservés aux administrateurs et historique des actions. Les comptes organisateurs sont protégés des suspensions par signalement. Les tests Gratuit/Premium restent des simulations sur l’appareil, sans achat ni droits réels.
+
+Validation : 168 tests locaux et build Pages réussis ; données déclaratives et migrations rejouées dans une base isolée. La migration a été appliquée et les accès privés vérifiés. L’identité organisateur est préparée via Auth avec session provisoire révoquée. Le précédent compte synthétique a été supprimé après autorisation. L’activation du propriétaire, la vérification du déploiement courant et les appareils physiques restent suivis séparément.
 
 ## Priorités suivantes
 
-1. Clôturer le nettoyage du compte synthétique, puis compléter le parcours déconnexion/reconnexion sur le site publié dans un essai maîtrisé.
+1. Vérifier l’interface publiée, puis laisser le propriétaire activer son compte et choisir son mot de passe.
 2. Finaliser les appels audio/vidéo et les rotations chronométrées, avec consentement et gestion des refus d’appareils.
-3. Raccorder l’administration et la modération, les signalements et suspensions.
+3. Compléter la gestion des salons et le suivi opérationnel de la modération.
 4. Compléter les préférences, la pagination, les matchs et messages réciproques.
 5. Tester les appareils, la supervision, les sauvegardes et la restauration ; finaliser les informations publiques.
 6. Valider séparément les paiements, droits, résiliations et remboursements avant toute vente.

@@ -8,6 +8,8 @@ Le démarrage choisi utilise une inscription immédiate sans vérification d’a
 
 Les protections de session, les limites de tentative et les contrôles d’accès sont conservés. Des réglages manquants, incohérents ou indisponibles ne permettent aucune création. Le formulaire et l’accueil distinguent l’inscription ouverte, les inscriptions fermées avec connexion disponible et le service indisponible.
 
-Validation de cette livraison : 161 tests locaux et build Pages réussis. Le formulaire d’inscription ouvert est visible sur le site publié. Un compte synthétique et son profil ont été créés sur les vraies API de production. L’interruption de cet essai ne permet pas de revendiquer la déconnexion/reconnexion ni le nettoyage final ; ce dernier reste à clôturer. Les essais complets de la livraison précédente constituent une preuve distincte. Les appareils physiques restent à tester.
+L’accès administrateur est attribué dans les données privées du serveur. Un code privé, expirant et utilisable une seule fois, permet au propriétaire de choisir son mot de passe sur le site. Un compte en attente d’activation n’a aucun accès organisateur. Les paramètres de rôle ou de formule envoyés par le navigateur ne donnent aucun droit. L’administration ne confère pas Premium.
+
+Validation de cette livraison : 168 tests locaux et build Pages réussis. Les tests couvrent les rôles, sessions révoquées, codes expirés et réutilisés, requêtes concurrentes d’activation, actions de modération et accès entre comptes. Le précédent compte synthétique a été supprimé après autorisation. L’identité organisateur a été créée via Auth, sans envoi d’e-mail, et sa session provisoire est révoquée. Le propriétaire doit encore réaliser son activation et les appareils physiques restent à tester.
 
 Les identifiants de projet, paramètres de sécurité détaillés et informations d’exploitation sont conservés dans le suivi privé.

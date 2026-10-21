@@ -1,5 +1,6 @@
 import {accountFailure,serverClient,serverRPC} from './supabase-server.mjs';
 import {supabaseCommunityAPI} from './supabase-community.mjs';
+import {supabaseAdminAPI} from './supabase-admin.mjs';
 
 const BUCKET='momento-media';
 const BACKGROUNDS=['none','blur','rose','night','studio','custom'];
@@ -159,6 +160,8 @@ export async function supabaseAccountAPI(request,env,context,userId,{readJSON,me
   return reply({...status,readiness:{video:false,payments:false,legal:false,enabled:false},realSessions:false});
  }
  if(path.startsWith('/api/service/')){
+  const adminResponse=await supabaseAdminAPI(request,env,{context,origin,readJSON});
+  if(adminResponse)return adminResponse;
   const response=await supabaseCommunityAPI(request,env,{context,origin,readJSON});
   if(response)return response;
   throw accountFailure('feature_not_ready');

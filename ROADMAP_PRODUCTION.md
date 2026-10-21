@@ -8,11 +8,11 @@ La cible Supabase suit désormais l’activation du fournisseur e-mail et l’au
 
 Le mode de départ n’effectue pas de vérification d’adresse et ne propose pas de récupération par e-mail ; l’interface annonce ces limites. Google et SMS restent reportés. Aucune modification de schéma, de rôle, de clé, d’offre payante ou de service externe.
 
-Validation : 161 tests locaux et build Pages réussis. Une lecture réelle d’Auth confirme que l’inscription simple est autorisée. Vérifier le résultat réellement publié avant d’annoncer l’ouverture du formulaire. Les essais des vraies API des livraisons précédentes restent distincts ; aucun nouvel essai complet ou sur téléphone physique n’est revendiqué à ce stade.
+Validation : 161 tests locaux et build Pages réussis. Le formulaire d’inscription ouvert est visible sur le site publié. La création d’un compte synthétique et de son profil a été confirmée en production. L’essai a été interrompu : déconnexion/reconnexion et nettoyage restent à clôturer. Les essais complets des livraisons précédentes restent distincts ; aucun essai actuel sur téléphone physique n’est revendiqué.
 
 ## Priorités suivantes
 
-1. Vérifier le déploiement et le parcours d’inscription, connexion et profil sur le site publié.
+1. Clôturer le nettoyage du compte synthétique, puis compléter le parcours déconnexion/reconnexion sur le site publié dans un essai maîtrisé.
 2. Finaliser les appels audio/vidéo et les rotations chronométrées, avec consentement et gestion des refus d’appareils.
 3. Raccorder l’administration et la modération, les signalements et suspensions.
 4. Compléter les préférences, la pagination, les matchs et messages réciproques.

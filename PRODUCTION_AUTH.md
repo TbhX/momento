@@ -8,6 +8,6 @@ Le démarrage choisi utilise une inscription immédiate sans vérification d’a
 
 Les protections de session, les limites de tentative et les contrôles d’accès sont conservés. Des réglages manquants, incohérents ou indisponibles ne permettent aucune création. Le formulaire et l’accueil distinguent l’inscription ouverte, les inscriptions fermées avec connexion disponible et le service indisponible.
 
-Validation de cette livraison : 161 tests locaux et build Pages réussis. Une lecture du vrai service Auth confirme l’inscription simple autorisée ; elle ne valide pas à elle seule un nouveau compte sur le site publié. Les essais de création/profil/suppression réalisés lors de la livraison précédente restent une preuve distincte. Le déploiement et les appareils doivent être contrôlés séparément.
+Validation de cette livraison : 161 tests locaux et build Pages réussis. Le formulaire d’inscription ouvert est visible sur le site publié. Un compte synthétique et son profil ont été créés sur les vraies API de production. L’interruption de cet essai ne permet pas de revendiquer la déconnexion/reconnexion ni le nettoyage final ; ce dernier reste à clôturer. Les essais complets de la livraison précédente constituent une preuve distincte. Les appareils physiques restent à tester.
 
 Les identifiants de projet, paramètres de sécurité détaillés et informations d’exploitation sont conservés dans le suivi privé.

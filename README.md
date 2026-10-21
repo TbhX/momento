@@ -24,7 +24,7 @@ Le build Pages produit `pages-dist` avec les fichiers du site et son Worker. Les
 
 ## Vérifications et disponibilité
 
-161 tests locaux réussis et build Pages réussi pour cette livraison. Une lecture du service Auth réel confirme que l’inscription simple est autorisée. Le formulaire publié doit être vérifié séparément après déploiement ; ces tests ne constituent pas un essai sur téléphone physique.
+161 tests locaux réussis et build Pages réussi pour cette livraison. Le site publié affiche le formulaire d’inscription ouvert. La création d’un compte synthétique et l’enregistrement de son profil ont été confirmés en production. L’essai complet a été interrompu avant validation de la déconnexion/reconnexion ; le nettoyage de ce compte reste à clôturer. Aucun essai sur téléphone physique n’est revendiqué.
 
 Les profils, médias, catalogue de salons, amis, invitations, blocages et signalements disposent de données persistantes. Les appels réels, rotations, administration/modération, messages, exploitation et paiements restent à finaliser. Les rencontres publiques et ventes restent fermées. Les rencontres physiques sont annoncées uniquement comme une évolution future.
 

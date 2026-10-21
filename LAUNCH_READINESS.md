@@ -8,8 +8,9 @@ Cette livraison simplifie la gestion des utilisateurs : Supabase Auth pilote l�
 - Lecture du vrai service Auth : inscription simple autorisée, Google/SMS inactifs.
 - Tests des erreurs et réglages inconnus, fermeture/réouverture des nouveaux comptes, connexion existante et messages de l’interface.
 - Protections antérieures de session, quotas et accès entre comptes conservées.
+- Formulaire d’inscription ouvert observé sur le site publié ; compte synthétique et profil persistés en production.
 
-Les contrôles de création, profils, relations et suppression sur les vraies API de la livraison précédente constituent une preuve séparée. La lecture actuelle d’Auth ne remplace pas un nouvel essai complet sur le site publié.
+L’essai actuel a été interrompu : déconnexion/reconnexion et nettoyage du compte synthétique restent à clôturer. Les contrôles complets de création, profils, relations et suppression sur les vraies API de la livraison précédente constituent une preuve séparée. Aucun essai actuel sur appareil physique n’est revendiqué.
 
 ## À terminer avant les rencontres publiques
 
@@ -17,4 +18,4 @@ Appels audio/vidéo et rotations, modération et administration, choix réciproq
 
 Les ventes et droits payants exigent leurs essais complets et leur validation distincte. Les rencontres physiques restent un teaser. Une PWA installable ne signifie pas que les applications sont publiées sur les stores.
 
-Le résultat du déploiement doit être vérifié directement ; un push GitHub n’est pas une preuve suffisante. Les détails opérationnels et identifiants d’infrastructure sont conservés dans le suivi privé.
+Le comportement d’inscription est confirmé sur le site publié ; l’identifiant exact du déploiement n’a pas été obtenu. Un push GitHub seul n’est pas une preuve suffisante. Les détails opérationnels et identifiants d’infrastructure sont conservés dans le suivi privé.

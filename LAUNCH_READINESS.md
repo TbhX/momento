@@ -4,16 +4,20 @@ Cette livraison apporte le cadre fixe, le menu latéral et la navigation entre p
 
 ## Vérifié localement
 
-- 181 tests et build Pages réussis.
+- 193 tests et build Pages réussis.
 - Clics rapides, réponses tardives, erreurs de chargement et retour arrière avec restauration du défilement interne.
 - Menu mobile au clavier : ouverture, boucle de focus, fermeture par Échap ou navigation.
 - Transitions immédiates, annulables et désactivées selon la préférence de réduction des animations.
 - Requêtes membre parallèles, partage limité aux GET en cours, invalidation après écriture et changement de compte ; aucune réponse privée terminée en cache.
 - Module vidéo absent du chargement initial, requête partagée, reprise après erreur et abandon sans ouverture de salle après navigation.
 - Protection des comptes, sessions, profils, quotas, rôles administrateur et accès entre comptes conservée par la suite de tests.
+- Palettes automatiques selon le genre déclaré, choix manuel séparé par compte, retour au mélange visiteur à la déconnexion et gestion du stockage indisponible.
+- Modification facultative du genre limitée au profil actif connecté, avec rejet des valeurs et champs étrangers ; aucune nouvelle colonne ni privilège.
 - Confidentialité intégrée à l’application, avec document complet accessible séparément.
 
-L’aperçu local est inaccessible au navigateur dans cet environnement. Le rendu réellement publié doit être contrôlé séparément du build et du push. Les simulations locales et tests isolés ne constituent pas un essai d’appel réel à deux appareils.
+Le cadre fixe publié a été observé dans un navigateur de bureau : accueil sans défilement à la taille contrôlée, concept, formules, formulaire d’inscription, confidentialité longue avec défilement interne et retour arrière. Le module de conférence est absent du chargement initial.
+
+L’aperçu local est inaccessible au navigateur dans cet environnement. La colonne de genre facultatif et ses droits existants ont été vérifiés par lecture du schéma distant, sans modifier de profil réel. Le contrôle du dernier lot de palettes reste distinct des tests automatisés et est consigné dans le suivi privé. Les simulations et tests isolés ne constituent pas un essai sur smartphone ou un appel réel à deux appareils.
 
 ## Acquis des livraisons précédentes
 

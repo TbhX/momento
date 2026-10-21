@@ -35,7 +35,7 @@ function fixture(){
     default:throw Error('Unexpected RPC '+u.pathname);
    }
   }
-  if(u.pathname==='/rest/v1/profiles')return json(f.profile);
+  if(u.pathname==='/rest/v1/profiles'){if(method==='PATCH'){if(f.denyProfilePatch)return json(null);f.profile.gender=body.gender;return json({gender:f.profile.gender})}return json(f.profile);}
   if(u.pathname==='/rest/v1/profile_media')return json(f.media);
   if(u.pathname==='/rest/v1/preferences'){
    if(method==='PATCH'){f.background=body.video_background;return new Response(null,{status:204});}
@@ -154,4 +154,21 @@ test('account deletion closes the profile, removes owned storage and deletes Aut
 test('real-session actions stay closed and account status comes from Postgres',async()=>run(async c=>{
  await registered(c);const status=await c.worker.fetch(req('/api/service/status',{cookie:c.b.header()}),c.e);const data=await status.json();assert.equal(data.realSessions,false);assert.equal(data.readiness.enabled,false);
  assert.equal((await c.worker.fetch(req('/api/service/events',{cookie:c.b.header()}),c.e)).status,503);
+}));
+
+test('optional gender changes update only the authenticated active profile through the member client',async()=>run(async c=>{
+ await registered(c);c.f.calls=[];
+ const response=await c.worker.fetch(req('/api/me',{method:'PATCH',cookie:c.b.header(),body:{gender:'woman'}}),c.e);assert.equal(response.status,200);assert.deepEqual(await response.json(),{gender:'woman'});
+ const patch=c.f.calls.find(call=>call.path==='/rest/v1/profiles'&&call.method==='PATCH');assert.deepEqual(patch.body,{gender:'woman'});assert.equal(patch.query.get('id'),'eq.'+id);assert.equal(patch.query.get('status'),'eq.active');assert.equal(patch.query.get('select'),'gender');assert.equal(patch.apikey,pub);assert.notEqual(patch.authorization,'Bearer '+secret);
+ const profile=await(await c.worker.fetch(req('/api/me',{cookie:c.b.header()}),c.e)).json();assert.equal(profile.profile.gender,'woman');
+}));
+test('gender changes reject unknown values, extra identity fields, cross-origin writes and missing profiles',async()=>run(async c=>{
+ let response=await c.worker.fetch(req('/api/me',{method:'PATCH',cookie:c.b.header(),body:{gender:'man'}}),c.e);assert.equal(response.status,403);
+ await registered(c);c.f.calls=[];
+ for(const body of [{gender:'invalid'},{gender:null},{gender:'man',id:'00000000-0000-4000-8000-000000000099'},{gender:'woman',role:'admin'},{gender:'man',premium:true}]){response=await c.worker.fetch(req('/api/me',{method:'PATCH',cookie:c.b.header(),body}),c.e);assert.equal(response.status,400)}
+ response=await c.worker.fetch(req('/api/me',{method:'PATCH',cookie:c.b.header(),body:{gender:'man'},headers:{Origin:'https://other.example'}}),c.e);assert.equal(response.status,403);assert.equal(c.f.calls.some(call=>call.method==='PATCH'),false);
+}));
+test('a suspended profile or a concurrent denied profile update cannot report a successful gender change',async()=>run(async c=>{
+ await registered(c);c.f.profile.status='suspended';assert.equal((await c.worker.fetch(req('/api/me',{method:'PATCH',cookie:c.b.header(),body:{gender:'man'}}),c.e)).status,403);
+ c.f.profile.status='active';c.f.denyProfilePatch=true;const response=await c.worker.fetch(req('/api/me',{method:'PATCH',cookie:c.b.header(),body:{gender:'man'}}),c.e);assert.equal(response.status,403);assert.equal(c.f.profile.gender,'unspecified');
 }));

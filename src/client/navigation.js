@@ -15,6 +15,7 @@ const MomentoNavigation=(()=>{
   finish(ticket,restore,focusFrom);return result;
  }
  document.addEventListener('keydown',event=>{if(!menuOpen)return;if(event.key==='Escape'){event.preventDefault();closeMenu(true);return}if(event.key!=='Tab')return;const items=[...panel.querySelectorAll('a[href],button:not([disabled])')].filter(el=>!el.closest('[hidden]')&&el.tabIndex!==-1),first=items[0],last=items.at(-1);if(!first)return;if(event.shiftKey&&(document.activeElement===first||!panel.contains(document.activeElement))){event.preventDefault();last.focus()}else if(!event.shiftKey&&(document.activeElement===last||!panel.contains(document.activeElement))){event.preventDefault();first.focus()}});
+ document.addEventListener('click',event=>{const link=event.target.closest?.('a[href]');if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||!link||link.target&&link.target!=='_self')return;if(link.getAttribute('href')==='/confidentialite.html'){event.preventDefault();go('privacy')}});
  small.addEventListener?.('change',()=>closeMenu(true));reduced.addEventListener?.('change',()=>{if(reduced.matches){animation?.cancel();animation=null}});closeMenu();
  return{run,toggleMenu,closeMenu};
 })();

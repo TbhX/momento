@@ -8,6 +8,8 @@ L’application utilise un cadre fixe avec menu latéral et vues centrales. Sur 
 
 Les transitions rosées respectent la réduction des animations. Les lectures des espaces membre sont parallélisées et seules les requêtes GET encore en cours sont partagées. Aucune réponse privée terminée n’est mise en cache. Le module de conférence est chargé à la demande pour un appel ou un effet vidéo.
 
+Les visiteurs voient un mélange rose et bleu pastel. Dans « Mon profil », le genre facultatif règle la palette automatique : rose pour une femme, bleu pour un homme, mélange pour les autres choix. Chacun peut préférer une autre ambiance. Le genre est enregistré sur le compte ; le choix manuel de couleur reste sur cet appareil, séparé par compte. La déconnexion remet immédiatement le mélange visiteur.
+
 ## Comptes et fonctionnalités
 
 Supabase Auth gère les comptes par e-mail et mot de passe. Le site suit les réglages natifs d’activation et d’inscription ; fermer les nouveaux comptes laisse les membres existants se connecter. L’adresse n’est pas vérifiée et la récupération par e-mail n’est pas encore disponible. Le formulaire annonce ces limites. Google et SMS sont reportés.
@@ -28,6 +30,6 @@ pnpm run build:pages
 
 Le build produit `pages-dist` avec le site et son Worker. Les paramètres sensibles restent dans les services ; aucun secret ou export personnel ne doit être ajouté au dépôt.
 
-181 tests locaux et build Pages réussis pour cette livraison. Les tests couvrent notamment les navigations concurrentes, les erreurs, la séparation des comptes, le retour arrière, le clavier, la réduction des animations et le chargement vidéo différé. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
+193 tests locaux et build Pages réussis pour cette livraison. Les tests couvrent notamment les navigations concurrentes, les erreurs, la séparation des comptes, le retour arrière, le clavier, la réduction des animations le chargement vidéo différé, les palettes par compte et les accès au genre facultatif. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
 
 Voir aussi [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md), [SUPABASE_SETUP.md](SUPABASE_SETUP.md) et [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md). Les détails d’exploitation sont conservés dans le suivi privé.

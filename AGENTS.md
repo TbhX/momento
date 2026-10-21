@@ -11,3 +11,5 @@ Les mises à jour de routine sont autorisées après vérification. Vérifier au
 Ne pas activer de service payant, de vente ou de rencontre réelle sans les validations correspondantes. La partie physique reste un teaser. Une PWA installable n’est pas une publication App Store ou Google Play. Voir les documents publics de suivi pour les limites fonctionnelles courantes.
 
 Conserver le cadre d’application fixe demandé par le propriétaire : menu latéral, vues centrales, tiroir mobile et défilement interne pour les contenus longs. Garder l’identité romantique de Momento, des transitions qui ne retardent pas la navigation et la préférence de réduction des animations. Ne pas revenir à une longue page d’accueil. Ne jamais accélérer la navigation par un cache persistant de données privées.
+
+Conserver les palettes pastel demandées : duo rose/bleu pour les visiteurs ; automatique selon le genre déclaré du profil (femme rose, homme bleu, autres choix duo), avec palette personnelle modifiable. Ne jamais déduire le genre du prénom, de la photo ou des envies de rencontre. Les couleurs ne modifient aucun droit et les préférences locales doivent rester séparées par compte.

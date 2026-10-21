@@ -133,8 +133,17 @@ export async function supabaseAccountAPI(request,env,context,userId,{readJSON,me
    const deletionPending=account.row?.status==='deleted';
    return reply({authenticated:true,persistence:'supabase',deletionPending,accountRef:'supabase:'+userId,profile:deletionPending?null:account.profile,registeredAt:account.row?.created_at??null});
   }
-  mutation(request,origin,['POST','DELETE']);
+  mutation(request,origin,['POST','PATCH','DELETE']);
   if(request.method==='DELETE')return deleteAccount(env,context,userId);
+  if(request.method==='PATCH'){
+   const data=await readJSON(request);
+   if(Object.keys(data).some(key=>key!=='gender')||!['woman','man','nonbinary','other','unspecified'].includes(data.gender))throw accountFailure('invalid_gender',400);
+   if(!(await readAccount(context.supabase,userId)).profile)throw accountFailure('registration_required',403);
+   const {data:saved,error}=await context.supabase.from('profiles').update({gender:data.gender}).eq('id',userId).eq('status','active').select('gender').maybeSingle();
+   if(error)throw accountFailure(error.code==='42501'?'account_unavailable':'account_service_unavailable',error.code==='42501'?403:503);
+   if(!saved)throw accountFailure('account_unavailable',403);
+   return reply({gender:saved.gender});
+  }
   const data=await readJSON(request),age=Number(data.age);
   if(!Number.isInteger(age)||age<18||age>100||typeof data.name!=='string'||typeof data.city!=='string'||data.adultConfirmed!==true||data.storageConsent!==true)throw accountFailure('invalid_registration',400);
   await userRPC(context.supabase,'save_profile',{p_name:data.name,p_age:age,p_city:data.city,p_adult:true,p_storage:true});

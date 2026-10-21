@@ -11,21 +11,22 @@ const legacy={fetch(){throw Error('Legacy D1/R2 backend must not receive this re
 function browser(){const cookies=new Map();return{header(){return [...cookies].map(([k,v])=>k+'='+v).join('; ')},apply(response){for(const value of response.headers.getSetCookie()){const item=value.split(';')[0],split=item.indexOf('=');if(/Max-Age=0(?:;|$)/.test(value))cookies.delete(item.slice(0,split));else cookies.set(item.slice(0,split),item.slice(split+1));}},get size(){return cookies.size;}};}
 function req(path,{method='GET',body,cookie='',headers={}}={}){return new Request(origin+path,{method,headers:{...(method==='GET'?{}:{Origin:origin,'X-Momento-Request':'1','Content-Type':'application/json'}),...(cookie?{Cookie:cookie}:{}),...headers},...(body===undefined?{}:{body:typeof body==='string'||body instanceof Uint8Array?body:JSON.stringify(body)})});}
 function fixture(){
- const f={calls:[],active:true,profile:null,media:[],background:'none',counter:0,tooMany:false,deleted:false,storage:[],exportRows:null,sessionFailures:0};
+ const f={calls:[],active:true,profile:null,media:[],background:'none',counter:0,authCounters:new Map(),tooMany:false,deleted:false,storage:[],exportRows:null,sessionFailures:0,settings:{external:{email:true,google:false,phone:false},mailer_autoconfirm:false,disable_signup:false}};
  const token={access_token:['eyJhbGciOiJIUzI1NiJ9',Buffer.from(JSON.stringify({sub:id,exp:Math.floor(Date.now()/1000)+3600,session_id:sid})).toString('base64url'),'fixture'].join('.'),refresh_token:'fixture-refresh',expires_in:3600,token_type:'bearer',user};
  f.fetch=async(input,init={})=>{
   const u=new URL(typeof input==='string'?input:input.url),headers=new Headers(init.headers),method=init.method||'GET';
   let body=null;if(typeof init.body==='string'&&headers.get('content-type')?.includes('json'))body=JSON.parse(init.body);
   f.calls.push({path:u.pathname,query:u.searchParams,method,body,apikey:headers.get('apikey'),authorization:headers.get('authorization')});
   const json=value=>Response.json(value,{headers:{'X-Supabase-Api-Version':'2024-01-01'}});
-  if(u.pathname==='/auth/v1/settings')return json({external:{email:true,google:false,phone:false},mailer_autoconfirm:false});
+  if(u.pathname==='/auth/v1/settings')return f.settingsResponse?.()??json(f.settings);
   if(u.pathname==='/auth/v1/token')return json(token);
+  if(u.pathname==='/auth/v1/signup')return json(token);
   if(u.pathname==='/auth/v1/user')return f.deleted?new Response('{}',{status:401}):json(user);
   if(u.pathname==='/auth/v1/logout'){f.active=false;return new Response(null,{status:204});}
   if(u.pathname==='/auth/v1/admin/users/'+id&&method==='DELETE'){f.deleted=true;return json({user});}
   if(u.pathname.startsWith('/rest/v1/rpc/')){
    switch(u.pathname.split('/').at(-1)){
-    case 'server_auth_attempt':return json(f.tooMany?100:++f.counter);
+    case 'server_auth_attempt':{f.counter++;const count=(f.authCounters.get(body.p_key)||0)+1;f.authCounters.set(body.p_key,count);return json(f.tooMany?100:count);}
     case 'server_session_active':if(f.sessionFailures-->0)return Response.json({message:'temporarily unavailable'},{status:503});return json(f.active);
     case 'server_begin_account_deletion':if(f.profile)f.profile.status='deleted';return json(null);
     case 'save_profile':f.profile={id,display_name:body.p_name,age:body.p_age,city:body.p_city,status:'active',created_at:'2026-10-20T08:00:00Z',profession:'',bio:'',gender:'unspecified'};return json(f.profile);
@@ -58,6 +59,57 @@ test('Supabase backend requires a server key and supports guarded email without 
  const e=env();assert.equal(externalAuthConfiguration(e).email,true);assert.equal(externalAuthConfiguration(e).configured,true);
  delete e.SUPABASE_SECRET_KEY;assert.equal(externalAuthConfiguration(e).configured,false);assert.equal(externalAuthConfiguration(e).email,false);
 });
+test('native Supabase email settings control the target despite an old disabled hosting switch',async()=>run(async c=>{
+ c.e.AUTH_EMAIL_ENABLED='false';c.e.AUTH_OAUTH_PROVIDERS='';
+ assert.equal(externalAuthConfiguration(c.e).emailSource,'supabase');
+ let response=await c.worker.fetch(req('/api/auth/config'),c.e),config=await response.json();
+ assert.equal(config.email,true);assert.equal(config.emailSignup,true);assert.deepEqual(config.providers,[]);
+ assert.match(response.headers.get('cache-control'),/no-store/);
+ c.f.settings.external.email=false;
+ config=await(await c.worker.fetch(req('/api/auth/config'),c.e)).json();assert.equal(config.email,false);assert.equal(config.emailSignup,false);
+ c.f.calls=[];
+ const denied=await c.worker.fetch(req('/api/auth/email/signin',{method:'POST',body:{email:user.email,password:'A test password 2026'}}),c.e);
+ assert.equal(denied.status,409);assert.equal(c.f.calls.some(call=>call.path==='/auth/v1/token'),false);
+ assert.ok(c.f.calls.every(call=>call.apikey===pub));
+ c.f.settings.external.email=true;delete c.e.AUTH_EMAIL_ENABLED;
+ assert.equal((await(await c.worker.fetch(req('/api/auth/config'),c.e)).json()).emailSignup,true);
+}));
+test('closing native signups blocks creation before counters while existing members can still sign in',async()=>run(async c=>{
+ c.f.settings.disable_signup=true;c.f.calls=[];
+ const config=await(await c.worker.fetch(req('/api/auth/config'),c.e)).json();assert.equal(config.email,true);assert.equal(config.emailSignup,false);
+ const response=await c.worker.fetch(req('/api/auth/email/signup',{method:'POST',body:{email:user.email,password:'A test password 2026',disable_signup:false,role:'admin'}}),c.e);
+ assert.equal(response.status,409);assert.deepEqual(await response.json(),{error:'signup_closed'});
+ assert.equal(c.f.calls.some(call=>call.path==='/auth/v1/signup'||call.path.endsWith('/server_auth_attempt')),false);
+ const signin=await c.worker.fetch(req('/api/auth/email/signin',{method:'POST',body:{email:user.email,password:'A test password 2026'}}),c.e);assert.equal(signin.status,200);
+ assert.doesNotMatch(await signin.text(),/access_token|refresh_token/);
+ assert.equal((await c.worker.fetch(req('/api/me',{cookie:c.b.header()}),c.e)).status,200);
+}));
+test('unknown signup settings fail closed and a mode mismatch never sends credentials upstream',async()=>run(async c=>{
+ for(const value of [undefined,null,'false',0]){
+  c.f.settings.disable_signup=value;
+  const config=await(await c.worker.fetch(req('/api/auth/config'),c.e)).json();assert.equal(config.email,true);assert.equal(config.emailSignup,false);
+  assert.equal((await c.worker.fetch(req('/api/auth/email/signup',{method:'POST',body:{email:user.email,password:'A test password 2026'}}),c.e)).status,409);
+ }
+ c.f.settings.disable_signup=false;c.f.settings.mailer_autoconfirm=true;
+ const config=await(await c.worker.fetch(req('/api/auth/config'),c.e)).json();assert.equal(config.email,false);assert.equal(config.emailSignup,false);
+ assert.equal(c.f.calls.some(call=>call.path==='/auth/v1/signup'),false);
+}));
+test('Supabase basic signup works with the stale hosting flag and keeps credentials in HttpOnly cookies',async()=>run(async c=>{
+ c.e.AUTH_EMAIL_ENABLED='false';c.e.AUTH_EMAIL_MODE='basic';c.e.AUTH_OAUTH_PROVIDERS='';c.f.settings.mailer_autoconfirm=true;c.f.calls=[];
+ const response=await c.worker.fetch(req('/api/auth/email/signup',{method:'POST',body:{email:user.email,password:'A test password 2026',role:'admin',premium:true}}),c.e);
+ assert.equal(response.status,200);assert.deepEqual(await response.json(),{authenticated:true,next:'profile',emailVerified:false});
+ assert.ok(response.headers.getSetCookie().some(value=>/HttpOnly/.test(value)&&/Secure/.test(value)&&/SameSite=lax/i.test(value)));
+ const signup=c.f.calls.find(call=>call.path==='/auth/v1/signup');assert.equal(signup.apikey,pub);assert.equal(signup.body.code_challenge??null,null);assert.deepEqual(signup.body.data,{});
+ assert.equal(c.f.calls.some(call=>/recover|resend/.test(call.path)),false);
+}));
+test('unavailable, malformed or oversized native settings cannot enable signup or expose diagnostics',async()=>run(async c=>{
+ for(const response of [()=>Response.json({detail:'private upstream detail'},{status:503}),()=>new Response('{oops',{headers:{'Content-Type':'application/json'}}),()=>Response.json([]),()=>new Response(' '.repeat(32769),{headers:{'Content-Type':'application/json'}})]){
+  c.f.settingsResponse=response;c.f.calls=[];
+  const config=await c.worker.fetch(req('/api/auth/config'),c.e);assert.equal(config.status,503);assert.deepEqual(await config.json(),{error:'auth_provider_unavailable'});
+  const signup=await c.worker.fetch(req('/api/auth/email/signup',{method:'POST',body:{email:user.email,password:'A test password 2026'}}),c.e);assert.equal(signup.status,503);
+  assert.equal(c.f.calls.some(call=>call.path==='/auth/v1/signup'||call.path.endsWith('/server_auth_attempt')),false);
+ }
+}));
 test('profile writes use the member JWT, ignore supplied roles/ids and never fall back to legacy storage',async()=>run(async c=>{
  const result=await c.worker.fetch(req('/api/me',{method:'POST',cookie:c.b.header(),headers:{'oai-authenticated-user-id':'forged'},body:{name:'Alice',age:28,city:'Paris',adultConfirmed:true,storageConsent:true,id:sid,role:'admin',premium:true}}),c.e);
  assert.equal(result.status,200);assert.equal((await result.json()).profile.name,'Alice');

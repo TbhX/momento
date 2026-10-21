@@ -6,7 +6,7 @@ import {JSDOM} from 'jsdom';
 const source=await readFile(new URL('../src/client/auth.js',import.meta.url),'utf8');
 async function ui(configuration={},respond=()=>Response.json({accepted:true}),url='https://momento.example/'){
  const dom=new JSDOM('<!doctype html><html lang="fr"><body><main id="app"></main></body></html>',{url,runScripts:'outside-only'}),{window}=dom,calls=[];
- window.fetch=async(path,options={})=>{if(path==='/api/auth/config')return Response.json({mode:'supabase',configured:true,providers:['google'],sms:false,email:true,recovery:false,...configuration});const call={path,options,body:options.body?JSON.parse(options.body):null};calls.push(call);return respond(call)};
+ window.fetch=async(path,options={})=>{if(path==='/api/auth/config')return Response.json({mode:'supabase',configured:true,providers:['google'],sms:false,email:true,emailSignup:true,recovery:false,...configuration});const call={path,options,body:options.body?JSON.parse(options.body):null};calls.push(call);return respond(call)};
  window.eval(source+'\nwindow.auth=MomentoAuth;');
  const render=()=>{window.document.querySelector('#app').innerHTML=window.auth.markup();window.auth.bind()};window.renderAccountGate=render;window.clearLocalBeforeLogout=()=>{window.localCleared=true};
  await window.auth.init();render();return{dom,window,document:window.document,auth:window.auth,calls,render};
@@ -17,6 +17,18 @@ async function submit(window,form){form.requestSubmit();await settle()}
 test('email fields only appear when configured and enabled, alongside enabled providers',async()=>{
  const hidden=await ui({email:false});assert.equal(hidden.document.querySelector('#authEmailForm'),null);assert.ok(hidden.document.querySelector('[data-provider="google"]'));hidden.dom.window.close();
  const unavailable=await ui({configured:false});assert.equal(unavailable.document.querySelector('input[type="password"]'),null);assert.match(unavailable.document.body.textContent,/en préparation/);unavailable.dom.window.close();
+});
+test('native signup closure hides registration while preserving login and blocking programmatic signup selection',async()=>{
+ const view=await ui({emailSignup:false,emailMode:'basic',emailRecovery:false}),{document,auth}=view;
+ assert.ok(document.querySelector('#authEmailForm'));assert.equal(document.querySelector('[data-email-mode="signup"]'),null);assert.match(document.querySelector('#authSignupClosed').textContent,/temporairement fermées/);
+ assert.equal(auth.emailEnabled(),true);assert.equal(auth.signupEnabled(),false);auth.selectMode('signup');assert.equal(document.querySelector('#authEmailSubmit').textContent,'Se connecter');
+ assert.equal(document.querySelector('#authConfirmationField').hidden,true);view.dom.window.close();
+ const unknown=await ui({emailSignup:undefined});assert.equal(unknown.auth.signupEnabled(),false);assert.equal(unknown.document.querySelector('[data-email-mode="signup"]'),null);unknown.dom.window.close();
+});
+test('a signup closed after rendering produces a clear message and clears both password fields',async()=>{
+ const view=await ui({},()=>Response.json({error:'signup_closed'},{status:409})),{document,window,calls}=view;
+ document.querySelector('[data-email-mode="signup"]').click();const form=document.querySelector('#authEmailForm');form.elements.email.value='member@example.test';form.elements.password.value='A unique fixture phrase 2026';form.elements.confirmation.value=form.elements.password.value;
+ await submit(window,form);assert.equal(calls.length,1);assert.match(document.querySelector('#authError').textContent,/temporairement fermées/);assert.equal(form.elements.password.value,'');assert.equal(form.elements.confirmation.value,'');view.dom.window.close();
 });
 test('signup validates confirmation, sends only credentials to the same-origin API and clears password fields',async()=>{
  const view=await ui(),{document,window,calls}=view;document.querySelector('[data-email-mode="signup"]').click();const form=document.querySelector('#authEmailForm');form.elements.email.value='member@example.test';form.elements.password.value='A unique fixture phrase 2026';form.elements.confirmation.value='A different fixture phrase';

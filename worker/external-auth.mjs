@@ -27,8 +27,11 @@ export function externalAuthConfiguration(env){
  const emailBudget=Number(env.AUTH_EMAIL_DAILY_BUDGET||20);
  const emailMode=env.AUTH_EMAIL_MODE||'confirmed';
  if(!['confirmed','basic'].includes(emailMode))issues.push('email_mode');
- const email=env.AUTH_EMAIL_ENABLED==='true'&&guarded&&Number.isInteger(emailBudget)&&emailBudget>=1&&emailBudget<=500;
- return{configured:issues.length===0,issues,url:supabaseURL?.origin,origin:origin?.origin,providers,sms,dailyBudget,email,emailBudget,emailMode};
+ // The Supabase-backed target follows the native email provider switch. The
+ // old environment switch remains limited to the legacy D1 adapter.
+ const emailSource=usesSupabaseData(env)?'supabase':'environment';
+ const email=(emailSource==='supabase'||env.AUTH_EMAIL_ENABLED==='true')&&guarded&&Number.isInteger(emailBudget)&&emailBudget>=1&&emailBudget<=500;
+ return{configured:issues.length===0,issues,url:supabaseURL?.origin,origin:origin?.origin,providers,sms,dailyBudget,email,emailBudget,emailMode,emailSource};
 }
 
 function cookieContext(request,config){
@@ -44,10 +47,10 @@ function cookieContext(request,config){
  return{supabase,jar,put,finish(response){const headers=new Headers(response.headers);for(const value of outgoing.values())headers.append('Set-Cookie',value);for(const [key,value] of Object.entries(AUTH_HEADERS))headers.set(key,value);return new Response(response.body,{status:response.status,statusText:response.statusText,headers})}};
 }
 
-async function limitedJSON(request){
+async function limitedJSON(request,limit=4096){
  if(!request.headers.get('Content-Type')?.startsWith('application/json'))throw authFailure('json_required',415);
  const reader=request.body?.getReader();let bytes=0,parts=[];
- if(reader)try{for(;;){const {value,done}=await reader.read();if(done)break;bytes+=value.byteLength;if(bytes>4096){await reader.cancel();throw authFailure('body_too_large',413)}parts.push(value)}}finally{reader.releaseLock()}
+ if(reader)try{for(;;){const {value,done}=await reader.read();if(done)break;bytes+=value.byteLength;if(bytes>limit){await reader.cancel();throw authFailure('body_too_large',413)}parts.push(value)}}finally{reader.releaseLock()}
  try{const buffer=new Uint8Array(bytes);let pos=0;for(const part of parts){buffer.set(part,pos);pos+=part.length}const value=JSON.parse(new TextDecoder().decode(buffer));if(!value||typeof value!=='object'||Array.isArray(value))throw 0;return value}catch{throw authFailure('invalid_json')}
 }
 function checkMutation(request,origin){if(request.method!=='POST')throw authFailure('method_not_allowed',405);if(request.headers.get('Origin')!==origin||request.headers.get('X-Momento-Request')!=='1'||request.headers.get('Sec-Fetch-Site')==='cross-site')throw authFailure('invalid_origin',403)}
@@ -98,7 +101,14 @@ async function countAttempt(env,label,subject,limit,period){
 const clientIP=request=>request.headers.get('CF-Connecting-IP')||'unknown'; // Trusted on the Cloudflare standalone target; never X-Forwarded-For.
 function verifiedIdentity(user){if(!user||user.is_anonymous||(!user.email_confirmed_at&&!user.phone_confirmed_at)||!user.aud||user.aud!=='authenticated'||! /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id))return null;return{id:'supabase:'+user.id,email:user.email_confirmed_at?user.email||'':''}}
 async function enabledProviders(config){
- try{const r=await fetch(config.url+'/auth/v1/settings',{headers:{apikey:config.key},signal:AbortSignal.timeout(10000)});if(!r.ok)throw 0;const settings=await r.json();const email=config.email&&settings.external?.email===true&&settings.mailer_autoconfirm===(config.emailMode==='basic');return{providers:config.providers.filter(p=>settings.external?.[p]===true),sms:config.sms&&settings.external?.phone===true,email,emailMode:config.emailMode,emailRecovery:email&&config.emailMode==='confirmed'}}catch{throw authFailure('auth_provider_unavailable',503)}
+ try{
+  const r=await fetch(config.url+'/auth/v1/settings',{headers:{apikey:config.key},cache:'no-store',signal:AbortSignal.timeout(10000)});if(!r.ok)throw 0;
+  const settings=await limitedJSON(r,32768);
+  const email=config.email&&settings.external?.email===true&&settings.mailer_autoconfirm===(config.emailMode==='basic');
+  // Closing new signups in Supabase must leave existing members able to sign
+  // in. Missing or malformed signup settings never authorize account creation.
+  return{providers:config.providers.filter(p=>settings.external?.[p]===true),sms:config.sms&&settings.external?.phone===true,email,emailSignup:email&&settings.disable_signup===false,emailMode:config.emailMode,emailRecovery:email&&config.emailMode==='confirmed'};
+ }catch{throw authFailure('auth_provider_unavailable',503)}
 }
 
 async function basicSignUp(config,context,env,email,password){
@@ -122,7 +132,7 @@ async function basicSignUp(config,context,env,email,password){
 async function authenticationRoute(request,env,config,context){
  const path=new URL(request.url).pathname;
  if(path==='/api/auth/config'&&request.method==='GET'){
-  if(!config.configured)return responseJSON({mode:'supabase',configured:false,providers:[],sms:false,email:false,emailRecovery:false,recovery:false});
+  if(!config.configured)return responseJSON({mode:'supabase',configured:false,providers:[],sms:false,email:false,emailSignup:false,emailRecovery:false,recovery:false});
   const providers=await enabledProviders(config);let recovery=false;
   if(providers.emailRecovery&&context.jar.get(RECOVERY_COOKIE))try{await recoveryGrant(context,env);recovery=true}catch{context.put(RECOVERY_COOKIE,'',{maxAge:0})}
   return responseJSON({mode:'supabase',configured:true,...providers,recovery});
@@ -131,7 +141,7 @@ async function authenticationRoute(request,env,config,context){
  const auth=context.supabase.auth;
  if(path==='/api/auth/recovery/callback'&&request.method==='GET'){
   let flow;
-  try{if(!config.email||config.emailMode==='basic')throw 0;flow=await readEmailRecord(env,context.jar.get(EMAIL_FLOW_COOKIE),'recover',600000);if(flow.verifier!==await verifierFingerprint(context,env))throw 0}catch{context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});return Response.redirect(config.origin+'/?authError=recovery_expired',303)}
+  try{if(!config.email||config.emailMode==='basic'||!(await enabledProviders(config)).emailRecovery)throw 0;flow=await readEmailRecord(env,context.jar.get(EMAIL_FLOW_COOKIE),'recover',600000);if(flow.verifier!==await verifierFingerprint(context,env))throw 0}catch{context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});return Response.redirect(config.origin+'/?authError=recovery_expired',303)}
   context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});
   const url=new URL(request.url),code=url.searchParams.get('code'),flowId=url.searchParams.get('sb_flow_id');
   if(!code||code.length>2048)return Response.redirect(config.origin+'/?authError=recovery_expired',303);
@@ -150,7 +160,9 @@ async function authenticationRoute(request,env,config,context){
  }
  checkMutation(request,config.origin);
  if(path.startsWith('/api/auth/email/')){
-  if(!config.email||!(await enabledProviders(config)).email)throw authFailure('email_not_enabled',409);
+  const available=await enabledProviders(config);
+  if(!available.email)throw authFailure('email_not_enabled',409);
+  if(path==='/api/auth/email/signup'&&!available.emailSignup)throw authFailure('signup_closed',409);
   if(config.emailMode==='basic'&&!['/api/auth/email/signup','/api/auth/email/signin'].includes(path))throw authFailure('email_links_not_enabled',409);
   if(path==='/api/auth/email/password'){
    const {password}=await limitedJSON(request);validPassword(password,{newPassword:true});

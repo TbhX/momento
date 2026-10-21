@@ -11,7 +11,7 @@ const index=process.argv.indexOf('--env-file');
 if(index<0||!process.argv[index+1])throw Error('A private JSON environment file is required.');
 const supplied=JSON.parse(await readFile(process.argv[index+1],'utf8'));
 if(supplied.SUPABASE_URL!=='https://yhtngbkjqffkhfjadjzp.supabase.co')throw Error('This verifier is scoped to the dedicated Momento project.');
-const env={...supplied,SUPABASE_DATA_ENABLED:'true',AUTH_EMAIL_ENABLED:'true',AUTH_SMS_ENABLED:'false'};
+const env={...supplied,SUPABASE_DATA_ENABLED:'true',AUTH_EMAIL_ENABLED:'false',AUTH_SMS_ENABLED:'false'};
 const transportFetch=globalThis.fetch;
 globalThis.fetch=async(input,init)=>{
  const path=new URL(typeof input==='string'?input:input.url).pathname;

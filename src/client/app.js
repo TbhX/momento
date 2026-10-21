@@ -15,15 +15,16 @@ const $=s=>document.querySelector(s);const app=$('#app');const events=[
 
 let state;try{state=JSON.parse(localStorage.getItem('momento-v1'))||{profile:null,bookings:[]}}catch{state={profile:null,bookings:[]}}state=Momento.cleanState(state);let filter='Tous',page='home',timer=null,round=0,seconds=300,phase='waiting',votes=[],stream=null,accelerated=false,mediaGeneration=0,sessionStart=0,currentSessionId=null,blockedRounds=new Set();const names=['Camille','Alex','Charlie','Lou','Sacha','Noa','Morgan','Eden','Alix','Andrea'];const prompts=['Quel morceau te met instantanément de bonne humeur ?','Ton endroit préféré pour déconnecter ?','Un voyage que tu rêves de faire ?','Ton dimanche idéal ressemble à quoi ?','Quel petit plaisir ne te lasse jamais ?','Le dernier concert qui t’a marqué·e ?','Une chose que tu aimerais apprendre ?','Plutôt dîner improvisé ou sortie préparée ?','Quel film pourrais-tu revoir dix fois ?','Qu’aimerais-tu faire découvrir à quelqu’un ?'];
 function save(){try{localStorage.setItem('momento-v1',JSON.stringify(state))}catch{toast('Stockage indisponible : vos changements restent dans cet onglet.')}$('#count').textContent=state.bookings.length}function escapeHTML(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function toast(t){$('#toast').textContent=t;$('#toast').style.display='block';setTimeout(()=>$('#toast').style.display='none',3500)}function stop(){mediaGeneration++;clearInterval(timer);timer=null;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}
-function go(p){
+function go(p){return typeof MomentoNavigation!=='undefined'?MomentoNavigation.run(p,()=>navigatePage(p)):navigatePage(p)}
+function navigatePage(p){
  p=typeof normalizeExperiencePage==='function'?normalizeExperiencePage(p):p;
  if(p==='adminSetup'&&typeof renderAdminSetup==='function'){renderAdminSetup();return}
  if(p==='home'){renderHome();window.scrollTo(0,0);return}
  if(p==='signin'||p==='signup'){openAccount(p);return}
- if(p==='audit'||p==='dates'&&!accountReady){if(typeof leaveLiveRoom==='function')leaveLiveRoom();stop();page=p;publicView='info';syncExperienceShell(accountReady?'member':'home');setExperiencePage(p);p==='audit'?renderProjectStatus():renderPhysicalPreview();window.scrollTo(0,0);return}
+ if(['concept','plans','privacy','audit','dates'].includes(p)){if(typeof leaveLiveRoom==='function')leaveLiveRoom();stop();page=p;publicView='info';syncExperienceShell(accountReady?'member':'home');setExperiencePage(p);if(p==='audit')renderProjectStatus();else if(p==='dates')renderPhysicalPreview();else return renderDiscovery(p);return}
  if(!accountReady){pendingMemberPage=p;openAccount('signin');return}
  if(typeof syncExperienceShell==='function')syncExperienceShell('member');if(typeof setExperiencePage==='function')setExperiencePage(p);
- if(typeof liveNavigate==='function'&&p!=='profile'){liveNavigate(p);return}
+ if(typeof liveNavigate==='function'&&p!=='profile'){return liveNavigate(p)}
  if(typeof leaveLiveRoom==='function')leaveLiveRoom();stop();page=p;
  if(p==='events')renderEvents();if(p==='profile')renderProfile();if(p==='bookings')renderBookings();if(p==='matches')renderMatches();if(p==='offers')renderOffers();window.scrollTo(0,0);
 }

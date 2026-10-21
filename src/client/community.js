@@ -1,7 +1,7 @@
 /* Shared account data. Demo state is opened only by an explicit demo action. */
 let communityData=null;
-async function communityNavigate(view,generation){
- const data=await api('/community');if(generation!==liveGeneration)return;
+async function communityNavigate(view,generation,preparedData){
+ const data=preparedData||await api('/community');if(generation!==liveGeneration)return;
  communityData=data;document.body.classList.remove('salon-mode');
  const heading={salon:['LES SALONS MOMENTO','Un point commun. Un premier bonjour.','Choisissez votre univers et découvrez les personnes présentes.'],friends:['MES LIENS','Les bonjours qui restent.','Vos amis et demandes sont liés à votre compte, sur tous vos appareils.'],videos:['MES INVITATIONS','Prenez le temps de vous retrouver.','Proposez un échange à un ami, puis attendez son accord.'],shop:['LA BOUTIQUE','Plus de liberté, bientôt.','Les paiements et les droits payants sont encore en préparation.']}[view];
  app.innerHTML=`<section class="profile-page-heading"><span class="home-eyebrow">${heading[0]}</span><h1>${heading[1]}</h1><p>${heading[2]}</p></section>${communityQuota()}<div class="community-toolbar"><button class="secondary" onclick="go('${view}')">Actualiser</button><button class="text-button" onclick="communityDemo('${view}')">Essayer la démonstration ↗</button></div><div id="communityContent"></div>`;

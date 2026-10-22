@@ -1,23 +1,23 @@
 # Momento — travaux de production
 
-## Livraison courante : navigation et palettes pastel
+## Livraison courante : aperçu et tête-à-tête guidé
 
-L’interface conserve l’identité romantique de Momento dans un cadre fixe : menu latéral, vues centrales et tiroir mobile. L’accueil compact remplace la longue page de présentation. Concept, formules et confidentialité s’ouvrent dans le même espace. Les contenus longs restent accessibles par défilement interne.
+Un parcours membre permet de préparer un appel audio, vidéo ou les deux, puis d’essayer une rencontre avec des profils explicitement fictifs. Les appareils ne sont demandés que sur action, peuvent être coupés et réactivés séparément, et sont libérés à la sortie. Les dispositions côte à côte, verticale et miniature, le cadrage et le plein écran sont disponibles. Le concept public montre une illustration sans ouvrir d’appareil.
 
-Le mode visiteur mélange rose et bleu pastel. Le genre facultatif du profil pilote la palette automatique, avec choix manuel Rose, Bleu ou Duo sur cet appareil. Aucun genre n’est déduit du prénom ou des envies de rencontre. Le changement de genre utilise le compte actif et ses règles d’accès, sans modifier les droits. La colonne existait déjà ; aucune migration n’est nécessaire.
+Le tour standard reste de 5 minutes, suivi de 30 secondes pour choisir. Like et swipe sont gratuits ; deux likes sont nécessaires au match. Les propositions suivantes demandent une acceptation puis une confirmation distincte. Un accès privé existant à 1,90 € couvre le lien ami et un échange privé de 3 minutes avec cette personne, hors rotation. Un second rendez-vous de 15 minutes utilise un autre accès. Premium inclut ces options simulées. Refus, annulation ou expiration ne consomment rien ; accepter est gratuit pour le destinataire. Les répétitions ne débitent pas deux fois. Les profils bloqués ne reviennent pas.
 
-Les transitions ne retardent pas le changement de vue, s’annulent à la navigation suivante et respectent la réduction des animations. Une vue en cours de chargement conserve son contenu précédent désactivé, avec indication d’attente retardée. Le menu reste disponible. Seule la dernière destination peut afficher sa réponse.
+Ce parcours est une répétition locale. Aucun paiement, droit serveur, appel distant ni entrée réelle de salon n’est créé. Le futur contrôle serveur doit relier matchs, consentements, présence, crédits et sessions de façon atomique. Les relations persistantes existantes n’appliquent pas encore ce nouveau tarif.
 
-Le chargement du statut et des liens est parallèle. Les GET simultanés identiques partagent uniquement leur requête en cours. Les écritures et changements de compte invalident les lectures en attente ; aucune réponse privée terminée n’est conservée en cache. Le module vidéo est chargé à la demande, avec possibilité de réessayer. Quitter pendant ce chargement ne peut pas ouvrir ensuite une salle.
+Le cadre fixe, le menu latéral, le tiroir mobile, les transitions et les palettes pastel de la livraison précédente sont conservés. Le genre est facultatif et déclaré ; la palette peut être choisie personnellement sans modifier les droits. Les lectures privées ne sont pas conservées en cache.
 
-Validation locale : 193 tests réussis et build Pages réussi. Le cadre publié a été vérifié dans le navigateur sur ordinateur : accueil, concept, formules, inscription, confidentialité, retour arrière et défilement interne. L’aperçu local est inaccessible dans l’environnement courant. Le contrôle du dernier lot de palettes est suivi séparément de ces tests ; aucun essai sur appareil physique n’est annoncé.
+Validation locale : 210 tests réussis et build Pages réussi. Les appareils sont testés avec des flux simulés ; aucun essai sur téléphone physique ou appel distant à deux appareils n’est annoncé. La vérification visuelle du code publié est distincte et consignée dans le suivi privé.
 
-L’accès organisateur et la modération de la livraison précédente restent protégés par les rôles privés. Les simulations Gratuit/Premium restent distinctes des droits du compte. L’inscription suit les réglages natifs e-mail de Supabase, avec un profil complété avant les espaces membre. Aucun domaine acheté ni service payant activé.
+L’accès organisateur reste protégé par les rôles privés. Les inscriptions suivent les réglages natifs e-mail, avec profil complété avant les espaces membre. Les simulations Gratuit/Premium ne modifient pas les droits réels.
 
 ## Priorités suivantes
 
-1. Contrôler le nouveau rendu publié et poursuivre les parcours mobile/ordinateur.
-2. Finaliser les appels audio/vidéo et les rotations chronométrées, avec consentement et gestion des refus d’appareils.
+1. Relier le parcours à deux participants réels : ordonnanceur, rotations, déconnexion et consentements contrôlés côté serveur.
+2. Implémenter les matchs et droits de connexion persistants, les débits atomiques et les confirmations sans double consommation avant toute activation payante.
 3. Compléter la gestion des salons et le suivi opérationnel de la modération.
 4. Compléter les préférences, la pagination, les matchs et messages réciproques.
 5. Tester les appareils, la supervision, les sauvegardes et la restauration ; finaliser les informations publiques.

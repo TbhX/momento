@@ -16,7 +16,7 @@ function api(path,body){
  })().finally(()=>{if(!reading)invalidateServiceReads();else if(pendingServiceReads.get(path)?.promise===promise)pendingServiceReads.delete(path)});
  if(reading)pendingServiceReads.set(path,{promise,controller});return promise;
 }
-function leaveLiveRoom(){if(typeof callCleanupLayout==='function')callCleanupLayout();if(typeof appearanceCleanup==='function')appearanceCleanup();if(typeof salonCleanup==='function')salonCleanup();if(typeof stopVideoExperience==='function')stopVideoExperience();liveGeneration++;clearTimeout(livePoll);livePoll=null;liveRoomKey='';liveEventId=null;const frame=$('#liveVideo');if(frame)frame.remove()}
+function leaveLiveRoom(){if(typeof callDemoCleanup==='function')callDemoCleanup();if(typeof callCleanupLayout==='function')callCleanupLayout();if(typeof appearanceCleanup==='function')appearanceCleanup();if(typeof salonCleanup==='function')salonCleanup();if(typeof stopVideoExperience==='function')stopVideoExperience();liveGeneration++;clearTimeout(livePoll);livePoll=null;liveRoomKey='';liveEventId=null;const frame=$('#liveVideo');if(frame)frame.remove()}
 async function liveNavigate(p){
  if(!accountReady){renderAccountGate();return}leaveLiveRoom();stop();page=p;const gen=liveGeneration;
  try{

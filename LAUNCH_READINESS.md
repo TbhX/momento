@@ -1,10 +1,14 @@
 # État de préparation de Momento
 
-Cette livraison apporte le cadre fixe, le menu latéral et la navigation entre panneaux, avec des transitions dans l’identité de Momento. Les longues listes et formulaires restent accessibles dans la zone centrale. Le menu devient un tiroir sur mobile.
+Cette livraison ajoute le tête-à-tête guidé et ses dispositions vidéo au cadre fixe de Momento. Les appareils se testent sur action explicite ; les profils distants et achats restent fictifs. Le menu latéral, le tiroir mobile et les palettes pastel sont conservés.
 
 ## Vérifié localement
 
-- 193 tests et build Pages réussis.
+- 210 tests et build Pages réussis.
+- Aperçu membre avec appareils éteints, autorisations séparées, arrêt/réactivation et libération après navigation, y compris pour une autorisation tardive.
+- Tours de 5 minutes, choix de 30 secondes, deux likes, consentements explicites et présence pour un échange privé.
+- Refus, blocages, annulation, expiration, absence de crédit et répétition de confirmation sans double consommation ; un même accès couvre lien ami et échange privé de 3 minutes, puis un second rendez-vous nécessite un autre accès.
+- Swipe horizontal sans intercepter le défilement vertical, accès réservé au profil complété et aucune API de service appelée par l’illustration publique.
 - Clics rapides, réponses tardives, erreurs de chargement et retour arrière avec restauration du défilement interne.
 - Menu mobile au clavier : ouverture, boucle de focus, fermeture par Échap ou navigation.
 - Transitions immédiates, annulables et désactivées selon la préférence de réduction des animations.
@@ -17,7 +21,7 @@ Cette livraison apporte le cadre fixe, le menu latéral et la navigation entre p
 
 Le cadre fixe publié a été observé dans un navigateur de bureau : accueil sans défilement à la taille contrôlée, concept, formules, formulaire d’inscription, confidentialité longue avec défilement interne et retour arrière. Le module de conférence est absent du chargement initial.
 
-L’aperçu local est inaccessible au navigateur dans cet environnement. La colonne de genre facultatif et ses droits existants ont été vérifiés par lecture du schéma distant, sans modifier de profil réel. Le contrôle du dernier lot de palettes reste distinct des tests automatisés et est consigné dans le suivi privé. Les simulations et tests isolés ne constituent pas un essai sur smartphone ou un appel réel à deux appareils.
+L’aperçu local est inaccessible au navigateur dans cet environnement. La colonne de genre facultatif et ses droits existants ont été vérifiés par lecture du schéma distant, sans modifier de profil réel. Les palettes publiées ont été contrôlées séparément dans le navigateur. Le contrôle du nouveau parcours d’appel et de son illustration publique est consigné dans le suivi privé. Les simulations et tests isolés ne constituent pas un essai sur smartphone ou un appel réel à deux appareils.
 
 ## Acquis des livraisons précédentes
 
@@ -27,6 +31,6 @@ Les vérifications de l’authentification, de l’activation administrateur et 
 
 ## À terminer avant les rencontres publiques
 
-Appels audio/vidéo et rotations, gestion complète des salons et traitement opérationnel des signalements, choix réciproques et messages, pagination, essais iOS/Android, exploitation et restauration, informations publiques de l’exploitant et revue des conditions.
+Connexion réelle de deux participants et rotations côté serveur, matchs et droits de connexion persistants avec débits atomiques, gestion complète des salons et traitement opérationnel des signalements, choix réciproques et messages, pagination, essais iOS/Android, exploitation et restauration, informations publiques de l’exploitant et revue des conditions.
 
-Les ventes et droits payants exigent leur validation distincte. Les rencontres physiques restent un teaser. Une PWA installable ne signifie pas que les applications sont publiées sur les stores. Les identifiants et détails d’exploitation ne sont pas documentés dans ce dépôt public.
+Le parcours guidé fonctionne en local et n’applique pas son tarif aux relations persistantes existantes. Les ventes et droits payants exigent leur validation distincte. Les rencontres physiques restent un teaser. Une PWA installable ne signifie pas que les applications sont publiées sur les stores. Les identifiants et détails d’exploitation ne sont pas documentés dans ce dépôt public.

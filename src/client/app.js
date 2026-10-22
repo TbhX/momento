@@ -23,6 +23,7 @@ function navigatePage(p){
  if(p==='signin'||p==='signup'){openAccount(p);return}
  if(['concept','plans','privacy','audit','dates'].includes(p)){if(typeof leaveLiveRoom==='function')leaveLiveRoom();stop();page=p;publicView='info';syncExperienceShell(accountReady?'member':'home');setExperiencePage(p);if(p==='audit')renderProjectStatus();else if(p==='dates')renderPhysicalPreview();else return renderDiscovery(p);return}
  if(!accountReady){pendingMemberPage=p;openAccount('signin');return}
+ if(p==='callDemo'&&typeof callDemoOpen==='function'){callDemoOpen();return}
  if(typeof syncExperienceShell==='function')syncExperienceShell('member');if(typeof setExperiencePage==='function')setExperiencePage(p);
  if(typeof liveNavigate==='function'&&p!=='profile'){return liveNavigate(p)}
  if(typeof leaveLiveRoom==='function')leaveLiveRoom();stop();page=p;

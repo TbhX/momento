@@ -1,10 +1,14 @@
 # État de préparation de Momento
 
-Cette livraison ajoute le tête-à-tête guidé et ses dispositions vidéo au cadre fixe de Momento. Les appareils se testent sur action explicite ; les profils distants et achats restent fictifs. Le menu latéral, le tiroir mobile et les palettes pastel sont conservés.
+Cette livraison ajoute les rappels et la fenêtre de choix en fin de tête-à-tête au cadre fixe de Momento. Les appareils se testent sur action explicite ; les profils distants et achats restent fictifs. Le menu latéral, le tiroir mobile et les palettes pastel sont conservés.
 
 ## Vérifié localement
 
-- 210 tests et build Pages réussis.
+- 220 tests et build Pages réussis.
+- Rappel à 60 secondes, fenêtre à 30 secondes et compteur de décision distinct, ouverture unique par stade, fermeture et réouverture manuelles.
+- Une confirmation en cours reste visible ; fermer une demande annule son attente. Une confirmation tardive ne crée ni achat fictif ni action pour une autre personne.
+- Focus stable pendant le décompte, fermeture du panneau sans perdre la disposition vidéo, retour d’onglet masqué sans alerte périmée et reprise après un échange privé terminé.
+- Coût affiché selon le solde Gratuit ou Premium d’essai ; aucune proposition payante avant le match réciproque.
 - Aperçu membre avec appareils éteints, autorisations séparées, arrêt/réactivation et libération après navigation, y compris pour une autorisation tardive.
 - Tours de 5 minutes, choix de 30 secondes, deux likes, consentements explicites et présence pour un échange privé.
 - Refus, blocages, annulation, expiration, absence de crédit et répétition de confirmation sans double consommation ; un même accès couvre lien ami et échange privé de 3 minutes, puis un second rendez-vous nécessite un autre accès.

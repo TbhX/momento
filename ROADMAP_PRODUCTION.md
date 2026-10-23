@@ -1,6 +1,10 @@
 # Momento — travaux de production
 
-## Livraison courante : aperçu et tête-à-tête guidé
+## Livraison courante : choix à l’approche de la fin
+
+Le chrono distingue maintenant un rappel discret à 60 secondes, une fenêtre de choix à 30 secondes et les 30 secondes de décision après l’échange. La fenêtre peut être fermée et rouverte ; elle ne réapparaît pas en boucle au même stade et ne remplace pas une confirmation en cours. Elle montre les likes gratuits avant un match, puis les propositions disponibles et leur coût après deux oui. Aucune action n’est achetée automatiquement. Sur petit écran, elle prend la forme d’un panneau en bas de l’écran, avec défilement interne si nécessaire.
+
+Les clics tardifs synchronisent d’abord le tour courant. Une demande privée non confirmée est annulée à son échéance ; les appareils ne peuvent pas être rallumés pendant le choix ou après la fin. Revenir d’un onglet masqué ne montre pas l’alerte d’une ancienne rencontre. Le focus reste stable pendant le décompte et les contrôles de démonstration sont repliés. Le concept public permet de voir une illustration de cette alerte.
 
 Un parcours membre permet de préparer un appel audio, vidéo ou les deux, puis d’essayer une rencontre avec des profils explicitement fictifs. Les appareils ne sont demandés que sur action, peuvent être coupés et réactivés séparément, et sont libérés à la sortie. Les dispositions côte à côte, verticale et miniature, le cadrage et le plein écran sont disponibles. Le concept public montre une illustration sans ouvrir d’appareil.
 
@@ -10,7 +14,7 @@ Ce parcours est une répétition locale. Aucun paiement, droit serveur, appel di
 
 Le cadre fixe, le menu latéral, le tiroir mobile, les transitions et les palettes pastel de la livraison précédente sont conservés. Le genre est facultatif et déclaré ; la palette peut être choisie personnellement sans modifier les droits. Les lectures privées ne sont pas conservées en cache.
 
-Validation locale : 210 tests réussis et build Pages réussi. Les appareils sont testés avec des flux simulés ; aucun essai sur téléphone physique ou appel distant à deux appareils n’est annoncé. La vérification visuelle du code publié est distincte et consignée dans le suivi privé.
+Validation locale : 220 tests réussis et build Pages réussi. Les appareils sont testés avec des flux simulés ; aucun essai sur téléphone physique ou appel distant à deux appareils n’est annoncé. La vérification visuelle du code publié est distincte et consignée dans le suivi privé.
 
 L’accès organisateur reste protégé par les rôles privés. Les inscriptions suivent les réglages natifs e-mail, avec profil complété avant les espaces membre. Les simulations Gratuit/Premium ne modifient pas les droits réels.
 

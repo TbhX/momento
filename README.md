@@ -16,6 +16,8 @@ Le menu « Essayer un appel » ouvre une répétition guidée, après inscriptio
 
 Les profils de cet essai sont fictifs : tours de 5 minutes, choix pendant 30 secondes, likes privés, match après deux oui et swipe gratuit. Après un match, chaque suite demande encore deux accords et une confirmation du coût. Un accès privé à 1,90 € débloque le lien ami et un échange privé de 3 minutes avec la même personne, en quittant la rotation. Un second rendez-vous de 15 minutes utilise un nouvel accès. Premium inclut ces options dans la simulation ; accepter ne fait pas payer le destinataire. Aucun achat ni appel réel n’est effectué.
 
+À 60 secondes de la fin, un rappel discret apparaît. À 30 secondes, une fenêtre refermable présente les choix adaptés au match, puis les 30 secondes de décision disposent de leur propre compteur. « Mes choix » permet de la rouvrir. Une confirmation en cours reste prioritaire ; aucune fenêtre ne consomme d’accès. Le clavier, le retour depuis un onglet masqué et les clics après expiration sont pris en compte. Les contrôles de simulation sont repliés pour alléger l’écran.
+
 Ces règles sont testables localement. Leur contrôle serveur, les droits payants et la connexion des deux participants restent à intégrer avant ouverture.
 
 ## Comptes et fonctionnalités
@@ -38,6 +40,6 @@ pnpm run build:pages
 
 Le build produit `pages-dist` avec le site et son Worker. Les paramètres sensibles restent dans les services ; aucun secret ou export personnel ne doit être ajouté au dépôt.
 
-210 tests locaux et build Pages réussis pour cette livraison. Ils couvrent notamment la navigation, les accès entre comptes, les palettes, les appareils et autorisations tardives, les consentements, les chronos, les blocages et la protection contre les confirmations répétées sans double consommation d’accès. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
+220 tests locaux et build Pages réussis pour cette livraison. Ils couvrent notamment la navigation, les accès entre comptes, les palettes, les appareils et autorisations tardives, les consentements, les chronos, les blocages et la protection contre les confirmations répétées sans double consommation d’accès. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
 
 Voir aussi [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md), [SUPABASE_SETUP.md](SUPABASE_SETUP.md) et [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md). Les détails d’exploitation sont conservés dans le suivi privé.

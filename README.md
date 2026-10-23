@@ -22,7 +22,7 @@ Pour prolonger, le demandeur confirme « Envoyer » avec son coût conditionnel 
 
 Masquer l’encart conserve une invitation en attente ; « Annuler la demande » la retire. Une confirmation répétée ne consomme pas deux fois et un tarif plus élevé ou un avantage expiré exigent une nouvelle autorisation. Les contrôles de démonstration permettent d’essayer une demande envoyée ou reçue. L’exemple public montre les deux côtés sans ouvrir d’appareil ni créer de compte.
 
-Ces règles sont testables localement. Leur contrôle serveur, les droits payants et la connexion des deux participants restent à intégrer avant ouverture.
+Ces règles sont testables localement. Un socle serveur distinct conserve les votes réciproques, l’autorisation du demandeur, l’acceptation et un accès privé de trois minutes. Il peut consommer un crédit prépayé du demandeur de façon atomique ; le destinataire n’est jamais débité. Il reste désactivé. Le raccordement du parcours aux appels réels et le paiement bancaire conditionnel restent à intégrer avant ouverture.
 
 ## Comptes et fonctionnalités
 
@@ -44,6 +44,6 @@ pnpm run build:pages
 
 Le build produit `pages-dist` avec le site et son Worker. Les paramètres sensibles restent dans les services ; aucun secret ou export personnel ne doit être ajouté au dépôt.
 
-234 tests locaux et build Pages réussis pour cette livraison. Ils couvrent notamment la navigation, les accès entre comptes, les palettes, les appareils et autorisations tardives, les consentements, les chronos, les blocages et la protection contre les confirmations répétées sans double consommation d’accès. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
+287 tests locaux et build Pages réussis pour cette livraison. Ils couvrent notamment la navigation, les accès entre comptes, les palettes, les appareils et autorisations tardives, les consentements, les chronos, les blocages et la protection contre les confirmations répétées sans double consommation d’accès. Les scénarios serveur de prolongation sont rejoués sur le schéma déclaré et sur les migrations, dans des bases de test isolées. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
 
 Voir aussi [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md), [SUPABASE_SETUP.md](SUPABASE_SETUP.md) et [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md). Les détails d’exploitation sont conservés dans le suivi privé.

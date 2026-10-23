@@ -1,10 +1,16 @@
 # État de préparation de Momento
 
-Cette livraison remplace la grande fenêtre par un petit encart dans la vidéo et explicite la prise en charge des prolongations par leur demandeur. Les appareils se testent sur action explicite ; les profils distants et achats restent fictifs. Le menu latéral, le tiroir mobile et les palettes pastel sont conservés.
+Cette livraison ajoute le socle serveur des prolongations, conservé désactivé : votes réciproques, coût autorisé, acceptation de l’invité et consommation atomique du crédit du demandeur. Le petit encart vidéo et la répétition locale sont conservés. Les profils distants et achats de l’essai restent fictifs ; aucun appel réel n’est ouvert.
 
 ## Vérifié localement
 
-- 234 tests et build Pages réussis.
+- 287 tests et build Pages réussis.
+- Schéma déclaré et migrations rejoués séparément : identité issue d’Auth, tables privées, votes réciproques et acceptation réservée au destinataire.
+- Débit prépayé du demandeur et accès privé enregistrés ensemble ; réponse rejouée sans nouveau débit ni nouveau chrono, avec restitution du même accès.
+- Départ, blocage, suspension, délai dépassé, nouvelle rotation, session révoquée, crédit perdu ou environnement modifié sans consommation incorrecte.
+- Premium contrôlé pour le demandeur, coût autorisé plafonné, aucune recherche d’un autre payeur ni achat automatique ; export personnel sans référence de session.
+- Deux participants retirés du salon à l’acceptation, accès privé de trois minutes distinct du tour, nouvelle entrée refusée pendant cet accès.
+- Verrous de fermeture côté serveur et base, refus et annulation possibles même pendant une fermeture ; aucun jeton média créé par ces opérations.
 - Prolongation envoyée ou reçue : seul le demandeur utilise un accès après acceptation, jamais l’invité ; aucun achat fictif avant sa réponse.
 - Refus, annulation, expiration, ancien jeton, réponse répétée et solde insuffisant ne créent aucun débit incorrect ni prolongation partielle.
 - Coût figé au moment de l’autorisation ; aucun achat plus cher si le tarif augmente, aucun achat automatique si un accès prépayé disparaît.
@@ -37,8 +43,10 @@ Comptes e-mail/mot de passe pilotés par Supabase Auth, profils et images privé
 
 Les vérifications de l’authentification, de l’activation administrateur et des API distantes des livraisons précédentes sont distinctes de la vérification visuelle de cette livraison. Les simulations Gratuit/Premium n’accordent aucun droit payant.
 
+La migration des prolongations est appliquée. La lecture du projet hébergé confirme les deux autorisations fermées, les nouvelles tables privées protégées et les opérations refusées aux visiteurs anonymes. Aucun compte, crédit, rencontre ou appel de test n’a été créé dans cette base pour cette livraison. Les scénarios d’acceptation et de consommation ont été exécutés uniquement dans les bases isolées de test.
+
 ## À terminer avant les rencontres publiques
 
-Connexion réelle de deux participants et rotations côté serveur, matchs et droits de connexion persistants avec débits atomiques, gestion complète des salons et traitement opérationnel des signalements, choix réciproques et messages, pagination, essais iOS/Android, exploitation et restauration, informations publiques de l’exploitant et revue des conditions.
+Connexion réelle de deux participants, ordonnanceur et rotations, raccordement du socle de consentement aux médias et essais concurrents, gestion complète des salons et traitement opérationnel des signalements, messages, pagination, essais iOS/Android, exploitation et restauration, informations publiques de l’exploitant et revue des conditions.
 
-Le parcours guidé fonctionne en local et n’applique pas son tarif aux relations persistantes existantes. Les ventes et droits payants exigent leur validation distincte. Les rencontres physiques restent un teaser. Une PWA installable ne signifie pas que les applications sont publiées sur les stores. Les identifiants et détails d’exploitation ne sont pas documentés dans ce dépôt public.
+Le parcours guidé fonctionne en local et n’applique pas son tarif aux relations persistantes existantes. Le socle serveur désactivé utilise des crédits prépayés ; le paiement bancaire conditionnel et les ventes exigent leur intégration et validation distinctes. Les tests isolés ne prouvent ni une charge concurrente réelle ni un appel distant. Les rencontres physiques restent un teaser. Une PWA installable ne signifie pas que les applications sont publiées sur les stores. Les identifiants et détails d’exploitation ne sont pas documentés dans ce dépôt public.

@@ -32,6 +32,7 @@ function fixture(){
     case 'save_profile':f.profile={id,display_name:body.p_name,age:body.p_age,city:body.p_city,status:'active',created_at:'2026-10-20T08:00:00Z',profession:'',bio:'',gender:'unspecified'};return json(f.profile);
     case 'commit_profile_media':{const old=f.media.find(m=>m.kind===body.p_kind)?.object_path??null;f.media=f.media.filter(m=>m.kind!==body.p_kind);if(body.p_path)f.media.push({kind:body.p_kind,object_path:body.p_path,updated_at:'2026-10-20T09:00:00Z'});return json(old);}
     case 'account_status':return json({premium:false,admin:false,unlimited:false,dailyLimit:1,used:0,bookingLimit:1});
+    case 'export_call_extensions':return json([{id:'fixture-extension',outgoing:true,status:'declined',chargedCredits:0}]);
     default:throw Error('Unexpected RPC '+u.pathname);
    }
   }
@@ -154,6 +155,23 @@ test('account deletion closes the profile, removes owned storage and deletes Aut
 test('real-session actions stay closed and account status comes from Postgres',async()=>run(async c=>{
  await registered(c);const status=await c.worker.fetch(req('/api/service/status',{cookie:c.b.header()}),c.e);const data=await status.json();assert.equal(data.realSessions,false);assert.equal(data.readiness.enabled,false);
  assert.equal((await c.worker.fetch(req('/api/service/events',{cookie:c.b.header()}),c.e)).status,503);
+}));
+
+test('conditional extension endpoints cannot bypass an expired Auth session or closed admissions',async()=>run(async c=>{
+ await registered(c);c.f.calls=[];
+ const path='/api/service/extensions/propose',body={encounter:id,requestId:sid,maxCredits:1};
+ let response=await c.worker.fetch(req(path,{method:'POST',cookie:c.b.header(),body}),c.e);
+ assert.equal(response.status,503);assert.deepEqual(await response.json(),{error:'call_extensions_disabled'});
+ c.f.active=false;response=await c.worker.fetch(req(path,{method:'POST',cookie:c.b.header(),body}),c.e);assert.equal(response.status,401);
+ assert.equal(c.f.calls.some(x=>x.path.endsWith('/propose_call_extension')),false);
+}));
+
+test('personal exports include conditional call consent through the member RPC',async()=>run(async c=>{
+ await registered(c);c.f.calls=[];
+ const response=await c.worker.fetch(req('/api/me/export',{cookie:c.b.header()}),c.e);assert.equal(response.status,200);
+ const data=await response.json();assert.deepEqual(data.data.call_extensions,[{id:'fixture-extension',outgoing:true,status:'declined',chargedCredits:0}]);
+ const call=c.f.calls.find(x=>x.path.endsWith('/export_call_extensions'));assert.equal(call.apikey,pub);assert.notEqual(call.authorization,'Bearer '+secret);
+ assert.match(response.headers.get('cache-control'),/no-store/);
 }));
 
 test('optional gender changes update only the authenticated active profile through the member client',async()=>run(async c=>{

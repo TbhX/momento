@@ -1,6 +1,6 @@
 import {accountFailure} from './supabase-server.mjs';
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const knownErrors={registration_required:403,peer_unavailable:403,request_unavailable:409,request_cooldown:429,invitation_limit:409,rate_limit:429,invalid_request:400,admissions_disabled:503,room_unavailable:409,media_mode_unavailable:409,age_not_eligible:403,already_in_room:409,room_full:409,daily_limit_reached:403,request_conflict:409};
+const knownErrors={registration_required:403,peer_unavailable:403,request_unavailable:409,request_cooldown:429,invitation_limit:409,rate_limit:429,invalid_request:400,admissions_disabled:503,room_unavailable:409,media_mode_unavailable:409,age_not_eligible:403,already_in_room:409,already_in_private_call:409,room_full:409,daily_limit_reached:403,request_conflict:409};
 async function rpc(client,name,args={}){
  const {data,error}=await client.rpc(name,args);
  if(error)throw accountFailure(Object.hasOwn(knownErrors,error.message)?error.message:'community_unavailable',knownErrors[error.message]??503);

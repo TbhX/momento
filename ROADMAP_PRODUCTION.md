@@ -1,6 +1,12 @@
 # Momento — travaux de production
 
-## Livraison courante : prolongation discrète et payeur explicite
+## Livraison courante : consentement et crédits contrôlés côté serveur
+
+Un socle serveur désactivé prépare les échanges réels : votes privés et match après deux oui, demande de prolongation liée à la rencontre et à la session du demandeur, plafond explicite de zéro ou un crédit, réponse réservée à l’invité. La demande ne réserve ni ne consomme de crédit. L’acceptation valide de nouveau les deux présences, les délais, le match, le Premium et le solde, puis inscrit ensemble le débit du demandeur et l’accès privé de trois minutes. Une réponse rejouée restitue le même accès et la même échéance. Aucun achat bancaire ou jeton vidéo n’est créé.
+
+Départ, blocage, suspension, nouvelle rotation, expiration, révocation de la session ou changement d’environnement empêchent une acceptation périmée. Une perte du Premium ne peut pas augmenter le coût autorisé. Les deux participants quittent la rotation après acceptation, sans modifier la durée du tour collectif ; une autre entrée est refusée pendant l’échange privé. L’export personnel inclut les accords, sans exposer les références de session. Les tables restent privées, sans accès direct pour les membres. L’activation exige des autorisations serveur et base distinctes ; elles restent fermées.
+
+## Parcours d’essai conservé
 
 Les rappels à 60 puis 30 secondes aboutissent à un petit encart dans la vidéo. Il laisse l’appel visible, les commandes accessibles et le focus à sa place. Le fond général n’est plus assombri. Fermer l’encart évite sa réapparition pendant le tour ; « Mes choix » reste disponible. Les autres options sont repliées.
 
@@ -12,18 +18,18 @@ Un parcours membre permet de préparer un appel audio, vidéo ou les deux, puis 
 
 Le tour standard reste de 5 minutes, suivi de 30 secondes pour choisir. Like et swipe sont gratuits ; deux likes sont nécessaires au match. La prolongation demande une autorisation du payeur avant envoi puis l’acceptation de l’invité. Les autres propositions conservent leurs accords distincts. Un accès privé existant à 1,90 € couvre le lien ami et un échange privé de 3 minutes avec cette personne, hors rotation. Un second rendez-vous de 15 minutes utilise un autre accès. Premium inclut ces options simulées. Refus, annulation ou expiration ne consomment rien ; accepter est gratuit pour le destinataire. Les répétitions ne débitent pas deux fois. Les profils bloqués ne reviennent pas.
 
-Ce parcours est une répétition locale. Aucun paiement, droit serveur, appel distant ni entrée réelle de salon n’est créé. Le futur contrôle serveur doit relier matchs, identité des deux acteurs, coût autorisé, consentements, présence, crédits et sessions de façon atomique, puis intégrer le paiement conditionnel sans débit avant acceptation. Les relations persistantes existantes n’appliquent pas encore ce nouveau tarif.
+Ce parcours reste une répétition locale. Ses boutons ne créent aucun paiement, droit serveur, appel distant ni entrée réelle de salon. Le socle serveur décrit plus haut n’est pas encore raccordé à cette interface. Il utilise uniquement des crédits déjà disponibles ; le paiement bancaire conditionnel reste à intégrer sans débit avant acceptation. Les relations persistantes existantes n’appliquent pas encore ce nouveau tarif.
 
 Le cadre fixe, le menu latéral, le tiroir mobile, les transitions et les palettes pastel de la livraison précédente sont conservés. Le genre est facultatif et déclaré ; la palette peut être choisie personnellement sans modifier les droits. Les lectures privées ne sont pas conservées en cache.
 
-Validation locale : 234 tests réussis et build Pages réussi. Les appareils sont testés avec des flux simulés ; aucun essai sur téléphone physique ou appel distant à deux appareils n’est annoncé. La vérification visuelle du code publié est distincte et consignée dans le suivi privé.
+Validation locale : 287 tests réussis et build Pages réussi. Le contrôle serveur est testé sur le schéma déclaré et les migrations, avec des comptes et présences synthétiques dans des bases isolées. Les appareils sont testés avec des flux simulés ; aucun essai sur téléphone physique, charge concurrente réelle ou appel distant à deux appareils n’est annoncé. La vérification du déploiement est distincte et consignée dans le suivi privé.
 
 L’accès organisateur reste protégé par les rôles privés. Les inscriptions suivent les réglages natifs e-mail, avec profil complété avant les espaces membre. Les simulations Gratuit/Premium ne modifient pas les droits réels.
 
 ## Priorités suivantes
 
-1. Relier le parcours à deux participants réels : ordonnanceur, rotations, déconnexion et consentements contrôlés côté serveur.
-2. Implémenter les matchs et droits de connexion persistants, les débits atomiques et les confirmations sans double consommation avant toute activation payante.
+1. Relier le parcours et le socle de consentement à deux participants réels : ordonnanceur, rotations, déconnexion et connexion média autorisée côté serveur.
+2. Valider les scénarios concurrents et les interruptions à deux appareils ; intégrer ensuite le paiement conditionnel et les droits complets avant toute activation payante.
 3. Compléter la gestion des salons et le suivi opérationnel de la modération.
 4. Compléter les préférences, la pagination, les matchs et messages réciproques.
 5. Tester les appareils, la supervision, les sauvegardes et la restauration ; finaliser les informations publiques.

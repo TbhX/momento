@@ -1,12 +1,16 @@
 # État de préparation de Momento
 
-Cette livraison ajoute les rappels et la fenêtre de choix en fin de tête-à-tête au cadre fixe de Momento. Les appareils se testent sur action explicite ; les profils distants et achats restent fictifs. Le menu latéral, le tiroir mobile et les palettes pastel sont conservés.
+Cette livraison remplace la grande fenêtre par un petit encart dans la vidéo et explicite la prise en charge des prolongations par leur demandeur. Les appareils se testent sur action explicite ; les profils distants et achats restent fictifs. Le menu latéral, le tiroir mobile et les palettes pastel sont conservés.
 
 ## Vérifié localement
 
-- 220 tests et build Pages réussis.
-- Rappel à 60 secondes, fenêtre à 30 secondes et compteur de décision distinct, ouverture unique par stade, fermeture et réouverture manuelles.
-- Une confirmation en cours reste visible ; fermer une demande annule son attente. Une confirmation tardive ne crée ni achat fictif ni action pour une autre personne.
+- 234 tests et build Pages réussis.
+- Prolongation envoyée ou reçue : seul le demandeur utilise un accès après acceptation, jamais l’invité ; aucun achat fictif avant sa réponse.
+- Refus, annulation, expiration, ancien jeton, réponse répétée et solde insuffisant ne créent aucun débit incorrect ni prolongation partielle.
+- Coût figé au moment de l’autorisation ; aucun achat plus cher si le tarif augmente, aucun achat automatique si un accès prépayé disparaît.
+- Encart sans modale ni vol de focus : appareils accessibles, fermeture par Échap, retour au bouton et défilement du panneau sans déclencher de swipe.
+- Rappel à 60 secondes, encart à 30 secondes et compteur de décision distinct ; après masquage, réouverture manuelle depuis « Mes choix ».
+- Une confirmation en cours reste visible. Masquer une prolongation laisse la demande en attente jusqu’à annulation explicite ou expiration ; fermer un formulaire d’ajout ami annule sa demande. Une confirmation tardive ne crée ni achat fictif ni action pour une autre personne.
 - Focus stable pendant le décompte, fermeture du panneau sans perdre la disposition vidéo, retour d’onglet masqué sans alerte périmée et reprise après un échange privé terminé.
 - Coût affiché selon le solde Gratuit ou Premium d’essai ; aucune proposition payante avant le match réciproque.
 - Aperçu membre avec appareils éteints, autorisations séparées, arrêt/réactivation et libération après navigation, y compris pour une autorisation tardive.
@@ -25,7 +29,7 @@ Cette livraison ajoute les rappels et la fenêtre de choix en fin de tête-à-t�
 
 Le cadre fixe publié a été observé dans un navigateur de bureau : accueil sans défilement à la taille contrôlée, concept, formules, formulaire d’inscription, confidentialité longue avec défilement interne et retour arrière. Le module de conférence est absent du chargement initial.
 
-L’aperçu local est inaccessible au navigateur dans cet environnement. La colonne de genre facultatif et ses droits existants ont été vérifiés par lecture du schéma distant, sans modifier de profil réel. Les palettes publiées ont été contrôlées séparément dans le navigateur. Le contrôle du nouveau parcours d’appel et de son illustration publique est consigné dans le suivi privé. Les simulations et tests isolés ne constituent pas un essai sur smartphone ou un appel réel à deux appareils.
+L’aperçu local est inaccessible au navigateur dans cet environnement. La colonne de genre facultatif et ses droits existants ont été vérifiés par lecture du schéma distant, sans modifier de profil réel. Les palettes publiées ont été contrôlées séparément dans le navigateur. Le contrôle du nouveau panneau de prolongation et de ses deux rôles publics est consigné dans le suivi privé. Les simulations et tests isolés ne constituent pas un essai sur smartphone ou un appel réel à deux appareils.
 
 ## Acquis des livraisons précédentes
 

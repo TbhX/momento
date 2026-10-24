@@ -38,6 +38,12 @@ Les profils, médias privés, catalogue, amis, invitations, blocages et signalem
 
 Les appels réels, rotations, messages, gestion complète des salons, exploitation et paiements restent à finaliser. Les rencontres publiques et les ventes restent fermées. Le physique reste un aperçu futur. La web-app installable n’est pas encore publiée sur les stores.
 
+## Tests de l’administrateur
+
+Dans Administration, « Admin illimité · Gratuit » et « Admin illimité · Premium » ouvrent un laboratoire local avec entrées et crédits d’essai illimités. Le serveur relit le rôle administrateur avant l’ouverture ; un modérateur ou un compte ordinaire ne peut pas activer ce parcours. Le choix Premium est modifiable dans la console de répétition. Les profils Gratuit/Premium habituels restent disponibles pour vérifier leurs limites normales.
+
+L’indicateur illimité n’est pas conservé dans le stockage local et disparaît à la déconnexion ou au changement de profil de test. Aucun crédit réel, abonnement, paiement ou accès à un autre membre n’est accordé. Match réciproque, consentement, refus, expiration, blocage et autorisations d’appareils gardent leurs contrôles. Les créations de salons peuvent être préparées en brouillon ; publication, rencontres réelles et ventes restent fermées.
+
 ## Développement
 
 Node.js 22 minimum et pnpm selon la version verrouillée dans `package.json`.
@@ -50,6 +56,6 @@ pnpm run build:pages
 
 Le build produit `pages-dist` avec le site et son Worker. Les paramètres sensibles restent dans les services ; aucun secret ou export personnel ne doit être ajouté au dépôt.
 
-318 tests locaux et build Pages réussis pour cette livraison. Ils couvrent notamment la navigation, les accès entre comptes, les palettes, les appareils et autorisations tardives, les consentements, les chronos, les blocages et la protection contre les confirmations répétées sans double consommation d’accès. Les scénarios serveur de prolongation sont rejoués sur le schéma déclaré et sur les migrations, dans des bases de test isolées. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
+322 tests locaux et build Pages réussis pour cette livraison. Ils couvrent notamment la navigation, les accès entre comptes, les palettes, les appareils et autorisations tardives, les consentements, les chronos, les blocages et la protection contre les confirmations répétées sans double consommation d’accès. Les scénarios serveur de prolongation sont rejoués sur le schéma déclaré et sur les migrations, dans des bases de test isolées. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
 
 Voir aussi [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md), [SUPABASE_SETUP.md](SUPABASE_SETUP.md) et [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md). Les détails d’exploitation sont conservés dans le suivi privé.

@@ -1,6 +1,12 @@
 /* Rehearsal ledger only. Real payment entitlements must come from the server. */
 (function(root){
  const DAY=86400000;
+ // Runtime-only capability for a local rehearsal, never serialized as a right.
+ const unlimitedWallets=new WeakSet();
+ function setRehearsalUnlimited(wallet,enabled){if(!wallet||typeof wallet!=='object')return;if(enabled===true)unlimitedWallets.add(wallet);else unlimitedWallets.delete(wallet)}
+ function isRehearsalUnlimited(wallet){return !!wallet&&unlimitedWallets.has(wallet)}
+ function balance(wallet,key){if(!['entryCredits','videoCredits','hostCredits'].includes(key))return 0;return isRehearsalUnlimited(wallet)?Infinity:Number.isSafeInteger(wallet?.[key])&&wallet[key]>=0?wallet[key]:0}
+ function consume(wallet,key){if(balance(wallet,key)<1)return false;if(!isRehearsalUnlimited(wallet))wallet[key]--;return true}
  const catalog={
   entry:{name:'Encore un bonjour',kind:'entry',cents:99,quantity:1},
   entries:{name:'Trois nouvelles entrées',kind:'entry',cents:249,quantity:3},
@@ -47,7 +53,7 @@
   const request={id:'video-'+now+'-'+s.requests.length,personId,status:'pending',at:now,consumed:false,startedAt:null};s.requests.push(request);return{ok:true,request};
  }
  function reply(s,id,action){const r=s.requests.find(r=>r.id===id);if(!r)return false;if(action==='accept'&&r.status==='pending')r.status='accepted';else if(action==='decline'&&r.status==='pending')r.status='declined';else if(action==='cancel'&&['pending','accepted'].includes(r.status))r.status='cancelled';else if(action==='finish'&&r.status==='accepted')r.status='done';else return false;return true}
- function startVideo(s,id,{premium=false,bothPresent=false,now=Date.now()}={}){const r=s.requests.find(r=>r.id===id);if(!r||r.status!=='accepted')return{error:'Une invitation acceptée est nécessaire.'};if(!bothPresent)return{error:'La présence des deux personnes est nécessaire.'};if(r.consumed)return r.startedAt!==null&&now<r.startedAt+15*60000?{ok:true}:{error:'Cette conversation est terminée. Envoyez une nouvelle invitation.'};if(!premium&&s.videoCredits<1)return{creditRequired:true};if(!premium)s.videoCredits--;r.consumed=true;r.startedAt=now;return{ok:true}}
+ function startVideo(s,id,{premium=false,bothPresent=false,now=Date.now()}={}){const r=s.requests.find(r=>r.id===id);if(!r||r.status!=='accepted')return{error:'Une invitation acceptée est nécessaire.'};if(!bothPresent)return{error:'La présence des deux personnes est nécessaire.'};if(r.consumed)return r.startedAt!==null&&now<r.startedAt+15*60000?{ok:true}:{error:'Cette conversation est terminée. Envoyez une nouvelle invitation.'};if(!premium&&balance(s,'videoCredits')<1)return{creditRequired:true};if(!premium)consume(s,'videoCredits');r.consumed=true;r.startedAt=now;return{ok:true}}
  function reconcile(s,r){
   if(!r||typeof r.id!=='string'||!Object.hasOwn(catalog,r.sku))return;const p=catalog[r.sku],id='stripe:'+r.id;let order=s.orders.find(o=>o.id===id);
   if(!order){order={id,sku:r.sku,at:r.at,cents:Number.isSafeInteger(r.cents)&&r.cents>=0?r.cents:p.cents,refundedCents:0,source:'stripe-test',stripeId:r.id,immediate:r.immediate===true,acknowledged:r.acknowledged===true,credited:false,revoked:false};s.orders.push(order)}
@@ -61,5 +67,5 @@
    if(['reversed','held','refund_pending'].includes(r.state)&&order.credited&&!order.revoked){s[key]=Math.max(0,s[key]-p.quantity);order.revoked=true}
   }
  }
- const api={catalog,create,clean,active,calendarEnd,buy,cancel,withdrawal,withdraw,invite,reply,startVideo,reconcile};if(typeof module!=='undefined')module.exports=api;else root.MomentoShop=api;
+ const api={catalog,create,clean,active,calendarEnd,buy,cancel,withdrawal,withdraw,invite,reply,startVideo,reconcile,setRehearsalUnlimited,isRehearsalUnlimited,balance,consume};if(typeof module!=='undefined')module.exports=api;else root.MomentoShop=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

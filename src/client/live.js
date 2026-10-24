@@ -4,7 +4,7 @@ const errors={hosting_disabled:'La publication des salons ouvrira après validat
 /* Deduplicate only pending GETs. No completed response is cached. */
 const pendingServiceReads=new Map();let serviceEpoch=0;
 function invalidateServiceReads(){serviceEpoch++;for(const entry of pendingServiceReads.values())entry.controller.abort();pendingServiceReads.clear()}
-function resetPrivateServiceState(){invalidateServiceReads();liveStatus=null;liveEvents=[];if(typeof communityData!=='undefined')communityData=null;if(typeof communityCleanup==='function')communityCleanup();if(typeof hostedCleanup==='function')hostedCleanup();if(typeof adminReportCache!=='undefined')adminReportCache.clear()}
+function resetPrivateServiceState(){if(typeof adminSandboxReset==='function')adminSandboxReset();invalidateServiceReads();liveStatus=null;liveEvents=[];if(typeof communityData!=='undefined')communityData=null;if(typeof communityCleanup==='function')communityCleanup();if(typeof hostedCleanup==='function')hostedCleanup();if(typeof adminReportCache!=='undefined')adminReportCache.clear()}
 function api(path,body){
  const reading=body===undefined;if(reading&&pendingServiceReads.has(path))return pendingServiceReads.get(path).promise;
  if(!reading)invalidateServiceReads();const epoch=serviceEpoch,controller=new AbortController();
@@ -24,7 +24,7 @@ async function liveNavigate(p){
   if(accountPersistence==='supabase'&&['events','bookings','matches'].includes(p)&&renderPreparedPage(p))return;
   const communityView=accountPersistence==='supabase'&&['salon','friends','videos','shop'].includes(p);
   const [status,data]=await Promise.all([api('/status'),communityView?api('/community/overview'):Promise.resolve(null)]);
-  if(gen!==liveGeneration||!accountReady)return;liveStatus=status;if(typeof refreshAdminNavigation==='function')refreshAdminNavigation();
+  if(gen!==liveGeneration||!accountReady)return;liveStatus=status;if(!status.admin&&typeof adminSandboxReset==='function')adminSandboxReset();if(typeof refreshAdminNavigation==='function')refreshAdminNavigation();
   if(['hosted','invite'].includes(p)&&accountPersistence==='supabase')return await hostedNavigate(p,gen);
   if(p==='admin'&&accountPersistence==='supabase'&&typeof adminDashboard==='function')return await adminDashboard(gen);
   if(communityView)return await communityNavigate(p,gen,data);

@@ -10,6 +10,12 @@ async function rpc(client,name,args){
 }
 export async function supabaseAdminAPI(request,env,{context,origin,readJSON}){
  const url=new URL(request.url),path=url.pathname;
+ if(path==='/api/service/admin/test-access'){
+  if(request.method!=='GET')throw accountFailure('method_not_allowed',405);
+  const status=await rpc(context.supabase,'account_status',{});
+  if(status?.admin!==true)throw accountFailure('admin_required',403);
+  return Response.json({simulationOnly:true,unlimitedCredits:true,realSessions:false,paymentsEnabled:false});
+ }
  if(path==='/api/service/admin'){
   if(request.method!=='GET')throw accountFailure('method_not_allowed',405);
   const status=url.searchParams.get('status')??'open',before=url.searchParams.get('before'),id=url.searchParams.get('beforeId');

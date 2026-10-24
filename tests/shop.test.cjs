@@ -2,6 +2,13 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const B=require('../src/client/shop-model.js'),S=require('../src/client/salon-model.js');
 const now=Date.parse('2026-10-19T15:00:00Z'),DAY=86400000;
 function buy(s,sku,id=sku){return B.buy(s,sku,{id,now,immediate:true,acknowledged:true})}
+test('unlimited rehearsal wallets never run out, never serialize and leave normal free quotas intact',()=>{
+ const s=S.create();B.setRehearsalUnlimited(s.shop,true);
+ for(let n=0;n<30;n++){assert.equal(S.enter(s,now),true);S.leave(s);assert.equal(B.consume(s.shop,'videoCredits'),true);assert.equal(B.consume(s.shop,'hostCredits'),true)}
+ assert.equal(S.isPremium(s,now),false);assert.equal(S.remaining(s,now),Infinity);assert.equal(s.shop.entryCredits,0);assert.equal(s.shop.videoCredits,0);assert.equal(s.shop.orders.length,0);
+ const restored=S.clean(JSON.parse(JSON.stringify(s)));assert.equal(B.isRehearsalUnlimited(restored.shop),false);assert.equal(S.enter(restored,now),false);
+ B.setRehearsalUnlimited(s.shop,false);assert.equal(S.enter(s,now),false);assert.equal(B.consume(s.shop,'videoCredits'),false);
+});
 test('new host options are isolated from entry/video rights and historical order amounts stay intact',()=>{
  const s=B.create();buy(s,'host100');assert.equal(s.hostCredits,4);assert.equal(s.entryCredits,0);assert.equal(s.videoCredits,0);
  const old=B.create();old.orders=[{id:'legacy',sku:'week',at:now,cents:190,refundedCents:95}];const restored=B.clean(old);assert.equal(restored.orders[0].cents,190);assert.equal(restored.orders[0].refundedCents,95);assert.equal(B.catalog.week.cents,390);

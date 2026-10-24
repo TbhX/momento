@@ -17,10 +17,10 @@ function begin(s,id){const result=access(s,id);if(!result.ok)return result;const
 function pay(s,id){const d=s.dates.find(d=>d.id===id);if(!d||d.status!=='accepted'||s.blocked.includes(d.personId))return false;d.paid=true;return true}
 function dayParis(now=Date.now()){return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Paris',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(now))}
 function refreshDay(s,now=Date.now()){const day=dayParis(now);if(s.day!==day){s.day=day;s.visits=0}if(s.started&&s.joinedPremium&&!isPremium(s,now))leave(s);return s}
-function enter(s,now=Date.now()){refreshDay(s,now);if(s.started)return s.joinedRoom===s.room;if(!isPremium(s,now)&&s.visits>=1){if(s.shop.entryCredits<1)return false;s.shop.entryCredits--}s.visits++;s.started=true;s.joinedRoom=s.room;s.joinedPremium=isPremium(s,now);return true}
+function enter(s,now=Date.now()){refreshDay(s,now);if(s.started)return s.joinedRoom===s.room;if(!isPremium(s,now)&&s.visits>=1){if(!Shop.consume(s.shop,'entryCredits'))return false}s.visits++;s.started=true;s.joinedRoom=s.room;s.joinedPremium=isPremium(s,now);return true}
 function leave(s){s.started=false;s.joinedRoom=null;s.joinedPremium=false}
 function selectRoom(s,room){if(!['cafe','music','voyage'].includes(room)||s.started&&s.joinedRoom!==room)return false;s.room=room;return true}
-function isPremium(s,now=Date.now()){return s.premium===true||Shop.active(s.shop,now)}
-function remaining(s,now=Date.now()){refreshDay(s,now);return isPremium(s,now)?Infinity:Math.max(0,1-s.visits)+s.shop.entryCredits}
+function isPremium(s,now=Date.now()){return Shop.isRehearsalUnlimited(s.shop)?s.premium===true:s.premium===true||Shop.active(s.shop,now)}
+function remaining(s,now=Date.now()){refreshDay(s,now);return isPremium(s,now)||Shop.isRehearsalUnlimited(s.shop)?Infinity:Math.max(0,1-s.visits)+s.shop.entryCredits}
 const api={isPremium,dayParis,refreshDay,leave,selectRoom,remaining,access,begin,pay,enter,people,create,clean,current,visible,swipe,relation,propose,reply,block};if(typeof module!=='undefined')module.exports=api;else root.MomentoSalon=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

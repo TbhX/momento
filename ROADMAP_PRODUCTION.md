@@ -1,6 +1,14 @@
 # Momento — travaux de production
 
-## Livraison courante : consentement et crédits contrôlés côté serveur
+## Livraison courante : salons personnalisables et répertoires paginés
+
+Les capacités 20/50/100, les brouillons persistants, les liens de partage, le droit de publication et la liste d’attente équilibrée disposent d’un socle serveur. Le créateur est utilisable en aperçu public ; seul un compte inscrit avec profil complet peut enregistrer un brouillon. La publication exige plusieurs validations distinctes et reste désactivée. Les crédits sont isolés par environnement, consommés à la publication et restitués une seule fois après une annulation avant le départ. Un abonnement expiré ne peut augmenter le coût autorisé. Les prix proposés et leurs limites sont documentés dans [PRICING_AND_CAPACITY.md](PRICING_AND_CAPACITY.md).
+
+L’interface recherche 12 salons, amis ou invitations à la fois côté serveur. Les tests locaux utilisent 5 000 profils et 5 000 salons synthétiques, sans aucune donnée de test dans le projet hébergé. Ils vérifient les droits et la pagination ; un vrai test de charge simultané et la validation de l’ordonnanceur média restent nécessaires. Les achats réels restent fermés.
+
+Priorités : rotations/check-in pour 20/50/100 avec gestion des absents ; jetons et révocation média par binôme ; tests sur deux comptes/appareils ; Checkout et webhooks vers Supabase ; vérification et récupération de compte par courriel ; modération, documents légaux et supervision. Aucun salon partagé ne doit servir de point d’accès à une conférence de 100 vidéos simultanées dans le même navigateur.
+
+## Socle de consentement et crédits contrôlés côté serveur
 
 Un socle serveur désactivé prépare les échanges réels : votes privés et match après deux oui, demande de prolongation liée à la rencontre et à la session du demandeur, plafond explicite de zéro ou un crédit, réponse réservée à l’invité. La demande ne réserve ni ne consomme de crédit. L’acceptation valide de nouveau les deux présences, les délais, le match, le Premium et le solde, puis inscrit ensemble le débit du demandeur et l’accès privé de trois minutes. Une réponse rejouée restitue le même accès et la même échéance. Aucun achat bancaire ou jeton vidéo n’est créé.
 
@@ -22,7 +30,7 @@ Ce parcours reste une répétition locale. Ses boutons ne créent aucun paiement
 
 Le cadre fixe, le menu latéral, le tiroir mobile, les transitions et les palettes pastel de la livraison précédente sont conservés. Le genre est facultatif et déclaré ; la palette peut être choisie personnellement sans modifier les droits. Les lectures privées ne sont pas conservées en cache.
 
-Validation locale : 287 tests réussis et build Pages réussi. Le contrôle serveur est testé sur le schéma déclaré et les migrations, avec des comptes et présences synthétiques dans des bases isolées. Les appareils sont testés avec des flux simulés ; aucun essai sur téléphone physique, charge concurrente réelle ou appel distant à deux appareils n’est annoncé. La vérification du déploiement est distincte et consignée dans le suivi privé.
+Validation locale : 318 tests réussis et build Pages réussi. Le contrôle serveur est testé sur le schéma déclaré et les migrations, avec des comptes et présences synthétiques dans des bases isolées. Les appareils sont testés avec des flux simulés ; aucun essai sur téléphone physique, charge concurrente réelle ou appel distant à deux appareils n’est annoncé. La vérification du déploiement est distincte et consignée dans le suivi privé.
 
 L’accès organisateur reste protégé par les rôles privés. Les inscriptions suivent les réglages natifs e-mail, avec profil complété avant les espaces membre. Les simulations Gratuit/Premium ne modifient pas les droits réels.
 
@@ -31,7 +39,7 @@ L’accès organisateur reste protégé par les rôles privés. Les inscriptions
 1. Relier le parcours et le socle de consentement à deux participants réels : ordonnanceur, rotations, déconnexion et connexion média autorisée côté serveur.
 2. Valider les scénarios concurrents et les interruptions à deux appareils ; intégrer ensuite le paiement conditionnel et les droits complets avant toute activation payante.
 3. Compléter la gestion des salons et le suivi opérationnel de la modération.
-4. Compléter les préférences, la pagination, les matchs et messages réciproques.
+4. Compléter les préférences, les matchs et messages réciproques ; la pagination des salons et relations est en place.
 5. Tester les appareils, la supervision, les sauvegardes et la restauration ; finaliser les informations publiques.
 6. Valider séparément les paiements, droits, résiliations et remboursements avant toute vente.
 

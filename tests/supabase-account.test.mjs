@@ -32,6 +32,7 @@ function fixture(){
     case 'save_profile':f.profile={id,display_name:body.p_name,age:body.p_age,city:body.p_city,status:'active',created_at:'2026-10-20T08:00:00Z',profession:'',bio:'',gender:'unspecified'};return json(f.profile);
     case 'commit_profile_media':{const old=f.media.find(m=>m.kind===body.p_kind)?.object_path??null;f.media=f.media.filter(m=>m.kind!==body.p_kind);if(body.p_path)f.media.push({kind:body.p_kind,object_path:body.p_path,updated_at:'2026-10-20T09:00:00Z'});return json(old);}
     case 'account_status':return json({premium:false,admin:false,unlimited:false,dailyLimit:1,used:0,bookingLimit:1});
+    case 'export_hosted_rooms':return json({owned:[],registrations:[]});
     case 'export_call_extensions':return json([{id:'fixture-extension',outgoing:true,status:'declined',chargedCredits:0}]);
     default:throw Error('Unexpected RPC '+u.pathname);
    }
@@ -102,6 +103,14 @@ test('Supabase basic signup works with the stale hosting flag and keeps credenti
  assert.ok(response.headers.getSetCookie().some(value=>/HttpOnly/.test(value)&&/Secure/.test(value)&&/SameSite=lax/i.test(value)));
  const signup=c.f.calls.find(call=>call.path==='/auth/v1/signup');assert.equal(signup.apikey,pub);assert.equal(signup.body.code_challenge??null,null);assert.deepEqual(signup.body.data,{});
  assert.equal(c.f.calls.some(call=>/recover|resend/.test(call.path)),false);
+}));
+test('basic signups use a separate daily budget, retain abuse limits and publish Retry-After',async()=>run(async c=>{
+ c.e.AUTH_EMAIL_MODE='basic';c.e.AUTH_BASIC_SIGNUP_DAILY_BUDGET='1';c.f.settings.mailer_autoconfirm=true;
+ const signup=email=>req('/api/auth/email/signup',{method:'POST',body:{email,password:'A test password 2026'}});
+ const first=await c.worker.fetch(signup('first@example.invalid'),c.e);assert.equal(first.status,200);
+ const second=await c.worker.fetch(signup('next@example.invalid'),c.e);assert.equal(second.status,429);assert.ok(Number(second.headers.get('Retry-After'))>0);
+ assert.equal(c.f.calls.filter(x=>x.path==='/auth/v1/signup').length,1);
+ const keys=[...c.f.authCounters.keys()];assert.ok(keys.some(k=>k.startsWith('auth:basic-signup-budget:')));assert.equal(keys.some(k=>k.startsWith('auth:email-send-budget:')),false);assert.doesNotMatch(keys.join(' '),/first@|next@/);
 }));
 test('unavailable, malformed or oversized native settings cannot enable signup or expose diagnostics',async()=>run(async c=>{
  for(const response of [()=>Response.json({detail:'private upstream detail'},{status:503}),()=>new Response('{oops',{headers:{'Content-Type':'application/json'}}),()=>Response.json([]),()=>new Response(' '.repeat(32769),{headers:{'Content-Type':'application/json'}})]){

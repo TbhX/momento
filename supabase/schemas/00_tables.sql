@@ -41,7 +41,7 @@ create table public.rooms (
   id uuid primary key default gen_random_uuid(), title text not null check (length(title) between 1 and 120),
   theme_slug text references public.themes(slug), city text not null default 'France', profession text,
   min_age smallint not null default 18, max_age smallint not null default 100,
-  capacity smallint not null default 20 check (capacity between 2 and 20),
+  capacity smallint not null default 20 check (capacity between 2 and 100),
   round_seconds integer not null default 300 check (round_seconds between 60 and 1800),
   break_seconds integer not null default 30 check (break_seconds between 0 and 300),
   allowed_modes text[] not null default array['audio','video']::text[],
@@ -148,7 +148,7 @@ create index messages_match on public.messages(match_id, created_at);
 create index messages_sender on public.messages(sender_id);
 
 create table public.products (
-  sku text primary key, label text not null, kind text not null check(kind in ('premium','room_entry','video_call')),
+  sku text primary key, label text not null, kind text not null check(kind in ('premium','room_entry','video_call','room_host')),
   interval_unit text check(interval_unit in ('week','month','year')), price_cents integer not null check(price_cents >= 0),
   currency text not null default 'eur' check(currency = 'eur'), active boolean not null default false,
   check((kind = 'premium') = (interval_unit is not null))
@@ -175,7 +175,7 @@ create index entitlements_user on public.entitlements(user_id, environment, ends
 create index entitlements_order on public.entitlements(order_id);
 create table public.credit_ledger (
   id uuid primary key default gen_random_uuid(), user_id uuid not null references public.profiles(id) on delete cascade,
-  unit text not null check(unit in ('room_entry','video_call')), amount integer not null check(amount <> 0),
+  unit text not null check(unit in ('room_entry','video_call','room_host')), amount integer not null check(amount <> 0),
   environment text not null default 'test' check(environment in ('test','live')),
   reason text not null check(reason in ('purchase','consume','refund','promotion')),
   idempotency_key text not null unique, order_id uuid references public.orders(id),

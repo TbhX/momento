@@ -1,4 +1,5 @@
 import {accountFailure,serverClient,serverRPC} from './supabase-server.mjs';
+import {hostedRoomsAPI,exportHostedRooms} from './supabase-hosted.mjs';
 import {supabaseCommunityAPI} from './supabase-community.mjs';
 import {supabaseAdminAPI} from './supabase-admin.mjs';
 import {supabaseCallExtensionsAPI,exportCallExtensions} from './supabase-call-extensions.mjs';
@@ -99,6 +100,7 @@ async function exportAccount(context,userId){
   records[table]=data;
  }
  records.call_extensions=await exportCallExtensions(context);
+ records.hosted_rooms=await exportHostedRooms(context);
  const body=JSON.stringify({exportedAt:new Date().toISOString(),accountId:userId,data:records});
  if(new TextEncoder().encode(body).length>2097152)throw accountFailure('export_too_large',413);
  return new Response(body,{headers:{'Content-Type':'application/json','Content-Disposition':'attachment; filename="mes-donnees-momento.json"'}});
@@ -171,6 +173,8 @@ export async function supabaseAccountAPI(request,env,context,userId,{readJSON,me
   return reply({...status,readiness:{video:false,payments:false,legal:false,enabled:false},realSessions:false});
  }
  if(path.startsWith('/api/service/')){
+  const hostedResponse=await hostedRoomsAPI(request,env,{context,origin,readJSON});
+  if(hostedResponse)return hostedResponse;
   const callResponse=await supabaseCallExtensionsAPI(request,env,{context,origin,readJSON});
   if(callResponse)return callResponse;
   const adminResponse=await supabaseAdminAPI(request,env,{context,origin,readJSON});

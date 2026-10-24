@@ -11,8 +11,33 @@ function mutation(request,origin){
  if(request.headers.get('Origin')!==origin||request.headers.get('X-Momento-Request')!=='1'||request.headers.get('Sec-Fetch-Site')==='cross-site')throw accountFailure('invalid_origin',403);
 }
 function identifier(value){if(typeof value!=='string'||!UUID.test(value))throw accountFailure('invalid_request',400);return value;}
+export function communityPageArguments(params){
+ const allowed=['kind','q','theme','city','profession','minAge','maxAge','mode','available','eligible','direction','after','afterId'];
+ for(const key of params.keys())if(!allowed.includes(key)||params.getAll(key).length!==1)throw accountFailure('invalid_request',400);
+ const kind=params.get('kind');if(!['rooms','friends','requests','invitations'].includes(kind))throw accountFailure('invalid_request',400);
+ const filters={};for(const [key,max] of Object.entries({q:60,theme:50,city:100,profession:120,mode:5,direction:8})){
+  const value=params.get(key);if(value!==null){if(value.length>max)throw accountFailure('invalid_request',400);filters[key]=value.trim()}
+ }
+ if(filters.mode&&!['audio','video'].includes(filters.mode)||filters.direction&&!['incoming','outgoing'].includes(filters.direction))throw accountFailure('invalid_request',400);
+ for(const key of ['minAge','maxAge'])if(params.has(key)){
+  const value=params.get(key);if(!/^\d{2,3}$/.test(value)||Number(value)<18||Number(value)>100)throw accountFailure('invalid_request',400);filters[key]=Number(value);
+ }
+ if((filters.minAge??18)>(filters.maxAge??100))throw accountFailure('invalid_request',400);
+ for(const key of ['eligible','available'])if(params.has(key)){
+  const value=params.get(key);if(!['true','false'].includes(value))throw accountFailure('invalid_request',400);filters[key]=value==='true';
+ }
+ const after=params.get('after'),id=params.get('afterId');
+ if((after===null)!==(id===null)||after!==null&&(after.length>64||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(after)||!Number.isFinite(Date.parse(after))))throw accountFailure('invalid_request',400);
+ return{p_kind:kind,p_filters:filters,p_after:after,p_after_id:id===null?null:identifier(id)};
+}
 export async function supabaseCommunityAPI(request,env,{context,origin,readJSON}){
  const path=new URL(request.url).pathname.slice('/api/service'.length);
+ if(path==='/community/overview'||path==='/community/page'){
+  if(request.method!=='GET')throw accountFailure('method_not_allowed',405);
+  if(path==='/community/page')return Response.json(await rpc(context.supabase,'community_page',communityPageArguments(new URL(request.url).searchParams)));
+  const value=await rpc(context.supabase,'community_overview');
+  return Response.json({...value,admissionsEnabled:value.admissionsEnabled===true&&env.LIVE_EVENTS_ENABLED==='true'&&env.VIDEO_VALIDATED==='true'&&env.LEGAL_VALIDATED==='true',callsEnabled:false});
+ }
  if(path==='/community'){
   if(request.method!=='GET')throw accountFailure('method_not_allowed',405);
   const value=await rpc(context.supabase,'community_snapshot');

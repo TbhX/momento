@@ -19,6 +19,8 @@ function go(p){return typeof MomentoNavigation!=='undefined'?MomentoNavigation.r
 function navigatePage(p){
  p=typeof normalizeExperiencePage==='function'?normalizeExperiencePage(p):p;
  if(p==='adminSetup'&&typeof renderAdminSetup==='function'){renderAdminSetup();return}
+ if(p==='hostedPreview'&&accountReady)p='hosted';
+ if(p==='hostedPreview'){if(typeof leaveLiveRoom==='function')leaveLiveRoom();stop();page=p;publicView='info';syncExperienceShell(accountReady?'member':'home');setExperiencePage(p);renderHostedBuilder(true);return}
  if(p==='home'){renderHome();window.scrollTo(0,0);return}
  if(p==='signin'||p==='signup'){openAccount(p);return}
  if(['concept','plans','privacy','audit','dates'].includes(p)){if(typeof leaveLiveRoom==='function')leaveLiveRoom();stop();page=p;publicView='info';syncExperienceShell(accountReady?'member':'home');setExperiencePage(p);if(p==='audit')renderProjectStatus();else if(p==='dates')renderPhysicalPreview();else return renderDiscovery(p);return}

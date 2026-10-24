@@ -197,7 +197,7 @@ test('basic mode blocks all email links and recovery callbacks without upstream 
  assert.equal(f.calls.some(c=>['/auth/v1/recover','/auth/v1/resend','/auth/v1/token','/auth/v1/user'].includes(c.path)),false);
 }));
 test('basic signup enforces password and shared signup quotas, conceals existing accounts and refuses a missing session',async()=>withFixture(async f=>{
- const env={...emailSetup(),AUTH_EMAIL_MODE:'basic',AUTH_EMAIL_DAILY_BUDGET:'2'};f.options.autoconfirm=true;
+ const env={...emailSetup(),AUTH_EMAIL_MODE:'basic',AUTH_BASIC_SIGNUP_DAILY_BUDGET:'2'};f.options.autoconfirm=true;
  assert.equal((await worker.fetch(request('/api/auth/email/signup',{email:user.email,password:'short'}),env)).status,400);
  f.options.signupError=true;const existing=await worker.fetch(request('/api/auth/email/signup',{email:user.email,password}),env);assert.equal(existing.status,200);assert.deepEqual(await existing.json(),{accepted:true,next:'signin'});assert.equal(existing.headers.getSetCookie().some(c=>c.startsWith('__Host-momento-auth=')&&!c.includes('Max-Age=0')),false);
  f.options.signupError=false;f.options.noSignupSession=true;assert.equal((await worker.fetch(request('/api/auth/email/signup',{email:'other@example.test',password}),env)).status,503);

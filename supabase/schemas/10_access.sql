@@ -103,6 +103,7 @@ begin
   if enabled is distinct from true then raise exception 'admissions_disabled' using errcode = '42501'; end if;
   select * into room from public.rooms where id = p_room for update;
   if not found or room.status not in ('published','live') or room.opens_at > now() or room.closes_at <= now() then raise exception 'room_unavailable' using errcode = '22023'; end if;
+  if not private.hosted_room_admission(p_room) then raise exception 'room_unavailable' using errcode='42501'; end if;
   if not p_mode = any(room.allowed_modes) then raise exception 'media_mode_unavailable' using errcode = '22023'; end if;
   if not exists(select 1 from public.profiles where id = actor and age between room.min_age and room.max_age) then raise exception 'age_not_eligible' using errcode = '42501'; end if;
   if exists(select 1 from public.room_presence where user_id = actor and active and expires_at > now()) then raise exception 'already_in_room' using errcode = '22023'; end if;
@@ -134,13 +135,14 @@ begin
   if auth.uid() is null or not private.is_active_member() then return false; end if;
   update public.room_presence p set expires_at = now()+interval '2 minutes' from public.rooms r
     where p.user_id = auth.uid() and p.entry_id = p_entry and p.active and p.expires_at > now()
-    and r.id = p.room_id and r.status in ('published','live') and r.closes_at > now();
+    and r.id = p.room_id and r.status in ('published','live') and r.closes_at > now() and private.hosted_room_admission(r.id);
   return found;
 end $$;
 create function private.room_preview(p_room uuid) returns table(user_id uuid,display_name text,age smallint,city text,profession text)
 language plpgsql security definer set search_path = '' as $$
 begin
-  if auth.uid() is null or not private.is_active_member() then raise exception 'registration_required' using errcode = '42501'; end if;
+  perform private.community_read_limit();
+  if not private.can_discover_room(p_room) then raise exception 'room_unavailable' using errcode='42501'; end if;
   return query select p.id,p.display_name,p.age,p.city,p.profession from public.room_presence s
     join public.rooms r on r.id = s.room_id join public.profiles p on p.id = s.user_id
     where r.id = p_room and r.status in ('published','live') and r.closes_at > now() and s.active and s.expires_at > now()

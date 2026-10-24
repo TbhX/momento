@@ -10,6 +10,6 @@ Les protections de session, les limites de tentative et les contrôles d’accè
 
 L’accès administrateur est attribué dans les données privées du serveur. Un code privé, expirant et utilisable une seule fois, permet au propriétaire de choisir son mot de passe sur le site. Un compte en attente d’activation n’a aucun accès organisateur. Les paramètres de rôle ou de formule envoyés par le navigateur ne donnent aucun droit. L’administration ne confère pas Premium.
 
-Validation de cette livraison : 168 tests locaux et build Pages réussis. Les tests couvrent les rôles, sessions révoquées, codes expirés et réutilisés, requêtes concurrentes d’activation, actions de modération et accès entre comptes. Le précédent compte synthétique a été supprimé après autorisation. L’identité organisateur a été créée via Auth, sans envoi d’e-mail, et sa session provisoire est révoquée. Le propriétaire doit encore réaliser son activation et les appareils physiques restent à tester.
+Validation locale : 318 tests et build Pages réussis pour la livraison des salons personnalisables. Les scénarios couvrent notamment les rôles, sessions révoquées, accès entre comptes et limites d’inscription. L’état d’activation de l’organisateur est relu côté serveur ; il ne doit pas être recréé ou réinitialisé lors d’une mise à jour. Les essais sur téléphone physique et les appels réels à deux appareils restent à valider.
 
 Les identifiants de projet, paramètres de sécurité détaillés et informations d’exploitation sont conservés dans le suivi privé.

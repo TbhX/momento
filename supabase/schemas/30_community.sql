@@ -11,10 +11,10 @@ begin
 end $$;
 
 create function private.community_snapshot() returns jsonb
-language plpgsql stable security definer set search_path = '' as $$
+language plpgsql security definer set search_path = '' as $$
 declare actor uuid:=auth.uid(); result jsonb;
 begin
- if not private.is_active_member() then raise exception 'registration_required' using errcode='42501'; end if;
+ perform private.community_read_limit();
  select jsonb_build_object(
  'memberId',actor,
  'admissionsEnabled',coalesce((select admissions_enabled from private.runtime_settings where singleton),false),
@@ -23,7 +23,7 @@ begin
    select r.id,r.title,r.theme_slug,r.city,r.profession,r.min_age,r.max_age,r.capacity,r.round_seconds,r.allowed_modes,r.opens_at,r.closes_at,
     (select count(*) from public.room_presence s join public.profiles p on p.id=s.user_id
       where s.room_id=r.id and s.active and s.expires_at>now() and p.status='active' and not private.is_blocked(p.id)) as present
-   from public.rooms r where r.status in ('published','live') and r.closes_at>now() order by r.opens_at,r.id limit 60
+   from public.rooms r where r.status in ('published','live') and r.closes_at>now() and private.can_discover_room(r.id) order by r.opens_at,r.id limit 60
  ) x),'[]'::jsonb),
  'presence',(select jsonb_build_object('roomId',room_id,'entryId',entry_id,'expiresAt',expires_at) from public.room_presence where user_id=actor and active and expires_at>now()),
  'friends',coalesce((select jsonb_agg(to_jsonb(x) order by x.name,x.id) from (

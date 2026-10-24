@@ -1,6 +1,7 @@
 import {createServerClient,parseCookieHeader,serializeCookieHeader} from '@supabase/ssr';
 import {createClient} from '@supabase/supabase-js';
 import {usesSupabaseData,hasServerKey,serverRPC,requireActiveSession,reserveRecovery} from './supabase-server.mjs';
+import {publicHostedRoom} from './supabase-hosted.mjs';
 import {supabaseAccountAPI} from './supabase-account.mjs';
 import {activateAdministrator} from './admin-setup.mjs';
 
@@ -91,11 +92,11 @@ async function countAttempt(env,label,subject,limit,period){
  const now=Date.now(),key='auth:'+label+':'+Math.floor(now/period)+':'+await hmac(env.AUTH_COOKIE_SECRET,subject);
  if(usesSupabaseData(env)){
   const count=await serverRPC(env,'server_auth_attempt',{p_key:key,p_expires_at:new Date(now+period*2).toISOString()});
-  if(!Number.isInteger(count)||count>limit)throw authFailure('too_many_attempts',429);
+  if(!Number.isInteger(count)||count>limit)throw Object.assign(authFailure('too_many_attempts',429),{retryAfter:Math.max(1,Math.ceil((period-now%period)/1000))});
   return;
  }
  const row=await env.DB.prepare('INSERT INTO rate_limits(key,count,expires_at) VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1 RETURNING count').bind(key,now+period*2).first();
- if(!row||row.count>limit)throw authFailure('too_many_attempts',429);
+ if(!row||row.count>limit)throw Object.assign(authFailure('too_many_attempts',429),{retryAfter:Math.max(1,Math.ceil((period-now%period)/1000))});
  // Expired identifiers are not retained indefinitely on a low-traffic installation.
  await env.DB.prepare('DELETE FROM rate_limits WHERE key LIKE ? AND expires_at<?').bind('auth:%',now).run();
 }
@@ -197,7 +198,11 @@ async function authenticationRoute(request,env,config,context){
    const {error}=await auth.resend({type:'signup',email,options:{emailRedirectTo:config.origin+'/api/auth/callback'}});emailProviderError(error,{concealAccount:true});return responseJSON({accepted:true,next:'confirm_email'});
   }
   if(path==='/api/auth/email/signup'){
-   const password=validPassword(body.password,{newPassword:true});await emailSendLimits(request,env,config,email);
+   const password=validPassword(body.password,{newPassword:true});
+   if(config.emailMode==='basic'){
+    const budget=Number(env.AUTH_BASIC_SIGNUP_DAILY_BUDGET??500);if(!Number.isInteger(budget)||budget<1||budget>5000)throw authFailure('auth_not_configured',503);
+    await countAttempt(env,'basic-signup-ip',clientIP(request),10,3600000);await countAttempt(env,'basic-signup-address',email,3,3600000);await countAttempt(env,'basic-signup-minute',email,1,60000);await countAttempt(env,'basic-signup-budget','all',budget,86400000);
+   }else await emailSendLimits(request,env,config,email);
    context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});context.put(RECOVERY_COOKIE,'',{maxAge:0});
    if(config.emailMode==='basic')return basicSignUp(config,context,env,email,password);
    const {data,error}=await auth.signUp({email,password,options:{emailRedirectTo:config.origin+'/api/auth/callback'}});emailProviderError(error,{concealAccount:true});
@@ -255,6 +260,9 @@ export function withExternalAuth(application,{staticHeaders={},staticBinding='PU
  const clean=new Request(request,{headers});
  if(['/signin-with-chatgpt','/signout-with-chatgpt','/callback'].includes(url.pathname))return responseJSON({error:'not_found'},404);
  const protectedPath=/^\/api\/(?:me(?:\/|$)|profile-photo\/|service(?:\/|$))/.test(url.pathname);
+ if(url.pathname.startsWith('/salon/')){
+  try{if(/^\/salon\/[0-9a-f-]{36}$/i.test(url.pathname))await countAttempt(env,'shared-salon-ip',clientIP(clean),60,60000);return await publicHostedRoom(clean,env)}catch(error){const response=responseJSON({error:error.momentoAuthError?error.message:'hosting_unavailable'},error.status??503);if(error.status===429)response.headers.set('Retry-After',String(error.retryAfter||60));return response}
+ }
  if(!authPath&&!protectedPath){const staticAssets=env[staticBinding];const response=!url.pathname.startsWith('/api/')&&staticAssets?await staticAssets.fetch(clean):await application.fetch(clean,{...env,MOMENTO_IDENTITY_PROVIDER:'supabase'},ctx);const h=new Headers(response.headers);for(const [key,value] of Object.entries(staticHeaders))h.set(key,value);h.set('Strict-Transport-Security',AUTH_HEADERS['Strict-Transport-Security']);return new Response(response.body,{status:response.status,headers:h})}
  const config={...externalAuthConfiguration(env),key:env.SUPABASE_PUBLISHABLE_KEY};let context;
  try{
@@ -273,5 +281,5 @@ export function withExternalAuth(application,{staticHeaders={},staticBinding='PU
   headers.set('oai-authenticated-user-id',identity.id);if(identity.email)headers.set('oai-authenticated-user-email',identity.email);
   const authenticated=new Request(clean,{headers});
   return context.finish(await application.fetch(authenticated,{...env,MOMENTO_IDENTITY_PROVIDER:'supabase'},ctx));
- }catch(error){const response=responseJSON({error:error.momentoAuthError?error.message:'authentication_unavailable'},error.momentoAuthError?error.status:503);return context?context.finish(response):response}
+ }catch(error){const response=responseJSON({error:error.momentoAuthError?error.message:'authentication_unavailable'},error.momentoAuthError?error.status:503);if(error.status===429)response.headers.set('Retry-After',String(error.retryAfter||60));return context?context.finish(response):response}
 }}}

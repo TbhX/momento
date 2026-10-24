@@ -2,6 +2,10 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const B=require('../src/client/shop-model.js'),S=require('../src/client/salon-model.js');
 const now=Date.parse('2026-10-19T15:00:00Z'),DAY=86400000;
 function buy(s,sku,id=sku){return B.buy(s,sku,{id,now,immediate:true,acknowledged:true})}
+test('new host options are isolated from entry/video rights and historical order amounts stay intact',()=>{
+ const s=B.create();buy(s,'host100');assert.equal(s.hostCredits,4);assert.equal(s.entryCredits,0);assert.equal(s.videoCredits,0);
+ const old=B.create();old.orders=[{id:'legacy',sku:'week',at:now,cents:190,refundedCents:95}];const restored=B.clean(old);assert.equal(restored.orders[0].cents,190);assert.equal(restored.orders[0].refundedCents,95);assert.equal(B.catalog.week.cents,390);
+});
 test('room previews are free, voluntary exit is final for the free entry, and a purchased credit funds one reentry',()=>{
  const s=S.create();assert.equal(S.selectRoom(s,'music'),true);assert.equal(s.visits,0);assert.equal(S.enter(s,now),true);assert.equal(S.selectRoom(s,'voyage'),false);assert.equal(S.enter(s,now),true);assert.equal(s.visits,1);
  S.leave(s);assert.equal(S.enter(s,now),false);buy(s.shop,'entry');assert.equal(s.shop.entryCredits,1);assert.equal(S.selectRoom(s,'voyage'),true);assert.equal(S.enter(s,now),true);assert.equal(s.shop.entryCredits,0);S.leave(s);assert.equal(S.enter(s,now),false);

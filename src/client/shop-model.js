@@ -5,15 +5,18 @@
   entry:{name:'Encore un bonjour',kind:'entry',cents:99,quantity:1},
   entries:{name:'Trois nouvelles entrées',kind:'entry',cents:249,quantity:3},
   video:{name:'Un moment vidéo',kind:'video',cents:190,quantity:1},
-  week:{name:'Premium · semaine découverte',kind:'premium',cents:190,days:7,recurring:false},
+  host20:{name:'Salon · 20 places',kind:'host',cents:690,quantity:1},
+  host50:{name:'Salon · 50 places',kind:'host',cents:1290,quantity:2},
+  host100:{name:'Salon · 100 places',kind:'host',cents:2490,quantity:4},
+  week:{name:'Premium · semaine découverte',kind:'premium',cents:390,days:7,recurring:false},
   month:{name:'Premium mensuel',kind:'premium',cents:990,months:1,recurring:true},
   year:{name:'Premium annuel',kind:'premium',cents:6990,months:12,recurring:true}
  };
- function create(){return{version:1,entryCredits:0,videoCredits:0,trialUsed:false,subscription:null,orders:[],requests:[]}}
+ function create(){return{version:1,entryCredits:0,videoCredits:0,hostCredits:0,trialUsed:false,subscription:null,orders:[],requests:[]}}
  function count(x){return Number.isSafeInteger(x)&&x>=0?x:0}
  function clean(raw){
-  const s=create();if(!raw||raw.version!==1)return s;s.entryCredits=count(raw.entryCredits);s.videoCredits=count(raw.videoCredits);s.trialUsed=raw.trialUsed===true;
-  s.orders=(Array.isArray(raw.orders)?raw.orders:[]).filter(o=>o&&typeof o.id==='string'&&Object.hasOwn(catalog,o.sku)&&Number.isFinite(o.at)).slice(-100).map(o=>({id:o.id,sku:o.sku,at:o.at,cents:catalog[o.sku].cents,refundedCents:Math.min(catalog[o.sku].cents,count(o.refundedCents)),immediate:o.immediate===true,acknowledged:o.acknowledged===true,source:o.source==='stripe-test'?'stripe-test':'local',stripeId:typeof o.stripeId==='string'?o.stripeId:null,credited:o.credited===true,revoked:o.revoked===true}));
+  const s=create();if(!raw||raw.version!==1)return s;s.entryCredits=count(raw.entryCredits);s.videoCredits=count(raw.videoCredits);s.hostCredits=count(raw.hostCredits);s.trialUsed=raw.trialUsed===true;
+  s.orders=(Array.isArray(raw.orders)?raw.orders:[]).filter(o=>o&&typeof o.id==='string'&&Object.hasOwn(catalog,o.sku)&&Number.isFinite(o.at)).slice(-100).map(o=>({id:o.id,sku:o.sku,at:o.at,cents:Number.isSafeInteger(o.cents)&&o.cents>=0?o.cents:catalog[o.sku].cents,refundedCents:Math.min(Number.isSafeInteger(o.cents)&&o.cents>=0?o.cents:catalog[o.sku].cents,count(o.refundedCents)),immediate:o.immediate===true,acknowledged:o.acknowledged===true,source:o.source==='stripe-test'?'stripe-test':'local',stripeId:typeof o.stripeId==='string'?o.stripeId:null,credited:o.credited===true,revoked:o.revoked===true}));
   const sub=raw.subscription;if(sub&&['week','month','year'].includes(sub.plan)&&typeof sub.orderId==='string'&&Number.isFinite(sub.startedAt)&&Number.isFinite(sub.endsAt)&&sub.endsAt>sub.startedAt)s.subscription={plan:sub.plan,orderId:sub.orderId,startedAt:sub.startedAt,endsAt:sub.endsAt,renew:sub.plan!=='week'&&sub.renew===true,refunded:sub.refunded===true};
   s.requests=(Array.isArray(raw.requests)?raw.requests:[]).filter(r=>r&&typeof r.id==='string'&&/^demo-\d+$/.test(r.personId)&&['pending','accepted','declined','cancelled','done'].includes(r.status)&&Number.isFinite(r.at)).slice(-40).map(r=>({id:r.id,personId:r.personId,status:r.status,at:r.at,consumed:r.consumed===true,startedAt:Number.isFinite(r.startedAt)?r.startedAt:null}));return s;
  }
@@ -26,7 +29,7 @@
    if(sku==='week'&&s.trialUsed)return{error:'La semaine découverte est réservée à un premier essai par compte.'};
    if(!immediate||sku==='week'&&!acknowledged)return{error:'Confirmez le démarrage du service et les informations de rétractation.'};
    s.subscription={plan:sku,orderId:id,startedAt:now,endsAt:product.days?now+product.days*DAY:calendarEnd(now,product.months),renew:product.recurring,refunded:false};if(sku==='week')s.trialUsed=true;
-  }else if(product.kind==='entry')s.entryCredits+=product.quantity;else s.videoCredits+=product.quantity;
+  }else if(product.kind==='entry')s.entryCredits+=product.quantity;else if(product.kind==='host')s.hostCredits+=product.quantity;else s.videoCredits+=product.quantity;
   const order={id,sku,at:now,cents:product.cents,refundedCents:0,immediate,acknowledged};s.orders.push(order);return{ok:true,order};
  }
  function cancel(s,now=Date.now()){if(!active(s,now))return false;s.subscription.renew=false;return true}
@@ -47,14 +50,14 @@
  function startVideo(s,id,{premium=false,bothPresent=false,now=Date.now()}={}){const r=s.requests.find(r=>r.id===id);if(!r||r.status!=='accepted')return{error:'Une invitation acceptée est nécessaire.'};if(!bothPresent)return{error:'La présence des deux personnes est nécessaire.'};if(r.consumed)return r.startedAt!==null&&now<r.startedAt+15*60000?{ok:true}:{error:'Cette conversation est terminée. Envoyez une nouvelle invitation.'};if(!premium&&s.videoCredits<1)return{creditRequired:true};if(!premium)s.videoCredits--;r.consumed=true;r.startedAt=now;return{ok:true}}
  function reconcile(s,r){
   if(!r||typeof r.id!=='string'||!Object.hasOwn(catalog,r.sku))return;const p=catalog[r.sku],id='stripe:'+r.id;let order=s.orders.find(o=>o.id===id);
-  if(!order){order={id,sku:r.sku,at:r.at,cents:p.cents,refundedCents:0,source:'stripe-test',stripeId:r.id,immediate:r.immediate===true,acknowledged:r.acknowledged===true,credited:false,revoked:false};s.orders.push(order)}
+  if(!order){order={id,sku:r.sku,at:r.at,cents:Number.isSafeInteger(r.cents)&&r.cents>=0?r.cents:p.cents,refundedCents:0,source:'stripe-test',stripeId:r.id,immediate:r.immediate===true,acknowledged:r.acknowledged===true,credited:false,revoked:false};s.orders.push(order)}
   order.refundedCents=r.refundedCents||0;
   if(p.kind==='premium'){
    if(r.sku==='week'&&['paid','expired','reversed'].includes(r.state))s.trialUsed=true;
    if(['paid','active'].includes(r.state))s.subscription={plan:r.sku,orderId:id,startedAt:r.at,endsAt:r.periodEnd,renew:r.renew===true,refunded:false};
    else if(s.subscription?.orderId===id){s.subscription.renew=false;s.subscription.endsAt=Math.min(s.subscription.endsAt,Date.now());s.subscription.refunded=['reversed','held','refund_pending'].includes(r.state)}
   }else{
-   const key=p.kind==='entry'?'entryCredits':'videoCredits';if(r.state==='paid'&&!order.credited){s[key]+=p.quantity;order.credited=true}
+   const key=p.kind==='entry'?'entryCredits':p.kind==='host'?'hostCredits':'videoCredits';if(r.state==='paid'&&!order.credited){s[key]+=p.quantity;order.credited=true}
    if(['reversed','held','refund_pending'].includes(r.state)&&order.credited&&!order.revoked){s[key]=Math.max(0,s[key]-p.quantity);order.revoked=true}
   }
  }

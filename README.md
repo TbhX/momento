@@ -2,6 +2,12 @@
 
 Application de rencontres audio/vidéo pensée pour le mobile et utilisable sur ordinateur. Les comptes Momento sont indépendants ; aucun compte ChatGPT ou Cloudflare n’est demandé aux utilisateurs.
 
+## Salons personnalisables et capacité visée
+
+Le créateur public donne un aperçu d’une soirée de 20, 50 ou 100 places. Après inscription et profil complet, un membre peut enregistrer et modifier ses brouillons. La publication, encore fermée, contrôle côté serveur les crédits de création ou l’avantage Premium : une création de 20 places tous les 30 jours. Les formats de 50 et 100 utilisent respectivement deux et quatre crédits. Le lien social n’expose que les informations du salon ; les réservations sont confirmées par paires femmes/hommes et l’excédent attend son tour. Une annulation avant le départ rétablit une seule fois les crédits utilisés.
+
+Le catalogue et les liens personnels sont recherchés côté serveur par pages de 12 éléments, avec curseurs et limites de lecture. L’objectif est de préparer 1 000–5 000 actifs mensuels ; le dimensionnement des appels simultanés reste à valider. Les rencontres réelles, la publication et les achats sont fermés. Voir [les tarifs, hypothèses de coûts et validations restantes](PRICING_AND_CAPACITY.md).
+
 ## Interface
 
 L’application utilise un cadre fixe avec menu latéral et vues centrales. Sur mobile, le menu devient un tiroir accessible au clavier. Les formulaires et listes longs défilent dans leur panneau, sans déplacer le cadre. L’accueil, le concept, les formules et la confidentialité s’ouvrent dans la même application, avec liens directs et retour arrière.
@@ -44,6 +50,6 @@ pnpm run build:pages
 
 Le build produit `pages-dist` avec le site et son Worker. Les paramètres sensibles restent dans les services ; aucun secret ou export personnel ne doit être ajouté au dépôt.
 
-287 tests locaux et build Pages réussis pour cette livraison. Ils couvrent notamment la navigation, les accès entre comptes, les palettes, les appareils et autorisations tardives, les consentements, les chronos, les blocages et la protection contre les confirmations répétées sans double consommation d’accès. Les scénarios serveur de prolongation sont rejoués sur le schéma déclaré et sur les migrations, dans des bases de test isolées. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
+318 tests locaux et build Pages réussis pour cette livraison. Ils couvrent notamment la navigation, les accès entre comptes, les palettes, les appareils et autorisations tardives, les consentements, les chronos, les blocages et la protection contre les confirmations répétées sans double consommation d’accès. Les scénarios serveur de prolongation sont rejoués sur le schéma déclaré et sur les migrations, dans des bases de test isolées. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
 
 Voir aussi [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md), [SUPABASE_SETUP.md](SUPABASE_SETUP.md) et [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md). Les détails d’exploitation sont conservés dans le suivi privé.

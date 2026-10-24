@@ -10,11 +10,11 @@ Les appels distants, ventes et publications ordinaires restent fermés. Les rés
 
 Validation : tests SQL sur le schéma déclaré et sur les migrations, tests de routes Worker et d’interface ; aucune fixture créée dans la base hébergée. Les vérifications distantes et du déploiement sont consignées séparément.
 
-## Livraison courante : laboratoire administrateur illimité
+## Livraison précédente : laboratoire administrateur illimité
 
 Deux accès admin permettent de tester le parcours Gratuit ou Premium avec crédits locaux illimités. Les entrées répétées, accès privés et prolongations peuvent être rejoués sans achat fictif de secours. Les accords et délais restent nécessaires. Le droit d’ouvrir ce laboratoire est relu via la session et le rôle privés, sans faire confiance au navigateur. L’indicateur illimité n’est pas sérialisé et est désactivé à la déconnexion, au changement de profil de test ou à la perte du rôle relue par le site.
 
-Pour la précédente livraison du laboratoire illimité : aucune migration, attribution de crédits réels, modification du compte organisateur, activation média ou vente n’est effectuée. Validation locale : 330 tests et build Pages ; la vérification du déploiement est consignée séparément. L’essai réel sur le compte du propriétaire et deux appareils n’est pas annoncé sans preuve.
+Pour la précédente livraison du laboratoire illimité : aucune migration, attribution de crédits réels, modification du compte organisateur, activation média ou vente n’est effectuée. Validation locale : 322 tests et build Pages ; la vérification du déploiement est consignée séparément. L’essai réel sur le compte du propriétaire et deux appareils n’est pas annoncé sans preuve.
 
 ## Salons personnalisables et répertoires paginés
 
@@ -46,7 +46,7 @@ Ce parcours reste une répétition locale. Ses boutons ne créent aucun paiement
 
 Le cadre fixe, le menu latéral, le tiroir mobile, les transitions et les palettes pastel de la livraison précédente sont conservés. Le genre est facultatif et déclaré ; la palette peut être choisie personnellement sans modifier les droits. Les lectures privées ne sont pas conservées en cache.
 
-Validation locale : 330 tests réussis et build Pages réussi. Le contrôle serveur est testé sur le schéma déclaré et les migrations, avec des comptes et présences synthétiques dans des bases isolées. Les appareils sont testés avec des flux simulés ; aucun essai sur téléphone physique, charge concurrente réelle ou appel distant à deux appareils n’est annoncé. La vérification du déploiement est distincte et consignée dans le suivi privé.
+Validation locale : 331 tests réussis et build Pages réussi. Le contrôle serveur est testé sur le schéma déclaré et les migrations, avec des comptes et présences synthétiques dans des bases isolées. Les appareils sont testés avec des flux simulés ; aucun essai sur téléphone physique, charge concurrente réelle ou appel distant à deux appareils n’est annoncé. La vérification du déploiement est distincte et consignée dans le suivi privé.
 
 L’accès organisateur reste protégé par les rôles privés. Les inscriptions suivent les réglages natifs e-mail, avec profil complété avant les espaces membre. Les simulations Gratuit/Premium ne modifient pas les droits réels.
 

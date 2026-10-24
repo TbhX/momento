@@ -244,3 +244,7 @@ test('admin publishes a saved test salon despite closed real publication and get
   await window.go('hosted');const button=document.querySelector('.hosted-room-actions .primary');assert.equal(button.disabled,false);assert.match(button.textContent,/Publier pour tester/);window.hostedPublishTestReview(room.id);assert.match(document.querySelector('#modal').textContent,/Aucun crédit réel/);await window.hostedAction(room.id,'publish-test');assert.deepEqual(requests,[{room:room.id}]);assert.match(document.querySelector('#hostedMyRooms').textContent,/SALON DE TEST/);assert.match(document.querySelector('.hosted-room-actions .primary').textContent,/Partager/);
  }finally{v.dom.window.close()}
 });
+
+test('public table and salon-builder deep links remain public during anonymous account initialization',async()=>{
+ for(const [hash,selector] of [['#apercu-table-ronde','.roundtable-public'],['#creer-un-salon','#hostedForm']]){const v=await experience(false,{},false,hash);try{assert.ok(v.document.querySelector(selector));assert.equal(v.document.querySelector('.onboarding-card'),null);assert.equal(v.calls.some(x=>x.startsWith('/api/service')),false);assert.equal(v.window.location.hash,hash)}finally{v.dom.window.close()}}
+});

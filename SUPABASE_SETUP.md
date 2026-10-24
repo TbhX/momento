@@ -13,3 +13,7 @@ Les paramètres sensibles sont configurés dans les services et conservés dans 
 ## Salons créés par les membres
 
 Les schémas `60_hosted_rooms.sql` et `70_community_directory.sql` ajoutent les brouillons, liens, réservations et droits de publication privés, ainsi que les répertoires paginés. Le drapeau de publication est désactivé par défaut, indépendant des autorisations d’appels et de paiement. Les nouveaux droits `room_host` ne peuvent venir du navigateur ; le versement après achat reste à relier aux webhooks avant toute vente. Les tests `hosted-rooms.test.mjs` rejouent les règles sur le schéma déclaré et l’historique des migrations, uniquement en local. Voir `PRICING_AND_CAPACITY.md` pour les règles et limites.
+
+### Publication réservée aux tests administrateur
+
+`80_admin_test_rooms.sql` ajoute une publication dédiée, liée à Auth, au rôle privé admin activé et à l’environnement de test. Les salons concernés portent `is_test`, sont accessibles par lien uniquement et ne consomment aucun crédit ni création Premium incluse. La fonction d’admission les refuse systématiquement. Les participants peuvent vérifier des réservations explicitement marquées comme tests ; aucun token média n’est créé. Les tests rejouent aussi la révocation du rôle et de la session, la propriété, l’idempotence et la fermeture des publications ordinaires. Les tables privées gardent RLS et aucun accès direct membre.

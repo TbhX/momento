@@ -38,3 +38,9 @@ test('social cards escape event content and never embed a member list or an exec
   const head=await publicHostedRoom(new Request(origin+'/salon/'+id,{method:'HEAD'}),env);assert.equal(await head.text(),'');
  }finally{globalThis.fetch=previous}
 });
+test('admin test publication uses a dedicated Auth-bound RPC, no credit or live gate bypass',async()=>{
+ const f=fixture();await invoke(f,'/hosted/publish-test',{room:id,role:'admin',owner:'forged',credits:999,environment:'live'},{});assert.deepEqual(f.calls,[{name:'admin_publish_test_room',args:{p_room:id}}]);
+ await assert.rejects(invoke(f,'/hosted/publish-test',{room:'invalid'},{}),e=>e.status===400);
+ await assert.rejects(invoke(f,'/hosted/publish-test',{room:id},{},{Origin:'https://evil.invalid'}),e=>e.status===403);
+ f.fail({message:'admin_required',code:'42501'});await assert.rejects(invoke(f,'/hosted/publish-test',{room:id},{}),e=>e.status===403);
+});

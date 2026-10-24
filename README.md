@@ -4,9 +4,9 @@ Application de rencontres audio/vidéo pensée pour le mobile et utilisable sur 
 
 ## Salons personnalisables et capacité visée
 
-Le créateur public donne un aperçu d’une soirée de 20, 50 ou 100 places. Après inscription et profil complet, un membre peut enregistrer et modifier ses brouillons. La publication, encore fermée, contrôle côté serveur les crédits de création ou l’avantage Premium : une création de 20 places tous les 30 jours. Les formats de 50 et 100 utilisent respectivement deux et quatre crédits. Le lien social n’expose que les informations du salon ; les réservations sont confirmées par paires femmes/hommes et l’excédent attend son tour. Une annulation avant le départ rétablit une seule fois les crédits utilisés.
+Le créateur public donne un aperçu d’une soirée de 20, 50 ou 100 places. Après inscription et profil complet, un membre peut enregistrer et modifier ses brouillons. La publication ordinaire, encore fermée, contrôle côté serveur les crédits de création ou l’avantage Premium : une création de 20 places tous les 30 jours. Les formats de 50 et 100 utilisent respectivement deux et quatre crédits. Le lien social n’expose que les informations du salon ; les réservations sont confirmées par paires femmes/hommes et l’excédent attend son tour. Une annulation avant le départ rétablit une seule fois les crédits utilisés.
 
-Le catalogue et les liens personnels sont recherchés côté serveur par pages de 12 éléments, avec curseurs et limites de lecture. L’objectif est de préparer 1 000–5 000 actifs mensuels ; le dimensionnement des appels simultanés reste à valider. Les rencontres réelles, la publication et les achats sont fermés. Voir [les tarifs, hypothèses de coûts et validations restantes](PRICING_AND_CAPACITY.md).
+Le catalogue et les liens personnels sont recherchés côté serveur par pages de 12 éléments, avec curseurs et limites de lecture. L’objectif est de préparer 1 000–5 000 actifs mensuels ; le dimensionnement des appels simultanés reste à valider. Les rencontres réelles, la publication ordinaire et les achats sont fermés. Voir [les tarifs, hypothèses de coûts et validations restantes](PRICING_AND_CAPACITY.md).
 
 ## Interface
 
@@ -42,7 +42,7 @@ Les appels réels, rotations, messages, gestion complète des salons, exploitati
 
 Dans Administration, « Admin illimité · Gratuit » et « Admin illimité · Premium » ouvrent un laboratoire local avec entrées et crédits d’essai illimités. Le serveur relit le rôle administrateur avant l’ouverture ; un modérateur ou un compte ordinaire ne peut pas activer ce parcours. Le choix Premium est modifiable dans la console de répétition. Les profils Gratuit/Premium habituels restent disponibles pour vérifier leurs limites normales.
 
-L’indicateur illimité n’est pas conservé dans le stockage local et disparaît à la déconnexion ou au changement de profil de test. Aucun crédit réel, abonnement, paiement ou accès à un autre membre n’est accordé. Match réciproque, consentement, refus, expiration, blocage et autorisations d’appareils gardent leurs contrôles. Les créations de salons peuvent être préparées en brouillon ; publication, rencontres réelles et ventes restent fermées.
+L’indicateur illimité n’est pas conservé dans le stockage local et disparaît à la déconnexion ou au changement de profil de test. Aucun crédit réel, abonnement, paiement ou accès à un autre membre n’est accordé. Match réciproque, consentement, refus, expiration, blocage et autorisations d’appareils gardent leurs contrôles. Les créations de salons peuvent être préparées en brouillon. Un administrateur activé peut ensuite publier gratuitement un **salon de test par lien**, sans crédit réel ni accès à un appel distant. Les publications ordinaires, rencontres réelles et ventes restent fermées.
 
 ## Développement
 
@@ -56,6 +56,10 @@ pnpm run build:pages
 
 Le build produit `pages-dist` avec le site et son Worker. Les paramètres sensibles restent dans les services ; aucun secret ou export personnel ne doit être ajouté au dépôt.
 
-322 tests locaux et build Pages réussis pour cette livraison. Ils couvrent notamment la navigation, les accès entre comptes, les palettes, les appareils et autorisations tardives, les consentements, les chronos, les blocages et la protection contre les confirmations répétées sans double consommation d’accès. Les scénarios serveur de prolongation sont rejoués sur le schéma déclaré et sur les migrations, dans des bases de test isolées. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
+330 tests locaux et build Pages réussis pour cette livraison. Ils couvrent notamment la navigation, les accès entre comptes, les palettes, les appareils et autorisations tardives, les consentements, les chronos, les blocages et la protection contre les confirmations répétées sans double consommation d’accès. Les scénarios serveur de prolongation sont rejoués sur le schéma déclaré et sur les migrations, dans des bases de test isolées. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
 
 Voir aussi [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md), [SUPABASE_SETUP.md](SUPABASE_SETUP.md) et [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md). Les détails d’exploitation sont conservés dans le suivi privé.
+
+### Table ronde
+
+Le menu « La table ronde » présente un aperçu sans permission d’appareil. Après inscription et profil complet, la répétition combine places paginées, filtre de genre déclaré, choix d’une personne, chrono de 5 minutes et 30 secondes, like, swipe et demandes consenties de prolongation. Un seul tête-à-tête reste au centre. Les personnes sont fictives ; seul l’aperçu de vos appareils peut être réel. Le quota d’entrée et les crédits de cette répétition sont locaux, distincts des droits serveur.

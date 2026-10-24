@@ -35,7 +35,7 @@ function salonLobby(){MomentoSalon.refreshDay(salonState);const preview=salonPre
 function salonChooseRoom(room){if(!salonRooms[room])return;salonPreviewRoomId=room;if(salonState.started){salonLobby();return}if(!MomentoSalon.selectRoom(salonState,room))return;salonState.theme=salonRooms[room].theme;salonSave();salonLobby()}
 function salonPreviewPerson(id){const p=MomentoSalon.people.find(p=>p.id===id);modal(`<div class="salon-sheet"><span class="salon-kicker">APERÇU GRATUIT · PROFIL FICTIF</span><span class="salon-sheet-icon" style="background:${p.color};color:white">${p.name[0]}</span><h2>${p.name}, ${p.age}</h2><p>${p.city} · ${p.job}</p><p>« ${p.bio} »</p><div class="notice">Consulter ce profil ne consomme pas votre entrée. Pour interagir avec les participants, rejoignez le salon.</div><button class="secondary wide" onclick="document.querySelector('#modal').close()">Continuer à regarder</button></div>`)}
 function salonBrowseRooms(){salonStopMedia();salonPreviewRoomId=salonState.room;salonLobby()}
-function salonEnter(){if(salonState.started&&salonPreviewRoomId&&salonPreviewRoomId!==salonState.joinedRoom){salonLeaveDemoRoom();return}if(!salonState.started&&!MomentoSalon.remaining(salonState)){salonLobby();return}salonPrepareMedia()}
+function salonEnter(){if(salonState.started&&salonPreviewRoomId&&salonPreviewRoomId!==salonState.joinedRoom){salonLeaveDemoRoom();return}if(!salonState.started&&!MomentoSalon.remaining(salonState)){salonLobby();return}tableDemoOpen(({music:'music',voyage:'travel',cafe:'nearby'})[salonPreviewRoomId||salonState.room]||'music')}
 function salonPlan(){go('shop')}
 function salonPayment(){salonComingSoon()}
 function salonSimulatePayment(){salonComingSoon()}

@@ -21,3 +21,7 @@ Les schémas `60_hosted_rooms.sql` et `70_community_directory.sql` ajoutent les 
 ### Photos des salons
 
 `90_salon_photos.sql` ajoute une fonction privée de résolution liée à la session et au Premium natif, exposée par un wrapper SECURITY INVOKER. Elle vérifie salon visible, présence active, compte actif et blocages, et limite les lectures. L’image n’est téléchargée via le serveur que si ce contrôle retourne une référence autorisée. Les vignettes gratuites sont un fichier neutre, sans copie de la photo nette. Aucun droit sur Storage n’est ajouté aux membres. Les tests rejouent le schéma et l’historique dans des bases isolées.
+
+### Places et présences
+
+`95_room_capacity.sql` fournit des agrégats par lots bornés de salons découvrables. Les confirmations et l’attente viennent des réservations privées ; les présents viennent des présences actives récentes. Les inscrits attendus sont les confirmations restantes sans présence. Les anciens formats sans réservation équilibrée retournent des quotas inconnus plutôt que des nombres inventés. La session, le profil et le budget de lecture sont vérifiés au RPC membre. Les contrôles de réservation et d’admission restent distincts des compteurs, qui n’accordent aucun accès. L’interface relit ces indicateurs toutes les dix secondes uniquement pendant la consultation, sans abonnement Realtime public aux tables privées.

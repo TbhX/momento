@@ -1,7 +1,7 @@
 let adminReportCache=new Map();
-let adminSandboxBusy=false;
+let adminSandboxBusy=false,adminPreviewActive=false;
 function adminSandboxReset(){
- adminSandboxActive=false;adminSandboxPremium=false;
+ adminSandboxActive=false;adminSandboxPremium=false;adminSandboxPremiumSource='manual';adminPreviewActive=false;
  if(typeof salonPersona!=='undefined')salonPersona='free';
  if(typeof salonState!=='undefined')MomentoShop.setRehearsalUnlimited(salonState?.shop,false);
  if(typeof callDemoFlow!=='undefined')MomentoShop.setRehearsalUnlimited(callDemoFlow?.peerWallet,false);
@@ -12,15 +12,16 @@ async function adminUnlimitedSimulation(premium=false,view='salon'){
   const permission=await api('/admin/test-access');
   if(gen!==liveGeneration||!accountReady||!liveStatus?.admin)return;
   if(permission.simulationOnly!==true||permission.unlimitedCredits!==true||permission.paymentsEnabled!==false)throw Error('Mode de test indisponible.');
-  adminSandboxReset();adminSandboxActive=true;adminSandboxPremium=premium===true;salonPersona='admin';salonState=null;communityDemo(['salon','friends','videos','shop'].includes(view)?view:'salon');
+  adminSandboxReset();adminPreviewActive=true;adminSandboxActive=true;adminSandboxPremium=premium===true;salonPersona='admin';salonState=null;communityDemo(['salon','friends','videos','shop'].includes(view)?view:'salon');
   const banner=document.querySelector('.community-demo-note');if(banner){const note=document.createElement('p');note.textContent='Admin illimité · entrées, accès privés et créations fictifs. Aucun crédit réel ni paiement bancaire.';banner.append(note)}
  }catch(error){toast(error.message)}finally{adminSandboxBusy=false}
 }
 function adminSandboxSetPremium(value){
  if(!adminSandboxActive||!liveStatus?.admin||salonPersona!=='admin')return;
- salonStopMedia();adminSandboxPremium=value===true;salonState.premium=adminSandboxPremium;salonSave();salonOpen(salonView);
+ salonStopMedia();adminSandboxPremiumSource='manual';salonState.adminPlanMode='manual';adminSandboxPremium=value===true;salonState.premium=adminSandboxPremium;salonSave();salonOpen(salonView);
 }
 function refreshAdminNavigation(){
+ syncPlanBadge();
  document.querySelectorAll('[data-admin-nav]').forEach(button=>button.hidden=!accountReady||!(liveStatus?.admin||liveStatus?.moderator));
 }
 function renderAdminSetup(){
@@ -62,6 +63,16 @@ async function adminReview(id,action){
 }
 function adminRunSimulation(persona){
  if(!liveStatus?.admin||!['free','premium'].includes(persona))return;adminSandboxReset();
- salonPersona=persona;salonState=null;communityDemo('salon');
+ adminPreviewActive=true;salonPersona=persona;salonState=null;communityDemo('salon');
  const banner=document.querySelector('.community-demo-note');if(banner){const back=document.createElement('button');back.className='secondary';back.textContent='Retour à l’administration';back.onclick=()=>go('admin');banner.append(back);}
 }
+
+function syncPlanBadge(){
+ let badge=document.querySelector('#shellPlanStatus');
+ if(!badge){badge=document.createElement('span');badge.id='shellPlanStatus';document.querySelector('.app-topbar .header-actions')?.prepend(badge)}
+ if(!accountReady){badge.hidden=true;badge.replaceChildren();return}
+ badge.hidden=false;
+ if(adminPreviewActive&&liveStatus?.admin){salonLoad();badge.innerHTML=`<span class="plan-preview-label">${MomentoSalon.isPremium(salonState)?'Premium':'Gratuit'} · essai</span><button type="button" class="theme-icon-action" aria-label="Quitter le mode de test" data-tip="Revenir aux droits réels de votre compte" onclick="adminExitPreview()">×</button>`}
+ else badge.innerHTML='<span class="plan-preview-label">'+(liveStatus?.premium?'Premium':'Gratuit')+'</span>';
+}
+function adminExitPreview(){adminSandboxReset();salonState=null;salonOwner=null;syncPlanBadge();go('salon')}

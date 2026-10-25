@@ -32,6 +32,14 @@ export function communityPageArguments(params){
 }
 export async function supabaseCommunityAPI(request,env,{context,origin,readJSON}){
  const path=new URL(request.url).pathname.slice('/api/service'.length);
+ if(path==='/community/seats'){
+  if(request.method!=='GET')throw accountFailure('method_not_allowed',405);
+  const params=new URL(request.url).searchParams;
+  if([...params.keys()].some(k=>k!=='rooms')||params.getAll('rooms').length!==1)throw accountFailure('invalid_request',400);
+  const rooms=params.get('rooms').split(',');if(rooms.length<1||rooms.length>12)throw accountFailure('invalid_request',400);
+  rooms.forEach(identifier);
+  return Response.json({items:await rpc(context.supabase,'room_seat_snapshots',{p_rooms:[...new Set(rooms)]})});
+ }
  if(path==='/community/overview'||path==='/community/page'){
   if(request.method!=='GET')throw accountFailure('method_not_allowed',405);
   if(path==='/community/page')return Response.json(await rpc(context.supabase,'community_page',communityPageArguments(new URL(request.url).searchParams)));

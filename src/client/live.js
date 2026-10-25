@@ -16,7 +16,7 @@ function api(path,body){
  })().finally(()=>{if(!reading)invalidateServiceReads();else if(pendingServiceReads.get(path)?.promise===promise)pendingServiceReads.delete(path)});
  if(reading)pendingServiceReads.set(path,{promise,controller});return promise;
 }
-function leaveLiveRoom(){if(typeof communityCleanup==='function')communityCleanup();if(typeof hostedCleanup==='function')hostedCleanup();if(typeof callDemoCleanup==='function')callDemoCleanup();if(typeof callCleanupLayout==='function')callCleanupLayout();if(typeof appearanceCleanup==='function')appearanceCleanup();if(typeof salonCleanup==='function')salonCleanup();if(typeof stopVideoExperience==='function')stopVideoExperience();liveGeneration++;clearTimeout(livePoll);livePoll=null;liveRoomKey='';liveEventId=null;const frame=$('#liveVideo');if(frame)frame.remove()}
+function leaveLiveRoom(){if(typeof MomentoRoomSeats!=='undefined')MomentoRoomSeats.stop();if(typeof communityCleanup==='function')communityCleanup();if(typeof hostedCleanup==='function')hostedCleanup();if(typeof callDemoCleanup==='function')callDemoCleanup();if(typeof callCleanupLayout==='function')callCleanupLayout();if(typeof appearanceCleanup==='function')appearanceCleanup();if(typeof salonCleanup==='function')salonCleanup();if(typeof stopVideoExperience==='function')stopVideoExperience();liveGeneration++;clearTimeout(livePoll);livePoll=null;liveRoomKey='';liveEventId=null;const frame=$('#liveVideo');if(frame)frame.remove()}
 async function liveNavigate(p){
  if(!accountReady){renderAccountGate();return}leaveLiveRoom();stop();page=p;const gen=liveGeneration;
  try{
@@ -27,6 +27,7 @@ async function liveNavigate(p){
   if(gen!==liveGeneration||!accountReady)return;liveStatus=status;if(!status.admin&&typeof adminSandboxReset==='function')adminSandboxReset();if(typeof refreshAdminNavigation==='function')refreshAdminNavigation();
   if(['hosted','invite'].includes(p)&&accountPersistence==='supabase')return await hostedNavigate(p,gen);
   if(p==='admin'&&accountPersistence==='supabase'&&typeof adminDashboard==='function')return await adminDashboard(gen);
+  if(communityView&&adminPreviewActive&&status.admin){communityDemo(p);return}
   if(communityView)return await communityNavigate(p,gen,data);
   if(accountPersistence==='supabase'&&typeof renderPreparedPage==='function'&&renderPreparedPage(p))return;
   const routes={salon:()=>salonOpen('salon'),friends:()=>salonOpen('friends'),dates:()=>salonOpen('dates'),videos:()=>salonOpen('videos'),shop:()=>{salonOpen('shop');if(liveStatus.admin&&new URLSearchParams(location.search).has('shopOrder'))salonStripeSync(true)},events:liveCatalog,bookings:liveBookings,matches:liveMatches,offers:liveOffers,audit:liveAudit,admin:liveAdmin};

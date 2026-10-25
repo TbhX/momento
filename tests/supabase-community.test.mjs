@@ -5,6 +5,11 @@ const origin='https://momento.example',id='00000000-0000-4000-8000-000000000001'
 function fixture(){const calls=[];let error=null;const context={supabase:{async rpc(name,args){calls.push({name,args});return{data:name==='community_snapshot'?{rooms:[],friends:[],admissionsEnabled:true}:[],error};}}};return{calls,context,setError(value){error=value;}};}
 const request=(path,body,headers={})=>new Request(origin+'/api/service'+path,{method:body?'POST':'GET',headers:body?{Origin:origin,'X-Momento-Request':'1',...headers}:headers,...(body?{body:JSON.stringify(body)}:{})});
 async function invoke(f,path,body,env={},headers={}){const req=request(path,body,headers);return supabaseCommunityAPI(req,env,{context:f.context,origin,readJSON:r=>r.json()});}
+test('seat reads are bounded and use only the authenticated RPC, with no actor or payment fields',async()=>{
+ const f=fixture();await invoke(f,'/community/seats?rooms='+id+','+id);assert.deepEqual(f.calls,[{name:'room_seat_snapshots',args:{p_rooms:[id]}}]);
+ for(const query of ['rooms=bad','rooms='+Array(13).fill(id).join(','),'rooms='+id+'&actor='+id,'rooms='+id+'&rooms='+id])await assert.rejects(invoke(f,'/community/seats?'+query),e=>e.status===400);
+ await assert.rejects(invoke(f,'/community/seats?rooms='+id,{}),e=>e.status===405);assert.equal(f.calls.length,1);
+});
 test('community data uses the member RPC and never advertises admissions or calls before every gate is ready',async()=>{
  const f=fixture();const response=await invoke(f,'/community');const data=await response.json();assert.equal(data.admissionsEnabled,false);assert.equal(data.callsEnabled,false);assert.deepEqual(f.calls,[{name:'community_snapshot',args:{}}]);
  const ready=await invoke(f,'/community',undefined,{LIVE_EVENTS_ENABLED:'true',VIDEO_VALIDATED:'true',LEGAL_VALIDATED:'true'});assert.equal((await ready.json()).admissionsEnabled,true);

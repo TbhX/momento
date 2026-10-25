@@ -41,7 +41,7 @@ test('the same seven themes reach public round tables and native paged filters w
 });
 test('icon explanations work with focus and touch, dismiss on Escape and close on navigation',async()=>{
  const v=await experience(),{window,document}=v;
- try{const hint=document.querySelector('.theme-facts [data-tip]');hint.focus();assert.equal(document.querySelector('#momento-ui-tip').hidden,false);assert.ok(hint.getAttribute('aria-label'));document.dispatchEvent(new window.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(document.querySelector('#momento-ui-tip').hidden,true);hint.click();assert.equal(document.querySelector('#momento-ui-tip').hidden,false);await window.go('concept');assert.equal(document.querySelector('#momento-ui-tip').hidden,true)}finally{v.dom.window.close()}
+ try{const hint=document.querySelector('.theme-facts [data-tip]');hint.focus();assert.equal(document.querySelector('#momento-ui-tip').hidden,false);assert.ok(hint.getAttribute('aria-label'));document.dispatchEvent(new window.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(document.querySelector('#momento-ui-tip').hidden,true);hint.click();assert.equal(document.querySelector('#momento-ui-tip').hidden,false);hint.addEventListener('click',()=>window.go('concept'));hint.click();assert.equal(document.querySelector('#momento-ui-tip').hidden,true,'a detached click target cannot reopen a tooltip after navigation')}finally{v.dom.window.close()}
 });
 test('admin Premium rehearsal and purchases stay coherent across navigation without changing native rights',async()=>{
  const v=await experience(true,{},true),{window,document}=v;

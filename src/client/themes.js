@@ -19,7 +19,7 @@
  if(typeof module!=='undefined'){module.exports=api;return}root.MomentoThemes=api;
  let tip,anchor;
  function hide(){if(tip)tip.hidden=true;anchor?.removeAttribute('aria-describedby');anchor=null}
- function show(button){hide();anchor=button;if(!tip){tip=document.createElement('div');tip.id='momento-ui-tip';tip.className='ui-tooltip';tip.setAttribute('role','tooltip');document.body.append(tip)}tip.textContent=button.dataset.tip;tip.hidden=false;button.setAttribute('aria-describedby',tip.id);const r=button.getBoundingClientRect(),width=Math.min(260,innerWidth-24);tip.style.width=width+'px';tip.style.left=Math.max(12,Math.min(innerWidth-width-12,r.left+r.width/2-width/2))+'px';tip.style.top=Math.max(12,Math.min(innerHeight-tip.offsetHeight-12,r.bottom+8))+'px'}
+ function show(button){hide();if(!button.isConnected)return;anchor=button;if(!tip){tip=document.createElement('div');tip.id='momento-ui-tip';tip.className='ui-tooltip';tip.setAttribute('role','tooltip');document.body.append(tip)}tip.textContent=button.dataset.tip;tip.hidden=false;button.setAttribute('aria-describedby',tip.id);const r=button.getBoundingClientRect(),width=Math.min(260,innerWidth-24);tip.style.width=width+'px';tip.style.left=Math.max(12,Math.min(innerWidth-width-12,r.left+r.width/2-width/2))+'px';tip.style.top=Math.max(12,Math.min(innerHeight-tip.offsetHeight-12,r.bottom+8))+'px'}
  document.addEventListener('pointerover',e=>{const b=e.target.closest?.('[data-tip]');if(b&&b!==anchor)show(b)});
  document.addEventListener('pointerout',e=>{if(anchor&&anchor.contains(e.target)&&(!e.relatedTarget||!anchor.contains(e.relatedTarget)))hide()});
  document.addEventListener('focusin',e=>{const b=e.target.closest?.('[data-tip]');if(b)show(b);else hide()});

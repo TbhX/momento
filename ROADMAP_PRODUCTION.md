@@ -1,5 +1,11 @@
 # Momento — travaux de production
 
+## Identité visuelle et animation d’accueil
+
+Le logo en image remplace le mot-symbole précédent dans le menu, l’en-tête, les formulaires de compte et les pages de confidentialité/erreur. L’accueil présente l’animation fournie dans un encart distinct du texte, sans rogner le logo, avec une image fixe de secours. La piste audio a été retirée du fichier publié. La vidéo locale boucle seulement quand elle est visible ; elle s’arrête en changeant de panneau ou en masquant l’onglet. Le bouton permet de mettre en pause ou de relancer. La préférence de réduction des animations conserve l’image fixe et évite le chargement vidéo jusqu’à une action explicite. Aucun lecteur ou traceur tiers n’est ajouté.
+
+Le build traite le MP4 comme un binaire, et non comme du texte. Les 361 tests locaux et le build Pages réussissent ; les fichiers publiés sont identiques aux sources binaires. Les essais couvrent le refus de lecture automatique, l’erreur média et une réponse de lecture tardive après navigation. Les contrôles de déploiement et les essais physiques sur téléphone restent distincts des tests locaux. Aucun droit de compte, appel distant ou service payant n’est activé.
+
 ## Noyau de rotation par binômes
 
 Un premier moteur pur prépare les dix tours du format équilibré pour 20, 50 ou 100 participants : préférences réciproques, présence récente, session active, confirmations, blocages, apartés et historique des paires. Le couplage maximise le nombre de rencontres possibles dans l’instantané et ne réutilise aucune paire déjà proposée dans l’événement. Les tours gardent leurs 5 minutes puis 30 secondes de choix, sans rattrapage tardif ni tour final incomplet. L’absence de personne compatible, l’attente et l’épuisement des rencontres sont distingués.

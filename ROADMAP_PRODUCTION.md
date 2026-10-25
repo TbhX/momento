@@ -1,5 +1,13 @@
 # Momento — travaux de production
 
+## Noyau de rotation par binômes
+
+Un premier moteur pur prépare les dix tours du format équilibré pour 20, 50 ou 100 participants : préférences réciproques, présence récente, session active, confirmations, blocages, apartés et historique des paires. Le couplage maximise le nombre de rencontres possibles dans l’instantané et ne réutilise aucune paire déjà proposée dans l’événement. Les tours gardent leurs 5 minutes puis 30 secondes de choix, sans rattrapage tardif ni tour final incomplet. L’absence de personne compatible, l’attente et l’épuisement des rencontres sont distingués.
+
+Ce noyau est volontairement sans route, minuterie ou accès base : il ne démarre aucun appel. Le [contrat d’intégration](ROTATION_ENGINE.md) précise les instantanés à lire côté serveur, les réservations atomiques et contraintes d’unicité à créer, la relecture après réponse perdue et les validations avant jeton média. La répétition locale reste séparée. Prochaine priorité : persister check-in, préférences et tours sur une base de développement, tester les ordonnancements concurrents et les révocations avant raccordement des médias. Aucun drapeau ni donnée du projet hébergé n’est modifié.
+
+Validation : 357 tests locaux et build Pages réussis, dont treize nouveaux tests, comparaison des 512 graphes possibles de taille 3×3 à un maximum exhaustif indépendant, et dix rotations sans répétition pour chacune des capacités. Le contrôle du déploiement est distinct des tests locaux ; aucun appel réel, charge simultanée ou téléphone physique n’est annoncé.
+
 ## Présentation publique, SEO et photos Premium
 
 Le parcours courant ne présente plus les bandeaux de chantier ni le journal de développement. L’administration conserve son laboratoire identifié ; les actions réellement indisponibles l’indiquent au moment utile. Aucun drapeau d’admission, de vente ou de média n’est activé.

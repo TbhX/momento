@@ -6,6 +6,11 @@ import {createRequire} from 'node:module';
 import {dirname,join} from 'node:path';
 const effects=await build({entryPoints:['src/vendor/background-entry.js'],bundle:true,write:false,format:'iife',platform:'browser',target:['es2020'],minify:true,legalComments:'eof',plugins:[{name:'livekit-global',setup(build){build.onResolve({filter:/^livekit-client$/},()=>({path:'livekit-client',namespace:'livekit-global'}));build.onLoad({filter:/.*/,namespace:'livekit-global'},()=>({contents:'module.exports=globalThis.LivekitClient;',loader:'js'}))}}]});
 const assets={};for(const name of await readdir('src/client'))assets['/'+name]=/\.(png|jpg)$/.test(name)?{binary:(await readFile('src/client/'+name)).toString('base64')}:await readFile('src/client/'+name,'utf8');
+const publicSEO=createRequire(import.meta.url)('../src/client/public-seo.js');
+const publicTemplate=assets['/index.html'];
+for(const [key,info] of Object.entries(publicSEO.pages))assets[info.path+'index.html']=publicSEO.renderDocument(publicTemplate,key);
+assets['/robots.txt']='User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: '+publicSEO.origin+'/sitemap.xml\n';
+assets['/sitemap.xml']='<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+Object.values(publicSEO.pages).map(p=>'<url><loc>'+publicSEO.origin+p.path+'</loc></url>').join('')+'</urlset>';
 const require=createRequire(import.meta.url),processorRequire=createRequire(require.resolve('@livekit/track-processors')),visionDirectory=dirname(processorRequire.resolve('@mediapipe/tasks-vision'));
 const effectHashes=JSON.parse(await readFile('src/vendor/effects-assets.json','utf8'));
 for(const [name,hash] of Object.entries(effectHashes)){

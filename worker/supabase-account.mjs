@@ -161,6 +161,13 @@ export async function supabaseAccountAPI(request,env,context,userId,{readJSON,me
  if(path.startsWith('/api/me/'))return profileMedia(request,env,context,userId,path,origin,readJSON,mediaCodec);
  if(path.startsWith('/api/profile-photo/')){
   if(request.method!=='GET')throw accountFailure('method_not_allowed',405);
+  if(path.startsWith('/api/profile-photo/room/')){
+   const parts=path.slice('/api/profile-photo/room/'.length).split('/');
+   if(parts.length!==2||!parts.every(v=>UUID.test(v)))throw accountFailure('not_found',404);
+   const image=await userRPC(context.supabase,'room_photo_path',{p_room:parts[0],p_peer:parts[1]});
+   if(!image)throw accountFailure('not_found',404);
+   return downloadImage(serverClient(env),image);
+  }
   const encounter=path.slice('/api/profile-photo/'.length);
   if(!UUID.test(encounter))throw accountFailure('not_found',404);
   const image=await userRPC(context.supabase,'peer_photo_path',{p_encounter:encounter});

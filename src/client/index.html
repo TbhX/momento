@@ -8,7 +8,7 @@
  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
  <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/appearance.css"><link rel="stylesheet" href="/auth.css"><link rel="stylesheet" href="/video.css"><link rel="stylesheet" href="/experience.css"><link rel="stylesheet" href="/admin.css"><link rel="stylesheet" href="/app-shell.css"><link rel="stylesheet" href="/palette.css"><link rel="stylesheet" href="/call-experience.css"><link rel="stylesheet" href="/call-moments.css">
-<link rel="stylesheet" href="/hosted-rooms.css"><link rel="stylesheet" href="/roundtable.css"></head>
+<link rel="stylesheet" href="/hosted-rooms.css"><link rel="stylesheet" href="/roundtable.css"><link rel="stylesheet" href="/salon-photos.css"></head>
 <body class="momento-shell public-view" data-palette="duo">
 <a class="skip-link" href="#app">Aller au contenu</a>
 <div class="app-frame">
@@ -17,9 +17,9 @@
   <p class="sidebar-tagline">Un bonjour peut tout changer.</p>
   <nav class="sidebar-nav" aria-label="Navigation principale">
    <span class="sidebar-label">DÉCOUVRIR</span>
-   <button data-page="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10H3Z M9 20v-7h6v7"/></svg><span>Pour vous</span></button>
-   <button data-page="salon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="5"/><path d="M8 10h.01M16 10h.01M8 14c2 2 6 2 8 0"/></svg><span>Les salons</span><small>APERÇU</small></button>
-   <button data-page="tablePreview"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg><span>La table ronde</span><small>NOUVEAU</small></button>
+   <a href="/" data-page="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10H3Z M9 20v-7h6v7"/></svg><span>Pour vous</span></a>
+   <button data-page="salon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="5"/><path d="M8 10h.01M16 10h.01M8 14c2 2 6 2 8 0"/></svg><span>Les salons</span></button>
+   <a href="/speed-dating/" data-page="tablePreview"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg><span>La table ronde</span></a>
    <div data-member-nav hidden class="sidebar-member-group">
     <span class="sidebar-label">VOTRE ESPACE</span>
     <button data-page="hosted"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M5 5l14 14M5 19 19 5"/></svg><span>Mes salons</span></button>
@@ -31,9 +31,9 @@
    </div>
    <div class="sidebar-discover-group" data-public-nav>
     <span class="sidebar-label">L’ESPRIT MOMENTO</span>
-    <button data-page="hostedPreview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M5 5l14 14M5 19 19 5"/></svg><span>Créer un salon</span><small>NOUVEAU</small></button>
-    <button data-page="concept"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5Z"/></svg><span>Le concept</span></button>
-    <button data-page="plans"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 5 4 4-7 4 7 5-4-2 12H5Z"/></svg><span>Les formules</span></button>
+    <a href="/creer-un-salon/" data-page="hostedPreview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M5 5l14 14M5 19 19 5"/></svg><span>Créer un salon</span></a>
+    <a href="/concept/" data-page="concept"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5Z"/></svg><span>Le concept</span></a>
+    <a href="/formules/" data-page="plans"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 5 4 4-7 4 7 5-4-2 12H5Z"/></svg><span>Les formules</span></a>
     <button data-page="dates"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h12v9a5 5 0 0 1-10 0V5M16 6h2a3 3 0 0 1 0 6h-2M3 21h16"/></svg><span>Bientôt en vrai</span><small>À VENIR</small></button>
    </div>
    <button data-page="admin" data-admin-nav hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 3v6c0 4-4 7-8 9-4-2-8-5-8-9V6Z M8 12l3 3 5-6"/></svg><span>Administration</span></button>
@@ -41,21 +41,21 @@
   <div class="sidebar-bottom">
    <div class="sidebar-moment"><span aria-hidden="true">♡</span><p>Laissons une place<br>à l’inattendu.</p><small>LES PREMIERS MOMENTS SE PRÉPARENT</small></div>
    <button class="sidebar-install" onclick="installApp()"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></svg>Installer Momento <span aria-hidden="true">↗</span></button>
-   <div class="sidebar-utility"><button data-page="audit">Le projet</button><a href="/confidentialite.html" onclick="event.preventDefault();go('privacy')">Confidentialité</a><span>18+</span></div>
+   <div class="sidebar-utility"><a href="/confidentialite.html" onclick="event.preventDefault();go('privacy')">Confidentialité</a><span>18+</span></div>
   </div>
  </aside>
  <button class="sidebar-scrim" id="sidebarScrim" aria-label="Fermer le menu" onclick="MomentoNavigation.closeMenu(true)" hidden tabindex="-1"></button>
  <div class="app-workspace" id="appWorkspace">
   <header class="app-topbar">
    <div class="topbar-location"><button id="sidebarToggle" class="icon-button menu-toggle" type="button" aria-label="Ouvrir le menu" aria-controls="appSidebar" aria-expanded="false" onclick="MomentoNavigation.toggleMenu()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><span class="topbar-wordmark">momento <i aria-hidden="true">/</i></span><span id="shellPageLabel">Pour vous</span></div>
-   <div class="header-actions"><span class="shell-beta"><i></i> EN PRÉPARATION</span><button class="header-signin" data-visitor-action onclick="openAccount('signin')">Se connecter <span aria-hidden="true">↗</span></button><button class="header-profile" data-page="profile" data-member-action hidden aria-label="Mon profil"><span class="avatar own-avatar" data-own-avatar>M</span><span>Mon profil</span></button></div>
+   <div class="header-actions"><button class="header-signin" data-visitor-action onclick="openAccount('signin')">Se connecter <span aria-hidden="true">↗</span></button><button class="header-profile" data-page="profile" data-member-action hidden aria-label="Mon profil"><span class="avatar own-avatar" data-own-avatar>M</span><span>Mon profil</span></button></div>
   </header>
   <div id="navigationProgress" class="navigation-progress" role="status" aria-live="polite" hidden><span aria-hidden="true">♡</span> Votre prochain moment arrive…</div>
-  <main id="app" tabindex="-1"><div class="empty" role="status"><h1>Votre prochain bonjour.</h1><p>Momento se prépare, un instant…</p></div></main>
-  <footer class="app-statusbar"><span><i></i> Les premiers bonjours se préparent.</span><button onclick="go('audit')">Rencontres et achats à venir <span aria-hidden="true">↗</span></button></footer>
+  <main id="app" tabindex="-1"><div class="empty" role="status"><h1>Votre prochain bonjour.</h1><p>Votre espace se charge…</p></div></main>
+  <footer class="app-statusbar"><span>Un bonjour peut tout changer.</span><a href="/confidentialite.html" onclick="event.preventDefault();go('privacy')">Confidentialité & règles · 18+</a></footer>
  </div>
 </div>
 <dialog id="modal" aria-label="Momento"></dialog><div id="toast" role="status" aria-live="polite"></div><span id="count" hidden>0</span>
 <noscript><p>Activez JavaScript pour découvrir Momento. <a href="/confidentialite.html">Lire la confidentialité et les règles</a>.</p></noscript>
-<script defer src="/domain.js"></script><script defer src="/app.js"></script><script defer src="/navigation.js"></script><script defer src="/discovery.js"></script><script defer src="/auth.js"></script><script defer src="/home.js"></script><script defer src="/account.js"></script><script defer src="/palette.js"></script><script defer src="/appearance.js"></script><script defer src="/media-loader.js"></script><script defer src="/effects.js"></script><script defer src="/media.js"></script><script defer src="/shop-model.js"></script><script defer src="/conversation-model.js"></script><script defer src="/salon-model.js"></script><script defer src="/salon.js"></script><script defer src="/call-ui.js"></script><script defer src="/shop.js"></script><script defer src="/community.js"></script><script defer src="/hosted-rooms.js"></script><script defer src="/live.js"></script><script defer src="/video.js"></script><script defer src="/admin.js"></script><script defer src="/call-moments.js"></script><script defer src="/call-demo.js"></script><script defer src="/roundtable.js"></script><script defer src="/business.js"></script>
+<script defer src="/domain.js"></script><script defer src="/app.js"></script><script defer src="/navigation.js"></script><script defer src="/discovery.js"></script><script defer src="/auth.js"></script><script defer src="/public-seo.js"></script><script defer src="/home.js"></script><script defer src="/account.js"></script><script defer src="/palette.js"></script><script defer src="/appearance.js"></script><script defer src="/media-loader.js"></script><script defer src="/effects.js"></script><script defer src="/media.js"></script><script defer src="/shop-model.js"></script><script defer src="/conversation-model.js"></script><script defer src="/salon-model.js"></script><script defer src="/salon.js"></script><script defer src="/call-ui.js"></script><script defer src="/shop.js"></script><script defer src="/salon-photos.js"></script><script defer src="/community.js"></script><script defer src="/hosted-rooms.js"></script><script defer src="/live.js"></script><script defer src="/video.js"></script><script defer src="/admin.js"></script><script defer src="/call-moments.js"></script><script defer src="/call-demo.js"></script><script defer src="/roundtable.js"></script><script defer src="/business.js"></script>
 </body></html>

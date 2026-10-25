@@ -1,0 +1,7 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),{readFileSync}=require('node:fs');
+const {JSDOM}=require('jsdom'),SEO=require('../src/client/public-seo.js');
+test('public documents expose unique canonical metadata and crawlable navigation without account data',()=>{
+ const template=readFileSync('src/client/index.html','utf8'),titles=new Set(),descriptions=new Set();
+ for(const [key,p] of Object.entries(SEO.pages)){const dom=new JSDOM(SEO.renderDocument(template,key)),d=dom.window.document;try{assert.equal(d.querySelectorAll('title').length,1);assert.equal(d.querySelectorAll('meta[name="description"]').length,1);assert.equal(d.querySelectorAll('link[rel="canonical"]').length,1);assert.equal(d.querySelector('link[rel="canonical"]').href,SEO.origin+p.path);assert.equal(d.querySelector('meta[property="og:title"]').content,p.title);assert.equal(d.querySelector('meta[name="twitter:description"]').content,p.description);assert.ok(d.querySelector('h1').textContent.includes(p.heading));assert.ok(d.querySelector('a[href="/concept/"]'));assert.equal(SEO.pageFromPath(p.path),key);assert.equal(titles.has(p.title),false);assert.equal(descriptions.has(p.description),false);titles.add(p.title);descriptions.add(p.description);assert.doesNotMatch(d.querySelector('#app').textContent,/chargement|en préparation|prod-ready|qa-only|session_id/i)}finally{dom.window.close()}}
+ assert.equal(SEO.pageFromPath('/api/service/admin'),null);assert.equal(SEO.pageFromPath('/concept'), 'concept');
+});

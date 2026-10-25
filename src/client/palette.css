@@ -9,11 +9,11 @@ body[data-palette] .brand{color:var(--palette-ink)}body[data-palette] .brand .br
 body[data-palette] .primary{background:var(--palette-button);color:white;border-color:transparent}
 body[data-palette] .secondary:not(.call-end){color:var(--palette-ink);border-color:var(--palette-line)}
 body[data-palette] :is(button,a,input,select,summary,textarea):focus-visible{outline-color:var(--palette-accent)}
-body[data-palette] .sidebar-tagline,body[data-palette] .sidebar-label,body[data-palette] .sidebar-nav button,body[data-palette] .sidebar-nav button>small,body[data-palette] .sidebar-install,body[data-palette] .sidebar-utility>*{color:var(--palette-muted)}
+body[data-palette] .sidebar-tagline,body[data-palette] .sidebar-label,body[data-palette] .sidebar-nav :is(button,a),body[data-palette] .sidebar-nav :is(button,a)>small,body[data-palette] .sidebar-install,body[data-palette] .sidebar-utility>*{color:var(--palette-muted)}
 body[data-palette] .sidebar-label{background:transparent}
-body[data-palette] .sidebar-nav button:hover{background:var(--palette-soft);color:var(--palette-accent)}
-body[data-palette] .sidebar-nav button.active{background:var(--palette-selected);color:var(--palette-ink);box-shadow:inset 0 0 0 1px var(--palette-line)}
-body[data-palette] .sidebar-nav button.active:before{background:var(--palette-accent)}
+body[data-palette] .sidebar-nav :is(button,a):hover{background:var(--palette-soft);color:var(--palette-accent)}
+body[data-palette] .sidebar-nav :is(button,a).active{background:var(--palette-selected);color:var(--palette-ink);box-shadow:inset 0 0 0 1px var(--palette-line)}
+body[data-palette] .sidebar-nav :is(button,a).active:before{background:var(--palette-accent)}
 body[data-palette] .sidebar-moment{background:var(--palette-moment)}body[data-palette] .sidebar-moment p,body[data-palette] .sidebar-moment>span{color:var(--palette-accent)}body[data-palette] .sidebar-moment small{color:var(--palette-muted)}
 body[data-palette] .topbar-location,body[data-palette] .topbar-wordmark,body[data-palette] .shell-beta,body[data-palette] .app-statusbar,body[data-palette] .app-statusbar button{color:var(--palette-muted)}
 body[data-palette] .shell-beta i,body[data-palette] .app-statusbar i{background:var(--palette-accent)}

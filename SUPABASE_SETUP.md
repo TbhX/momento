@@ -17,3 +17,7 @@ Les schémas `60_hosted_rooms.sql` et `70_community_directory.sql` ajoutent les 
 ### Publication réservée aux tests administrateur
 
 `80_admin_test_rooms.sql` ajoute une publication dédiée, liée à Auth, au rôle privé admin activé et à l’environnement de test. Les salons concernés portent `is_test`, sont accessibles par lien uniquement et ne consomment aucun crédit ni création Premium incluse. La fonction d’admission les refuse systématiquement. Les participants peuvent vérifier des réservations explicitement marquées comme tests ; aucun token média n’est créé. Les tests rejouent aussi la révocation du rôle et de la session, la propriété, l’idempotence et la fermeture des publications ordinaires. Les tables privées gardent RLS et aucun accès direct membre.
+
+### Photos des salons
+
+`90_salon_photos.sql` ajoute une fonction privée de résolution liée à la session et au Premium natif, exposée par un wrapper SECURITY INVOKER. Elle vérifie salon visible, présence active, compte actif et blocages, et limite les lectures. L’image n’est téléchargée via le serveur que si ce contrôle retourne une référence autorisée. Les vignettes gratuites sont un fichier neutre, sans copie de la photo nette. Aucun droit sur Storage n’est ajouté aux membres. Les tests rejouent le schéma et l’historique dans des bases isolées.

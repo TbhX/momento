@@ -56,7 +56,7 @@ pnpm run build:pages
 
 Le build produit `pages-dist` avec le site et son Worker. Les paramètres sensibles restent dans les services ; aucun secret ou export personnel ne doit être ajouté au dépôt.
 
-337 tests locaux et build Pages réussis pour cette livraison. Ils couvrent notamment la navigation, les accès entre comptes, les palettes, les appareils et autorisations tardives, les consentements, les chronos, les blocages et la protection contre les confirmations répétées sans double consommation d’accès. Les scénarios serveur de prolongation sont rejoués sur le schéma déclaré et sur les migrations, dans des bases de test isolées. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
+344 tests locaux et build Pages réussis pour cette livraison. Ils couvrent notamment la navigation, les accès entre comptes, les palettes, les appareils et autorisations tardives, les consentements, les chronos, les blocages et la protection contre les confirmations répétées sans double consommation d’accès. Les scénarios serveur de prolongation sont rejoués sur le schéma déclaré et sur les migrations, dans des bases de test isolées. La validation du code publié et les essais sur appareils sont suivis séparément dans [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
 
 Voir aussi [PRODUCTION_AUTH.md](PRODUCTION_AUTH.md), [SUPABASE_SETUP.md](SUPABASE_SETUP.md) et [ROADMAP_PRODUCTION.md](ROADMAP_PRODUCTION.md). Les détails d’exploitation sont conservés dans le suivi privé.
 
@@ -67,3 +67,9 @@ Les visiteurs découvrent une présentation courte, sans préférences ni liste 
 La confirmation prépare l’entrée à l’heure fixée ; avant le départ, ni quota consommé, ni premier profil proposé, ni chrono de rencontre lancé. Sortir de l’attente annule cette entrée préparée. Après l’ouverture, l’entrée est immédiate, sous réserve du quota. La répétition conserve les prénoms déjà rencontrés par événement, y compris après une sortie et un retour. Les tours suivants utilisent uniquement les personnes restantes, jusqu’à la fin de l’événement.
 
 La répétition est locale : profils fictifs, horaires de démonstration au quart d’heure suivant, appareils éteints par défaut. Une invitation de salon de test reprend son vrai créneau mais utilise toujours des personnes fictives dans l’essai. L’admin peut avancer l’horloge de sa répétition. Les admissions réelles sont fermées ; le serveur dispose déjà d’un contrôle d’horaire d’entrée et d’une contrainte unique de paire par salon, mais l’ordonnanceur et les médias restent à raccorder avant toute rencontre réelle.
+
+### Présentation et découverte
+
+Les pages publiques utilisent des adresses lisibles et du contenu HTML prêt à être lu avant JavaScript, avec titres, descriptions, liens canoniques, partage social et sitemap. Le parcours courant présente le service ; les informations du laboratoire restent dans l’administration ou au moment d’une action d’essai. Les autorisations serveur des appels et ventes restent fermées.
+
+Les photos des salons sont une option Premium : l’accès aux originaux privés est vérifié côté serveur, avec session, abonnement, visibilité, présence et blocages. Les comptes gratuits voient un visuel neutre flouté et une invitation à découvrir les formules, sans URL de l’original. Dans la répétition, les portraits sont illustratifs. En fin de découverte, l’encart « Vous avez vu tous les participants » propose un autre salon sans nouvelle entrée automatique.

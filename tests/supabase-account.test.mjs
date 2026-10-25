@@ -31,6 +31,7 @@ function fixture(){
     case 'server_begin_account_deletion':if(f.profile)f.profile.status='deleted';return json(null);
     case 'save_profile':f.profile={id,display_name:body.p_name,age:body.p_age,city:body.p_city,status:'active',created_at:'2026-10-20T08:00:00Z',profession:'',bio:'',gender:'unspecified'};return json(f.profile);
     case 'commit_profile_media':{const old=f.media.find(m=>m.kind===body.p_kind)?.object_path??null;f.media=f.media.filter(m=>m.kind!==body.p_kind);if(body.p_path)f.media.push({kind:body.p_kind,object_path:body.p_path,updated_at:'2026-10-20T09:00:00Z'});return json(old);}
+    case 'room_photo_path':return json(f.roomPhoto??null);
     case 'account_status':return json({premium:false,admin:false,unlimited:false,dailyLimit:1,used:0,bookingLimit:1});
     case 'export_hosted_rooms':return json({owned:[],registrations:[]});
     case 'export_call_extensions':return json([{id:'fixture-extension',outgoing:true,status:'declined',chargedCredits:0}]);
@@ -198,4 +199,10 @@ test('gender changes reject unknown values, extra identity fields, cross-origin 
 test('a suspended profile or a concurrent denied profile update cannot report a successful gender change',async()=>run(async c=>{
  await registered(c);c.f.profile.status='suspended';assert.equal((await c.worker.fetch(req('/api/me',{method:'PATCH',cookie:c.b.header(),body:{gender:'man'}}),c.e)).status,403);
  c.f.profile.status='active';c.f.denyProfilePatch=true;const response=await c.worker.fetch(req('/api/me',{method:'PATCH',cookie:c.b.header(),body:{gender:'man'}}),c.e);assert.equal(response.status,403);assert.equal(c.f.profile.gender,'unspecified');
+}));
+
+test('salon photo downloads depend on the member-bound room RPC before any private Storage read',async()=>run(async c=>{
+ await registered(c);const path='/api/profile-photo/room/'+sid+'/'+id;c.f.calls=[];let response=await c.worker.fetch(req(path,{cookie:c.b.header(),headers:{'X-Premium':'true'}}),c.e);assert.equal(response.status,404);assert.equal(c.f.calls.some(x=>x.path.startsWith('/storage/v1/')),false);const check=c.f.calls.find(x=>x.path.endsWith('/room_photo_path'));assert.equal(check.apikey,pub);assert.deepEqual(check.body,{p_room:sid,p_peer:id});
+ c.f.roomPhoto=id+'/avatar-00000000-0000-4000-8000-000000000099.jpg';response=await c.worker.fetch(req(path,{cookie:c.b.header()}),c.e);assert.equal(response.status,200);assert.match(response.headers.get('cache-control'),/no-store/);assert.equal(c.f.calls.findLast(x=>x.path.startsWith('/storage/v1/object/')).apikey,secret);
+ assert.equal((await c.worker.fetch(req(path+'/extra',{cookie:c.b.header()}),c.e)).status,404);
 }));

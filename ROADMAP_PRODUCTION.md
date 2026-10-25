@@ -1,5 +1,15 @@
 # Momento — travaux de production
 
+## Présentation publique, SEO et photos Premium
+
+Le parcours courant ne présente plus les bandeaux de chantier ni le journal de développement. L’administration conserve son laboratoire identifié ; les actions réellement indisponibles l’indiquent au moment utile. Aucun drapeau d’admission, de vente ou de média n’est activé.
+
+Cinq pages publiques disposent de chemins lisibles, de contenu HTML avant JavaScript, de titres/descriptions propres, de liens explorables, d’une URL canonique, de métadonnées de partage et d’un sitemap. Les anciens liens à fragment restent compris. La navigation conserve le cadre d’application et les panneaux membres restent soumis au compte et au profil complet. Le SEO ne garantit aucune position dans les moteurs. Référence : [guide JavaScript SEO de Google](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics).
+
+Les membres gratuits voient un visuel neutre flouté et une invitation à découvrir Premium, sans URL de photo nette dans le composant. Premium peut consulter les photos des personnes présentes dans un salon visible, sous réserve de la session active, des blocages, de la présence et de la période d’abonnement. Le Worker télécharge l’image privée après validation Auth-bound en base ; aucun lien Storage public ni cache privé persistant. La répétition utilise des portraits illustratifs et ses droits locaux ne donnent aucun accès aux images d’un vrai membre.
+
+À épuisement des personnes compatibles, un encart « Vous avez vu tous les participants » propose de découvrir un autre salon. Il ne réinitialise pas les rencontres et ne consomme pas une entrée automatiquement. 344 tests locaux et build Pages réussis. La fonction de photos a été appliquée après vérification de l’identité et de l’historique du projet, puis les droits/RLS et autorisations fermées ont été relus, sans fixture hébergée. Le déploiement et les essais sur appareils sont suivis séparément.
+
 ## Salons de test et table ronde
 
 L’administrateur activé peut enregistrer un brouillon puis choisir « Publier pour tester ». Le serveur relit le rôle privé et la session active, exige l’environnement de test, impose la propriété du brouillon et publie uniquement par lien. Le statut « Salon de test » apparaît sur la carte sociale et l’invitation. Aucun crédit réel ni avantage de création Premium n’est consommé. Rejouer la publication ne crée ni deuxième salon ni deuxième écriture. Ces salons restent interdits aux admissions réelles, même si les autres autorisations sont activées ultérieurement. La perte du rôle admin masque leur lien public.
@@ -48,7 +58,7 @@ Ce parcours reste une répétition locale. Ses boutons ne créent aucun paiement
 
 Le cadre fixe, le menu latéral, le tiroir mobile, les transitions et les palettes pastel de la livraison précédente sont conservés. Le genre est facultatif et déclaré ; la palette peut être choisie personnellement sans modifier les droits. Les lectures privées ne sont pas conservées en cache.
 
-Validation locale : 337 tests réussis et build Pages réussi. Le contrôle serveur est testé sur le schéma déclaré et les migrations, avec des comptes et présences synthétiques dans des bases isolées. Les appareils sont testés avec des flux simulés ; aucun essai sur téléphone physique, charge concurrente réelle ou appel distant à deux appareils n’est annoncé. La vérification du déploiement est distincte et consignée dans le suivi privé.
+Validation locale : 344 tests réussis et build Pages réussi. Le contrôle serveur est testé sur le schéma déclaré et les migrations, avec des comptes et présences synthétiques dans des bases isolées. Les appareils sont testés avec des flux simulés ; aucun essai sur téléphone physique, charge concurrente réelle ou appel distant à deux appareils n’est annoncé. La vérification du déploiement est distincte et consignée dans le suivi privé.
 
 L’accès organisateur reste protégé par les rôles privés. Les inscriptions suivent les réglages natifs e-mail, avec profil complété avant les espaces membre. Les simulations Gratuit/Premium ne modifient pas les droits réels.
 

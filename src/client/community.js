@@ -11,7 +11,7 @@ async function communityNavigate(view,generation,preparedData){
  if(view==='salon')communityRooms();else communityContacts();
  await communityLoadPage();
 }
-function communityQuota(){return `<aside class="quota-panel"><div><span class="date">${liveStatus.premium?'MOMENTO PREMIUM':'MOMENTO GRATUIT'}</span><h3>${liveStatus.premium?'Tous les salons pendant votre abonnement':Math.max(0,Number(liveStatus.dailyLimit||1)-Number(liveStatus.used||0))+' entrée gratuite restante aujourd’hui'}</h3><p>Journée à l’heure de Paris. L’aperçu et la réservation ne consomment aucune entrée.</p></div><span class="badge">${communityData.admissionsEnabled?'Salons ouverts':'Rencontres en préparation'}</span></aside>`}
+function communityQuota(){return `<aside class="quota-panel"><div><span class="date">${liveStatus.premium?'MOMENTO PREMIUM':'MOMENTO GRATUIT'}</span><h3>${liveStatus.premium?'Tous les salons pendant votre abonnement':Math.max(0,Number(liveStatus.dailyLimit||1)-Number(liveStatus.used||0))+' entrée gratuite restante aujourd’hui'}</h3><p>Journée à l’heure de Paris. L’aperçu et la réservation ne consomment aucune entrée.</p></div><span class="badge">${communityData.admissionsEnabled?'Salons ouverts':'Prochains salons'}</span></aside>`}
 function communityDemo(view='salon'){
  leaveLiveRoom();salonOpen(view);const banner=document.createElement('aside');banner.className='community-demo-note';banner.innerHTML=`<b>Démonstration · profils fictifs</b><p>Ces interactions restent sur cet appareil. Aucun membre ne les reçoit.</p><button class="secondary" onclick="go('salon')">Revenir à mes vrais salons</button>`;app.prepend(banner);
 }
@@ -50,7 +50,7 @@ function communityContactCards(items){
 }
 async function communityPreview(id){
  try{const generation=liveGeneration,room=communityDirectory?.items.find(r=>r.id===id);if(!room)return;const data=await api('/rooms/'+encodeURIComponent(id)+'/preview');if(generation!==liveGeneration||!accountReady)return;
- modal(`<span class="home-eyebrow">APERÇU GRATUIT</span><h2>${txt(room.title)}</h2><p>${txt(room.city)} · ${room.min_age}–${room.max_age} ans</p><p>Regarder ne consomme aucune entrée. Seuls les prénoms sont affichés : la découverte se fera pendant l’échange. Les profils bloqués restent masqués.</p><div class="community-people">${data.people.map(p=>`<article><b>${txt(p.display_name)}</b></article>`).join('')||'<p>Personne n’est présent pour le moment.</p>'}</div><div class="notice">Les entrées et appels réels ouvriront après validation.</div><button class="secondary" onclick="document.getElementById('modal').close()">Revenir aux salons</button>`);
+ modal(`<span class="home-eyebrow">APERÇU GRATUIT</span><h2>${txt(room.title)}</h2><p>${txt(room.city)} · ${room.min_age}–${room.max_age} ans</p><p>Regarder ne consomme aucune entrée. Les photos sont accessibles avec Premium ; les autres membres découvrent les prénoms. Les profils bloqués restent masqués.</p><div class="community-people">${data.people.length?'<div class="salon-photo-grid">'+data.people.map(p=>salonPhotoMarkup(p.display_name,'/api/profile-photo/room/'+encodeURIComponent(id)+'/'+encodeURIComponent(p.user_id),liveStatus?.premium===true)).join('')+'</div>':'<p>Personne n’est présent pour le moment.</p>'}</div><div class="notice">Les horaires et l’ouverture des places sont indiqués sur chaque invitation.</div><button class="secondary" onclick="document.getElementById('modal').close()">Revenir aux salons</button>`);
  }catch(e){toast(e.message)}
 }
 function communityShop(){

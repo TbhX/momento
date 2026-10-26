@@ -39,3 +39,9 @@ Le contrôle de dépendances du 26 octobre 2026 (`pnpm audit --prod`) ne signale
 Avant ouverture complète : configurer et tester confirmation/récupération e-mail ; terminer la suppression des événements HTML intégrés ; valider médias et interruptions avec deux comptes/appareils ; exercer modération et gestion des abus ; configurer alertes et procédure d’incident ; disposer de sauvegardes protégées et d’un essai de restauration ; réaliser un audit d’intrusion indépendant. Le contrôle natif des mots de passe compromis reste signalé comme désactivé ; aucun passage à une offre payante n’est effectué implicitement.
 
 Références : [MFA Supabase](https://supabase.com/docs/guides/auth/auth-mfa), [TOTP](https://supabase.com/docs/guides/auth/auth-mfa/totp), [pratiques Workers](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/).
+
+## Aperçus et bilan de l’essai
+
+L’aperçu de salon est réduit dès la fonction SQL : âge, ville et profession restent à null dans le contrat historique. La route applicative transmet seulement identifiant technique et prénom. Le contrôle s’applique donc aussi à l’appel direct de ce RPC ; les règles de session, MFA, salon découvrable, présence et blocage restent requises.
+
+Le récapitulatif local de sortie n’affiche que les personnes rencontrées durant cet essai, les propres likes et les accords réciproques ; aucun like reçu seul. Il n’est pas persisté, ne renvoie pas de clé de requête et n’accorde aucun accès. Noms insérés comme texte, confirmation liée au compte/persona et au flux courant, retrait du contenu à la fermeture et à l’arrière-plan. Le dialogue bloque les gestes de swipe sous-jacents. Le bouton de présence fictive est explicitement identifié et ne contacte aucune API d’admission ou de média. Les tests de ces vues ne constituent pas une validation de présence réelle ou de jeton vidéo.

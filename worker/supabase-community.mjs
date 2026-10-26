@@ -54,7 +54,8 @@ export async function supabaseCommunityAPI(request,env,{context,origin,readJSON}
  const preview=path.match(/^\/rooms\/([0-9a-f-]+)\/preview$/i);
  if(preview){
   if(request.method!=='GET')throw accountFailure('method_not_allowed',405);
-  return Response.json({people:await rpc(context.supabase,'room_preview',{p_room:identifier(preview[1])})});
+  const people=await rpc(context.supabase,'room_preview',{p_room:identifier(preview[1])});
+  return Response.json({people:people.map(({user_id,display_name})=>({user_id,display_name}))});
  }
  if(!['/friends/action','/invitations/action','/community/block','/rooms/enter','/rooms/leave','/rooms/heartbeat'].includes(path))return null;
  mutation(request,origin);const body=await readJSON(request);let value;

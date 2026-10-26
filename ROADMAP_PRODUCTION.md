@@ -1,5 +1,17 @@
 # Momento — travaux de production
 
+## Attente à deux, transition Momento et récapitulatif privé
+
+L’essai audio/vidéo affiche une attente avant le premier tête-à-tête, après les envies et l’horaire du salon. Le second participant fictif doit être déclaré arrivé explicitement ; l’entrée et le chrono ne commencent pas pendant cette attente. Les appareils restent sous le contrôle du membre. Le retour aux choix ou la sortie de l’attente ne consomme rien. Cette commande appartient uniquement à la répétition locale : la présence réelle, les absences et la reconnexion doivent venir du futur ordonnanceur authentifié, jamais de ce bouton.
+
+Les swipes et rotations de l’essai affichent le logo existant sur un fondu pastel de 320 ms, sans retarder le changement de personne ni l’horloge. L’animation ne capte pas les gestes, disparaît à la sortie et n’est pas créée lorsque les animations sont réduites ou l’onglet masqué.
+
+Avant de changer de panneau après une rencontre commencée, un récapitulatif permet de rester ou de confirmer la sortie : rencontres de cet essai, likes envoyés, matchs réciproques, amitiés et prolongations acceptées, accès privés restants. Aucun like reçu non réciproque n’est révélé ; les profils bloqués et les personnes non rencontrées sont exclus. Les noms sont insérés comme texte, sans HTML utilisateur ni gestionnaire intégré dans ces nouveaux composants. La fermeture ou le masquage de l’onglet retire le contenu du dialogue. Une confirmation détachée ne peut agir sur un autre compte ou une autre session d’essai. Les gestes de swipe ne traversent pas un dialogue ouvert ; quitter annule les demandes non réglées et libère les appareils, sans nouvel achat ni restitution de l’entrée.
+
+Le RPC historique d’aperçu conserve ses colonnes pour compatibilité mais renvoie âge, ville et profession à null, y compris en Data API directe. Le Worker transmet uniquement l’identifiant technique et le prénom. Les gardes de session/MFA, découverte, présence, blocage et budget restent en place. Le delta est généré depuis le déclaratif, revu et rejoué deux fois sur des bases isolées (déclarations et migrations) avant application ; aucune fixture hébergée. La migration est archivée sous sa version réellement attribuée. Les droits et RLS sont relus après application, les autorisations d’ouverture restent fermées et les advisors n’ajoutent aucun avertissement.
+
+Validation : 403 tests locaux et build Pages réussis ; contrôles SQL distants de la projection, des droits et de RLS après application. Aucun essai authentifié sur appareil physique, appel distant à deux membres ni audit d’intrusion indépendant effectué. La suppression des événements HTML historiques, les préférences/check-in persistants, l’ordonnanceur et les médias authentifiés restent à compléter. Ces composants d’essai ne créent aucun droit serveur.
+
 ## Renforcement des comptes et du navigateur
 
 La double authentification TOTP est disponible dans Mon profil → Sécurité et double authentification. La configuration exige le mot de passe actuel puis un code valide. Les clés et codes restent dans la vue courante ; fermer ou masquer le dialogue efface le contenu sensible. L’ajout d’une application de secours et le retrait confirmé par un code sont prévus. La déconnexion globale révoque les connexions natives. Aucune récupération automatique d’un facteur perdu n’est proposée : conserver la clé ou un secours avant activation.

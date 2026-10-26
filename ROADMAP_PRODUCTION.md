@@ -1,5 +1,13 @@
 # Momento — travaux de production
 
+## Réinitialisation réservée aux essais administrateur
+
+Administration → Laboratoire propose de réinitialiser les salons fictifs du compte et du profil d’essai utilisés. Dans une table, le bouton ↻ permet de recommencer seulement cette table. Une confirmation explique les éléments effacés ; aucune remise à zéro n’est déclenchée à l’ouverture. Le quota local est rétabli, les choix et l’historique concernés sont retirés et les appareils libérés. Les envies, l’arrivée fictive du second participant et l’entrée doivent ensuite être confirmées de nouveau. Les historiques des autres tables sont conservés pour une réinitialisation ciblée. Les formules et portefeuilles fictifs, y compris les crédits illimités du laboratoire et un abonnement d’essai acheté, restent en place.
+
+La confirmation relit la permission native administrateur/MFA, puis revérifie compte, persona, état et flux avant toute mutation locale. Une réponse arrivée après navigation, fermeture ou changement de profil ne peut effacer un nouvel essai. Les membres ordinaires n’ont ni bouton ni action autorisée. Le dialogue est retiré à la sortie. Aucun RPC d’écriture, réouverture d’événement, modification de réservation, remboursement ou crédit hébergé n’est effectué ; les horaires d’un salon publié ne sont pas déplacés. Les salons persistants et leurs participants ne disposent pas d’une réinitialisation destructive.
+
+Validation : 408 tests locaux et build Pages réussis, dont Gratuit/Premium, refus de rôle, annulation, réponse tardive, arrêt des appareils, conservation du portefeuille et séparation des historiques. Le contrôle du déploiement reste distinct ; aucun test propriétaire ou téléphone physique annoncé. Le contrôle MFA serveur existant est réutilisé, sans migration ni activation de service réel.
+
 ## Attente à deux, transition Momento et récapitulatif privé
 
 L’essai audio/vidéo affiche une attente avant le premier tête-à-tête, après les envies et l’horaire du salon. Le second participant fictif doit être déclaré arrivé explicitement ; l’entrée et le chrono ne commencent pas pendant cette attente. Les appareils restent sous le contrôle du membre. Le retour aux choix ou la sortie de l’attente ne consomme rien. Cette commande appartient uniquement à la répétition locale : la présence réelle, les absences et la reconnexion doivent venir du futur ordonnanceur authentifié, jamais de ce bouton.

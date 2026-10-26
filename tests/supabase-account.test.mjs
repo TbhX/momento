@@ -180,6 +180,7 @@ test('personal exports include conditional call consent through the member RPC',
  await registered(c);c.f.calls=[];
  const response=await c.worker.fetch(req('/api/me/export',{cookie:c.b.header()}),c.e);assert.equal(response.status,200);
  const data=await response.json();assert.deepEqual(data.data.call_extensions,[{id:'fixture-extension',outgoing:true,status:'declined',chargedCredits:0}]);
+ assert.equal(c.f.calls.some(x=>x.path.endsWith('/export_call_readiness')),false,'pending SQL must not become an export dependency');
  const call=c.f.calls.find(x=>x.path.endsWith('/export_call_extensions'));assert.equal(call.apikey,pub);assert.notEqual(call.authorization,'Bearer '+secret);
  assert.match(response.headers.get('cache-control'),/no-store/);
 }));
@@ -205,4 +206,12 @@ test('salon photo downloads depend on the member-bound room RPC before any priva
  await registered(c);const path='/api/profile-photo/room/'+sid+'/'+id;c.f.calls=[];let response=await c.worker.fetch(req(path,{cookie:c.b.header(),headers:{'X-Premium':'true'}}),c.e);assert.equal(response.status,404);assert.equal(c.f.calls.some(x=>x.path.startsWith('/storage/v1/')),false);const check=c.f.calls.find(x=>x.path.endsWith('/room_photo_path'));assert.equal(check.apikey,pub);assert.deepEqual(check.body,{p_room:sid,p_peer:id});
  c.f.roomPhoto=id+'/avatar-00000000-0000-4000-8000-000000000099.jpg';response=await c.worker.fetch(req(path,{cookie:c.b.header()}),c.e);assert.equal(response.status,200);assert.match(response.headers.get('cache-control'),/no-store/);assert.equal(c.f.calls.findLast(x=>x.path.startsWith('/storage/v1/object/')).apikey,secret);
  assert.equal((await c.worker.fetch(req(path+'/extra',{cookie:c.b.header()}),c.e)).status,404);
+}));
+
+
+test('pending readiness schema cannot break closed routes or bypass revoked sessions',async()=>run(async c=>{
+ await registered(c);c.f.calls=[];const path='/api/service/encounters/'+id+'/readiness';
+ let response=await c.worker.fetch(req(path,{cookie:c.b.header()}),c.e);assert.equal(response.status,200);assert.deepEqual(await response.json(),{state:'disabled',mediaEnabled:false});
+ response=await c.worker.fetch(req(path,{method:'POST',cookie:c.b.header(),body:{action:'prepare',mode:'video'}}),c.e);assert.equal(response.status,200);assert.equal((await response.json()).state,'disabled');
+ c.f.active=false;response=await c.worker.fetch(req(path,{cookie:c.b.header()}),c.e);assert.equal(response.status,401);assert.equal(c.f.calls.some(x=>/call_readiness/.test(x.path)),false);
 }));

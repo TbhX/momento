@@ -1,3 +1,4 @@
+import {supabaseCallReadinessAPI} from './supabase-call-readiness.mjs';
 import {accountFailure,serverClient,serverRPC} from './supabase-server.mjs';
 import {hostedRoomsAPI,exportHostedRooms} from './supabase-hosted.mjs';
 import {supabaseCommunityAPI} from './supabase-community.mjs';
@@ -182,6 +183,8 @@ export async function supabaseAccountAPI(request,env,context,userId,{readJSON,me
  if(path.startsWith('/api/service/')){
   const hostedResponse=await hostedRoomsAPI(request,env,{context,origin,readJSON});
   if(hostedResponse)return hostedResponse;
+  const readinessResponse=await supabaseCallReadinessAPI(request,env,{context,origin,readJSON});
+  if(readinessResponse)return readinessResponse;
   const callResponse=await supabaseCallExtensionsAPI(request,env,{context,origin,readJSON});
   if(callResponse)return callResponse;
   const adminResponse=await supabaseAdminAPI(request,env,{context,origin,readJSON});

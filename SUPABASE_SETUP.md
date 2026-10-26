@@ -35,3 +35,7 @@ Le delta est rejoué sur les déclarations et l’historique en bases locales is
 ### Aperçu des participants réduit
 
 La fonction native d’aperçu ne retourne plus les valeurs d’âge, ville ou profession : les colonnes historiques sont conservées à null pour compatibilité. Le Worker ne transmet que l’identifiant technique nécessaire aux actions autorisées et le prénom. Le changement ne touche ni les rôles, ni la découverte, ni les budgets, ni le contrôle de session. Le delta du déclaratif est rejoué deux fois sur les déclarations et l’historique isolés avant application, puis archivé sous la version native attribuée ; RLS et droits sont relus. Aucun participant de test n’est créé dans le projet hébergé.
+
+### Préparation d’un binôme
+
+`96_call_readiness.sql` ajoute les réglages fermés par défaut et les préparations privées liées à une rencontre, une session et une entrée natives. RLS interdit tout accès direct membre aux tables ; seuls les RPC Auth-bound sont exposés via wrappers INVOKER. Le reçu commun n’est jamais un droit média. Les retraits sont persistants et l’export personnel masque les références de session et d’entrée. Le schéma et l’historique avec delta sont testés en local isolé. L’application distante est bloquée par une erreur du connecteur ; le delta demeure dans `supabase/pending/call_readiness.sql` et ne fait pas partie de l’historique appliqué. L’export de compte existant ne dépend pas encore de cette fonction. Voir [CALL_READINESS.md](CALL_READINESS.md).

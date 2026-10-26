@@ -52,6 +52,8 @@ begin
  if not private.is_active_member() then raise exception 'admin_required' using errcode='42501'; end if;
  select role into result from private.admin_roles where user_id=auth.uid() and not setup_required;
  if result is null then raise exception 'admin_required' using errcode='42501'; end if;
+ if not exists(select 1 from auth.mfa_factors where user_id=auth.uid() and status='verified') then raise exception 'mfa_enrollment_required' using errcode='42501'; end if;
+ if (auth.jwt()->>'aal') is distinct from 'aal2' then raise exception 'mfa_required' using errcode='42501'; end if;
  return result;
 end $$;
 
@@ -137,3 +139,11 @@ begin
   'premiumUntil',(select max(e.ends_at) from public.entitlements e join private.runtime_settings s on e.environment=s.billing_environment where e.user_id=actor and e.revoked_at is null and e.starts_at<=now() and e.ends_at>now()),
   'serverNow',floor(extract(epoch from now())*1000),'dataSource','supabase');
 end $$;
+
+-- No actor/role/entitlement supplied by a browser. The same MFA guard applies
+-- to moderation, test publication and the unlimited local laboratory.
+create function public.admin_test_access() returns boolean language sql stable security invoker set search_path='' as $$
+ select private.require_administrator()='admin';
+$$;
+revoke execute on function public.admin_test_access() from public,anon,authenticated;
+grant execute on function public.admin_test_access() to authenticated;

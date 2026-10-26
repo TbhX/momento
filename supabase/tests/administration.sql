@@ -10,6 +10,7 @@ insert into public.profiles(id,display_name,age,city,terms_version,privacy_versi
 insert into private.admin_roles(user_id,role,setup_required) values
  ('00000000-0000-4000-8000-0000000000a1','admin',true),
  ('00000000-0000-4000-8000-0000000000a3','moderator',false);
+insert into auth.mfa_factors(id,user_id,status) select user_id,user_id,'verified' from private.admin_roles;
 insert into private.admin_setups(token_hash,user_id,expires_at)
  values(repeat('a',64),'00000000-0000-4000-8000-0000000000a1',now()+interval '1 day');
 insert into public.reports(id,reporter_id,target_id,reason) values
@@ -17,15 +18,16 @@ insert into public.reports(id,reporter_id,target_id,reason) values
  ('00000000-0000-4000-8000-0000000000b2','00000000-0000-4000-8000-0000000000a2','00000000-0000-4000-8000-0000000000a1','Protected administrator');
 set local role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-0000000000a2',true);
-select set_config('request.jwt.claims',jsonb_build_object('session_id',current_setting('request.jwt.claim.sub'),'user_metadata',jsonb_build_object('role','admin'))::text,true);
+select set_config('request.jwt.claims',jsonb_build_object('aal','aal2','session_id',current_setting('request.jwt.claim.sub'),'user_metadata',jsonb_build_object('role','admin'))::text,true);
 do $$ begin
  begin perform public.admin_snapshot(); raise exception 'Member accessed admin reports'; exception when insufficient_privilege then null; end;
  begin perform public.admin_report_action('00000000-0000-4000-8000-0000000000b1','suspend','open'); raise exception 'Member suspended another account'; exception when insufficient_privilege then null; end;
  begin perform public.server_admin_setup_begin(repeat('a',64),gen_random_uuid()); raise exception 'Member claimed setup lease'; exception when insufficient_privilege then null; end;
- begin insert into private.admin_setups values(repeat('b',64),auth.uid(),now()+interval '1 day',null,null,null); raise exception 'Member forged setup'; exception when insufficient_privilege then null; end;
+ begin insert into auth.mfa_factors(id,user_id,status) select user_id,user_id,'verified' from private.admin_roles;
+insert into private.admin_setups values(repeat('b',64),auth.uid(),now()+interval '1 day',null,null,null); raise exception 'Member forged setup'; exception when insufficient_privilege then null; end;
 end $$;
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-0000000000a1',true);
-select set_config('request.jwt.claims',jsonb_build_object('session_id',current_setting('request.jwt.claim.sub'))::text,true);
+select set_config('request.jwt.claims',jsonb_build_object('aal','aal2','session_id',current_setting('request.jwt.claim.sub'))::text,true);
 do $$ begin
  if (public.account_status()->>'admin')::boolean then raise exception 'Pending administrator authorized'; end if;
  begin perform public.admin_snapshot(); raise exception 'Pending administrator accessed reports'; exception when insufficient_privilege then null; end;
@@ -65,7 +67,7 @@ end $$;
 set local role authenticated;
 select public.admin_report_action('00000000-0000-4000-8000-0000000000b1','restore','resolved');
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-0000000000a3',true);
-select set_config('request.jwt.claims',jsonb_build_object('session_id',current_setting('request.jwt.claim.sub'))::text,true);
+select set_config('request.jwt.claims',jsonb_build_object('aal','aal2','session_id',current_setting('request.jwt.claim.sub'))::text,true);
 do $$ begin
  if public.admin_snapshot()->>'role'<>'moderator' then raise exception 'Moderator access missing'; end if;
  begin perform public.admin_report_action('00000000-0000-4000-8000-0000000000b1','suspend','reviewing'); raise exception 'Moderator suspended a member'; exception when insufficient_privilege then null; end;
@@ -82,7 +84,7 @@ insert into public.reports(reporter_id,target_id,reason)
  select '00000000-0000-4000-8000-0000000000a3','00000000-0000-4000-8000-0000000000a2','Pagination test' from generate_series(1,51);
 set local role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-0000000000a1',true);
-select set_config('request.jwt.claims',jsonb_build_object('session_id',current_setting('request.jwt.claim.sub'))::text,true);
+select set_config('request.jwt.claims',jsonb_build_object('aal','aal2','session_id',current_setting('request.jwt.claim.sub'))::text,true);
 do $$ declare first_page jsonb; second_page jsonb; last_row jsonb; begin
  first_page:=public.admin_snapshot('all');
  if jsonb_array_length(first_page->'reports')<>50 or not (first_page->>'hasMore')::boolean then raise exception 'Queue not bounded'; end if;

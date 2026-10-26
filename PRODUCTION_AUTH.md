@@ -13,3 +13,7 @@ L’accès administrateur est attribué dans les données privées du serveur. U
 Validation locale : 318 tests et build Pages réussis pour la livraison des salons personnalisables. Les scénarios couvrent notamment les rôles, sessions révoquées, accès entre comptes et limites d’inscription. L’état d’activation de l’organisateur est relu côté serveur ; il ne doit pas être recréé ou réinitialisé lors d’une mise à jour. Les essais sur téléphone physique et les appels réels à deux appareils restent à valider.
 
 Les identifiants de projet, paramètres de sécurité détaillés et informations d’exploitation sont conservés dans le suivi privé.
+
+La double authentification par application TOTP se configure depuis Mon profil → Sécurité et double authentification. L’ajout demande le mot de passe actuel, puis un code valide de l’application. Les autres sessions AAL1 sont refusées pour un compte protégé ; les contrôles du Worker et les politiques RLS couvrent aussi un accès direct à la Data API. La déconnexion de tous les appareils utilise la révocation native globale.
+
+Le second facteur est obligatoire pour les opérations administrateur/modérateur, le laboratoire illimité et la publication des salons de test. Le propriétaire doit effectuer lui-même l’association sur son appareil ; aucun code ne lui est demandé en discussion. Le rôle et le mot de passe existants restent inchangés. Conserver la clé dans un gestionnaire ou prévoir un secours avant activation : aucune récupération automatique d’un facteur perdu n’est encore disponible.

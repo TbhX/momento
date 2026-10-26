@@ -1,3 +1,5 @@
+import {hardenResponse} from './security-headers.mjs';
+import {mfaRoute,requireMFA} from './security-mfa.mjs';
 import {createServerClient,parseCookieHeader,serializeCookieHeader} from '@supabase/ssr';
 import {createClient} from '@supabase/supabase-js';
 import {usesSupabaseData,hasServerKey,serverRPC,requireActiveSession,reserveRecovery} from './supabase-server.mjs';
@@ -141,6 +143,17 @@ async function authenticationRoute(request,env,config,context){
  }
  if(!config.configured)throw authFailure('auth_not_configured',503);
  const auth=context.supabase.auth;
+ if(path==='/api/auth/mfa'||path.startsWith('/api/auth/mfa/')){
+  const {data,error}=await auth.getUser();if(error||!verifiedIdentity(data?.user))throw authFailure('authentication_required',401);
+  await requireActiveSession(env,context,data.user.id);
+  return mfaRoute(request,{context,user:data.user,origin:config.origin,readJSON:limitedJSON,limit:(...args)=>countAttempt(env,...args),verifyPassword:async(user,password)=>{
+   if(!user.email)throw authFailure('mfa_password_required',409);
+   const verifier=createClient(config.url,config.key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},global:{fetch:(input,init={})=>fetch(input,{...init,signal:AbortSignal.timeout(10000)})}});
+   const checked=await verifier.auth.signInWithPassword({email:user.email,password});
+   if(checked.data?.session){const closed=await verifier.auth.signOut({scope:'local'});if(closed.error)throw authFailure('mfa_unavailable',503)}
+   if(checked.error||checked.data?.user?.id!==user.id)throw authFailure('invalid_credentials',401);
+  }});
+ }
  if(path==='/api/auth/recovery/callback'&&request.method==='GET'){
   let flow;
   try{if(!config.email||config.emailMode==='basic'||!(await enabledProviders(config)).emailRecovery)throw 0;flow=await readEmailRecord(env,context.jar.get(EMAIL_FLOW_COOKIE),'recover',600000);if(flow.verifier!==await verifierFingerprint(context,env))throw 0}catch{context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});return Response.redirect(config.origin+'/?authError=recovery_expired',303)}
@@ -244,20 +257,22 @@ async function authenticationRoute(request,env,config,context){
   if(error||!verifiedIdentity(data.user))throw authFailure('invalid_code',401);
   context.put(PHONE_COOKIE,'',{maxAge:0});return responseJSON({authenticated:true});
  }
- if(path==='/api/auth/logout'){
-  const {error}=await auth.signOut({scope:'local'});if(error&&error.name!=='AuthSessionMissingError'&&error.status!==401&&error.status!==403)throw authFailure('logout_unavailable',503);
+ if(path==='/api/auth/logout'||path==='/api/auth/logout-all'){
+  if(path.endsWith('logout-all')){const {data,error}=await auth.getUser();if(error||!verifiedIdentity(data?.user))throw authFailure('authentication_required',401);await requireActiveSession(env,context,data.user.id);await requireMFA(context,data.user)}
+  const {error}=await auth.signOut({scope:path.endsWith('logout-all')?'global':'local'});if(error&&error.name!=='AuthSessionMissingError'&&error.status!==401&&error.status!==403)throw authFailure('logout_unavailable',503);
   clearIdentityCookies(context);
   return responseJSON({signedOut:true});
  }
  throw authFailure('not_found',404);
 }
 
-export function withExternalAuth(application,{staticHeaders={},staticBinding='PUBLIC_ASSETS',mediaCodec}={}){return{async fetch(request,env,ctx){
+export function withExternalAuth(application,{staticHeaders={},staticBinding='PUBLIC_ASSETS',mediaCodec}={}){const worker={async fetch(request,env,ctx){
  const url=new URL(request.url),authPath=url.pathname.startsWith('/api/auth/');
  const headers=new Headers(request.headers);
  // External requests can forge platform headers. Remove them before EVERY route.
  for(const name of [...headers.keys()])if(name.toLowerCase().startsWith('oai-authenticated-'))headers.delete(name);
  const clean=new Request(request,{headers});
+ if(url.pathname.startsWith('/api/')&&(request.headers.get('Sec-Fetch-Site')==='cross-site'||request.headers.has('Origin')&&request.headers.get('Origin')!==url.origin))return responseJSON({error:'invalid_origin'},403);
  if(['/signin-with-chatgpt','/signout-with-chatgpt','/callback'].includes(url.pathname))return responseJSON({error:'not_found'},404);
  const protectedPath=/^\/api\/(?:me(?:\/|$)|profile-photo\/|service(?:\/|$))/.test(url.pathname);
  if(url.pathname.startsWith('/salon/')){
@@ -273,6 +288,7 @@ export function withExternalAuth(application,{staticHeaders={},staticBinding='PU
   const {data,error}=await context.supabase.auth.getUser();const identity=verifiedIdentity(data?.user);
   if(error||!identity)throw authFailure('authentication_required',401);
   await requireActiveSession(env,context,data.user.id);
+  await requireMFA(context,data.user);
   if(usesSupabaseData(env)){
    const response=await supabaseAccountAPI(clean,env,context,data.user.id,{readJSON:limitedJSON,mediaCodec,origin:config.origin});
    if(url.pathname==='/api/me'&&clean.method==='DELETE'&&response.ok)clearIdentityCookies(context);
@@ -282,4 +298,4 @@ export function withExternalAuth(application,{staticHeaders={},staticBinding='PU
   const authenticated=new Request(clean,{headers});
   return context.finish(await application.fetch(authenticated,{...env,MOMENTO_IDENTITY_PROVIDER:'supabase'},ctx));
  }catch(error){const response=responseJSON({error:error.momentoAuthError?error.message:'authentication_unavailable'},error.momentoAuthError?error.status:503);if(error.status===429)response.headers.set('Retry-After',String(error.retryAfter||60));return context?context.finish(response):response}
-}}}
+}};return{async fetch(request,env,ctx){return hardenResponse(await worker.fetch(request,env,ctx),request,env)}}}

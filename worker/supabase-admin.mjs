@@ -2,7 +2,7 @@ import {accountFailure} from './supabase-server.mjs';
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const states=['all','open','reviewing','resolved','dismissed'];
 const actions=['reviewing','resolved','dismissed','suspend','restore'];
-const expectedErrors={admin_required:403,protected_account:403,report_changed:409,invalid_request:400,rate_limit:429};
+const expectedErrors={mfa_required:403,mfa_enrollment_required:403,admin_required:403,protected_account:403,report_changed:409,invalid_request:400,rate_limit:429};
 async function rpc(client,name,args){
  const {data,error}=await client.rpc(name,args);
  if(error)throw accountFailure(Object.hasOwn(expectedErrors,error.message)?error.message:'administration_unavailable',expectedErrors[error.message]??503);
@@ -12,8 +12,8 @@ export async function supabaseAdminAPI(request,env,{context,origin,readJSON}){
  const url=new URL(request.url),path=url.pathname;
  if(path==='/api/service/admin/test-access'){
   if(request.method!=='GET')throw accountFailure('method_not_allowed',405);
-  const status=await rpc(context.supabase,'account_status',{});
-  if(status?.admin!==true)throw accountFailure('admin_required',403);
+  const allowed=await rpc(context.supabase,'admin_test_access',{});
+  if(allowed!==true)throw accountFailure('admin_required',403);
   return Response.json({simulationOnly:true,unlimitedCredits:true,realSessions:false,paymentsEnabled:false});
  }
  if(path==='/api/service/admin'){

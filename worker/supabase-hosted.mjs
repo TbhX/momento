@@ -1,6 +1,6 @@
 import {accountFailure,serverRPC} from './supabase-server.mjs';
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const faults={admin_required:403,test_environment_required:409,registration_required:403,room_unavailable:404,invalid_request:400,rate_limit:429,draft_limit:409,room_locked:409,hosting_limit:409,hosting_disabled:503,hosting_credit_required:403,hosting_price_changed:409,registration_closed:409,balance_profile_required:409,age_not_eligible:403,export_too_large:413};
+const faults={mfa_required:403,mfa_enrollment_required:403,admin_required:403,test_environment_required:409,registration_required:403,room_unavailable:404,invalid_request:400,rate_limit:429,draft_limit:409,room_locked:409,hosting_limit:409,hosting_disabled:503,hosting_credit_required:403,hosting_price_changed:409,registration_closed:409,balance_profile_required:409,age_not_eligible:403,export_too_large:413};
 const enabled=env=>['HOSTED_ROOMS_ENABLED','LIVE_EVENTS_ENABLED','VIDEO_VALIDATED','LEGAL_VALIDATED'].every(k=>env[k]==='true');
 const uuid=value=>{if(typeof value!=='string'||!UUID.test(value))throw accountFailure('invalid_request',400);return value};
 async function rpc(context,name,args={}){

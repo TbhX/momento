@@ -1,5 +1,15 @@
 # Momento — travaux de production
 
+## Renforcement des comptes et du navigateur
+
+La double authentification TOTP est disponible dans Mon profil → Sécurité et double authentification. La configuration exige le mot de passe actuel puis un code valide. Les clés et codes restent dans la vue courante ; fermer ou masquer le dialogue efface le contenu sensible. L’ajout d’une application de secours et le retrait confirmé par un code sont prévus. La déconnexion globale révoque les connexions natives. Aucune récupération automatique d’un facteur perdu n’est proposée : conserver la clé ou un secours avant activation.
+
+Les comptes ayant activé MFA doivent valider AAL2 pour les données privées, au Worker et dans le contrôle de session RLS. Administration, modération, publication de test et laboratoire illimité exigent désormais MFA même si un rôle existe déjà. Aucun secret ou facteur du propriétaire n’est créé par l’agent. Les autres membres conservent l’inscription et la connexion basiques actuelles.
+
+Les en-têtes interdisent l’intégration du site en iframe, les balises script intégrées et les URL de base injectées ; les API rejettent les requêtes cross-site avant Auth. Caméra/micro restent limités à la même origine et les permissions inutilisées sont désactivées. Pour la cible Supabase, la politique réseau du navigateur reste sur Momento et les iframes vidéo tierces sont fermées jusqu’à l’intégration des médias authentifiés. Les événements HTML historiques restent un chantier distinct : ne pas affirmer que tous les scripts intégrés ont disparu.
+
+Validation : 394 tests locaux et build Pages réussis ; contrôle de dépendances de production sans avis de vulnérabilité connu au 26 octobre 2026. Delta SQL testé sur déclarations et historique isolés et rejoué deux fois avant application ; droits et RLS relus après application. Aucun compte, facteur, crédit ou salon de test créé dans la base hébergée. Les autorisations d’admissions, publication ordinaire et prolongations restent fermées. Aucun test MFA réel avec le téléphone du propriétaire, test de charge ou audit d’intrusion indépendant annoncé. Voir [SECURITY.md](SECURITY.md) pour les protections et limites, notamment e-mail, sauvegardes, supervision et médias à finaliser.
+
 ## Préparation responsive, aperçu des salons et partage
 
 La table ronde regroupe l’horaire, les envies, le mode audio/vidéo et la confirmation dans une grille adaptée à la largeur du panneau. Les champs ne se compriment plus en une rangée de colonnes étroites ; le bouton de confirmation garde toute sa largeur. Sur les écrans intermédiaires et petits, la préparation passe avant la liste des prénoms. Le cadre fixe et le défilement interne sont conservés. Aucun appareil, chrono ou entrée ne démarre avant les choix et la confirmation prévus.

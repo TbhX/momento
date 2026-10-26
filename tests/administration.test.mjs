@@ -8,10 +8,10 @@ const token='a'.repeat(64),password='An entirely private test phrase';
 const env={SUPABASE_URL:'https://abcdefghijklmnopqrst.supabase.co',SUPABASE_PUBLISHABLE_KEY:'sb_publishable_fixture_only_123456',SUPABASE_SECRET_KEY:'sb_secret_fixture_only_123456',SUPABASE_DATA_ENABLED:'true',MOMENTO_APP_ORIGIN:origin,AUTH_COOKIE_SECRET:'test-only-secret-at-least-32-characters',AUTH_EMAIL_MODE:'basic'};
 const req=(path,body,headers={})=>new Request(origin+path,{method:body===undefined?'GET':'POST',headers:body===undefined?headers:{Origin:origin,'X-Momento-Request':'1','Content-Type':'application/json',...headers},...(body===undefined?{}:{body:JSON.stringify(body)})});
 test('unlimited test access is checked against the current private admin role and grants no live rights',async()=>{
- let admin=true;const calls=[],context={supabase:{async rpc(name,args){calls.push({name,args});return{data:{admin},error:null}}}};
+ let admin=true;const calls=[],context={supabase:{async rpc(name,args){calls.push({name,args});return{data:admin,error:null}}}};
  const invoke=request=>supabaseAdminAPI(request,{}, {context,origin,readJSON:r=>r.json()});
  const response=await invoke(req('/api/service/admin/test-access?premium=true&credits=999'));
- assert.deepEqual(await response.json(),{simulationOnly:true,unlimitedCredits:true,realSessions:false,paymentsEnabled:false});assert.deepEqual(calls,[{name:'account_status',args:{}}]);
+ assert.deepEqual(await response.json(),{simulationOnly:true,unlimitedCredits:true,realSessions:false,paymentsEnabled:false});assert.deepEqual(calls,[{name:'admin_test_access',args:{}}]);
  admin=false;await assert.rejects(invoke(req('/api/service/admin/test-access')),e=>e.message==='admin_required'&&e.status===403);
  await assert.rejects(invoke(req('/api/service/admin/test-access',{admin:true})),e=>e.status===405);
 });

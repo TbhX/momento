@@ -25,3 +25,9 @@ Les schémas `60_hosted_rooms.sql` et `70_community_directory.sql` ajoutent les 
 ### Places et présences
 
 `95_room_capacity.sql` fournit des agrégats par lots bornés de salons découvrables. Les confirmations et l’attente viennent des réservations privées ; les présents viennent des présences actives récentes. Les inscrits attendus sont les confirmations restantes sans présence. Les anciens formats sans réservation équilibrée retournent des quotas inconnus plutôt que des nombres inventés. La session, le profil et le budget de lecture sont vérifiés au RPC membre. Les contrôles de réservation et d’admission restent distincts des compteurs, qui n’accordent aucun accès. L’interface relit ces indicateurs toutes les dix secondes uniquement pendant la consultation, sans abonnement Realtime public aux tables privées.
+
+### Double authentification et administration
+
+La déclaration de session exige AAL2 dès qu’un facteur natif est vérifié. Les politiques restrictives existantes protègent donc aussi la Data API directe. L’administration et la modération exigent toujours un facteur actif, y compris pour le laboratoire et la publication de test. La migration remplace seulement les contrôles de session/administration et ajoute un wrapper INVOKER borné pour le laboratoire ; aucun accès membre aux tables Auth n’est ajouté.
+
+Le delta est rejoué sur les déclarations et l’historique en bases locales isolées, puis archivé sous sa version réellement attribuée. Les lectures distantes confirment les gardes, les droits du wrapper et RLS ; les autorisations de rencontres, de publication ordinaire et de prolongation restent fermées. Aucun facteur n’est créé sur le compte du propriétaire : il doit associer sa propre application depuis Sécurité du compte. Les appels réels et la récupération de facteur perdu ne sont pas validés par ces tests.

@@ -7,7 +7,7 @@ test('Pages serves assets with security headers through its native ASSETS bindin
  const worker=withExternalAuth(app,{staticBinding:'ASSETS',staticHeaders:{'Content-Security-Policy':"default-src 'self'"}});
  const env={ASSETS:{async fetch(req){received.push(req);return new Response('momento',{headers:{'Content-Type':'text/html'}})}}};
  const response=await worker.fetch(new Request('https://memento.pages.dev/',{headers:{'oai-authenticated-user-id':'forged'}}),env);
- assert.equal(response.status,200);assert.equal(await response.text(),'momento');assert.equal(received[0].headers.get('oai-authenticated-user-id'),null);assert.equal(response.headers.get('Content-Security-Policy'),"default-src 'self'");
+ assert.equal(response.status,200);assert.equal(await response.text(),'momento');assert.equal(received[0].headers.get('oai-authenticated-user-id'),null);assert.match(response.headers.get('Content-Security-Policy'),/frame-ancestors 'none'/);assert.match(response.headers.get('Content-Security-Policy'),/script-src-elem 'self'/);assert.equal(response.headers.get('X-Frame-Options'),'DENY');
 });
 test('Pages authentication and protected APIs cannot fall through to public static assets',async()=>{
  let requests=0;const worker=withExternalAuth({fetch:async()=>Response.json({unexpected:true})},{staticBinding:'ASSETS'}),env={ASSETS:{fetch:async()=>{requests++;return new Response('public')}}};

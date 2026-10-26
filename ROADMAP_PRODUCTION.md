@@ -1,5 +1,15 @@
 # Momento — travaux de production
 
+## Préparation responsive, aperçu des salons et partage
+
+La table ronde regroupe l’horaire, les envies, le mode audio/vidéo et la confirmation dans une grille adaptée à la largeur du panneau. Les champs ne se compriment plus en une rangée de colonnes étroites ; le bouton de confirmation garde toute sa largeur. Sur les écrans intermédiaires et petits, la préparation passe avant la liste des prénoms. Le cadre fixe et le défilement interne sont conservés. Aucun appareil, chrono ou entrée ne démarre avant les choix et la confirmation prévus.
+
+Chaque carte de « Mes salons » ouvre un aperçu privé au clic ou au clavier, y compris les brouillons. Les actions de modification, publication et partage restent séparées. L’aperçu présente thème, date, capacité et format ; consulter ne publie, ne réserve et ne débite rien. Les salons publiés proposent ensuite leur invitation avec les contrôles membres habituels.
+
+Les liens publics utilisent un visuel Momento de 1200 × 630 pixels ; les liens d’invitation choisissent parmi sept visuels thématiques sur une liste fermée. Aucun portrait ou participant n’est intégré aux images. Les balises Open Graph et Twitter comportent image absolue, dimensions, description accessible et grande carte. Le partage d’un salon propose le lien, son aperçu, un format carré 1080 × 1080 et un format story 1080 × 1920 à télécharger. Les deux derniers sont des visuels génériques de marque auxquels l’organisateur ajoute son lien. Aucun message n’est envoyé automatiquement. Le rendu et l’actualisation finale dépendent du réseau ; une publication Instagram ou une story ne sont pas créées par la simple présence des métadonnées. Référence : [protocole Open Graph](https://ogp.me/). Les images sont déclinées depuis le logo existant avec l’outil local `scripts/render-social-cards.py` ; leur génération ne fait pas partie du build Pages.
+
+Validation locale : 377 tests et build Pages réussis. Tests des aperçus sans effet de bord, échappement du contenu des salons, préparation sans appareil ni entrée, images PNG et dimensions, métadonnées et partage uniquement sur action. Aucun schéma ni droit Supabase modifié, aucune fixture hébergée. La validation visuelle authentifiée sur téléphone/tablette et les aperçus rendus dans chaque réseau restent à effectuer séparément.
+
 ## Tables par thème, préparation et indicateurs de places
 
 Sept univers communs organisent l’accueil, la découverte des tables, le catalogue filtré côté serveur et les salons locaux : musique, proximité, culture, voyages, astro, sport et univers professionnel. Les cartes affichent les informations essentielles ; les détails sont accessibles par icônes avec explication au survol, au focus et au toucher. Les inscriptions et profils restent requis pour les interactions. Le fichier vidéo et l’identité pastel sont conservés.

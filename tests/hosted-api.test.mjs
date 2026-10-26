@@ -29,10 +29,10 @@ test('directory arguments are typed, bounded and reject cursor or page-size tamp
 });
 test('social cards escape event content and never embed a member list or an executable script',async()=>{
  const previous=globalThis.fetch;const calls=[];
- globalThis.fetch=async(input,options)=>{calls.push({path:new URL(input).pathname,key:new Headers(options.headers).get('apikey')});return Response.json({id,title:'<img src=x onerror=alert(1)>',description:'"/><script>alert(2)</script>',city:'Paris',capacity:100,minAge:18,maxAge:100,opensAt:'2026-12-01T18:00:00Z'})};
+ globalThis.fetch=async(input,options)=>{calls.push({path:new URL(input).pathname,key:new Headers(options.headers).get('apikey')});return Response.json({id,theme:'travel',title:'<img src=x onerror=alert(1)>',description:'"/><script>alert(2)</script>',city:'Paris',capacity:100,minAge:18,maxAge:100,opensAt:'2026-12-01T18:00:00Z'})};
  try{
   const env={MOMENTO_APP_ORIGIN:origin,SUPABASE_URL:'https://example.supabase.co',SUPABASE_SECRET_KEY:'sb_secret_fixture_server_key_123456'};
-  const response=await publicHostedRoom(new Request(origin+'/salon/'+id),env);assert.equal(response.status,200);const html=await response.text();assert.match(html,/&lt;img/);assert.doesNotMatch(html,/<script|<img src=x|owner_id|session_id/);assert.match(html,/og:title/);assert.match(html,/salon-invite/);assert.equal(response.headers.get('Cache-Control'),'no-store');assert.match(response.headers.get('Content-Security-Policy'),/default-src 'none'/);
+  const response=await publicHostedRoom(new Request(origin+'/salon/'+id),env);assert.equal(response.status,200);const html=await response.text();assert.match(html,/&lt;img/);assert.doesNotMatch(html,/<script|<img src=x|owner_id|session_id/);assert.match(html,/og:title/);assert.match(html,/share-travel-link-v1.png/);assert.match(html,/summary_large_image/);assert.match(html,/og:image:width/);assert.match(html,/salon-invite/);assert.equal(response.headers.get('Cache-Control'),'no-store');assert.match(response.headers.get('Content-Security-Policy'),/default-src 'none'/);
   assert.deepEqual(calls.map(c=>c.path),['/rest/v1/rpc/server_shared_room']);assert.ok(calls[0].key.startsWith('sb_secret_'));
   assert.equal((await publicHostedRoom(new Request(origin+'/salon/invalid/extra'),env)).status,404);assert.equal(calls.length,1);
   const head=await publicHostedRoom(new Request(origin+'/salon/'+id,{method:'HEAD'}),env);assert.equal(await head.text(),'');

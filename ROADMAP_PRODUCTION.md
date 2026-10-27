@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Salle immersive Three.js
+
+Le décor occupe désormais le cadre central et dispose de vues d’ensemble, à hauteur de table, plein écran explicite et repli simplifié. Three.js est épinglé et compilé sur la même origine, chargé seulement dans les tables. La géométrie représente 10, 25 ou 50 tables pour deux selon la capacité du format ; aucune chaise ne prétend représenter une présence native. Les noms et photos restent dans leurs composants autorisés existants. Le rendu est à la demande, sans animation permanente ni téléchargement de textures, avec résolution bornée et libération des ressources à la sortie. Aucun appareil, donnée membre, jeton ou droit supplémentaire. Tests de navigation, chargement tardif et absence de WebGL ajoutés. Validation locale et déploiement consignés après exécution ; appareils physiques et présence réelle restent à vérifier.
+
 ## Décor de bar chaleureux
 
 La table ronde propose un décor en perspective CSS : comptoir, bois, éclairage ambré, petites tables et chaises face à face. Les membres fictifs gardent seulement leur prénom et une initiale ; les photos restent dans le volet Premium existant. Les tables sont paginées par huit places pour conserver la lisibilité. Le placement est illustratif, pas une attribution de binôme ou une mesure de présence réelle. Le teaser public expose uniquement des chaises vides, sans compte ni appareil. Les choix, horaires, crédits et consentements ne changent pas. Le décor ne charge aucun moteur 3D ni service externe et respecte les animations réduites. Validation : 466 tests locaux et build Pages réussis. Aucun SQL distant, droit, crédit, facteur MFA ou autorisation d’ouverture modifié. Le rendu mobile et les appels distants restent à vérifier sur appareils. Prochaine priorité serveur : préparation persistante, ordonnanceur et médias authentifiés, avant ouverture.

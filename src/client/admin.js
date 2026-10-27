@@ -68,6 +68,7 @@ function adminRunSimulation(persona){
 }
 
 function syncPlanBadge(){
+ syncHeaderWallet();
  let badge=document.querySelector('#shellPlanStatus');
  if(!badge){badge=document.createElement('span');badge.id='shellPlanStatus';document.querySelector('.app-topbar .header-actions')?.prepend(badge)}
  if(!accountReady){badge.hidden=true;badge.replaceChildren();return}
@@ -111,4 +112,21 @@ function adminResetRehearsal(scope='all'){
    syncPlanBadge();toast('Essai réinitialisé. Vos données réelles restent inchangées.');
   }catch(error){if(current())status.textContent=error.message}finally{if(panel.isConnected)button.disabled=false}
  });
+}
+
+function syncHeaderWallet(){
+ let button=document.querySelector('#headerWallet');if(!button){button=document.createElement('button');button.id='headerWallet';button.type='button';button.className='header-wallet';button.setAttribute('data-member-action','');button.addEventListener('click',headerWalletOpen);document.querySelector('.app-topbar .header-actions')?.prepend(button)}
+ button.hidden=!accountReady;if(!accountReady){button.replaceChildren();return}
+ const rehearsal=!!(salonState&&(adminPreviewActive&&liveStatus?.admin||document.body.classList.contains('salon-mode')||document.body.classList.contains('roundtable-mode')||typeof callDemoFlow!=='undefined'&&callDemoFlow));
+ const unlimited=rehearsal&&MomentoShop.isRehearsalUnlimited(salonState.shop),amount=rehearsal?MomentoShop.balance(salonState.shop,'videoCredits'):null;
+ button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 8V5a2 2 0 0 0-2-2H6a3 3 0 0 0 0 6h15v12H6a3 3 0 0 1-3-3V6M21 12h-6v5h6M17 14.5h.1"/></svg>'+(rehearsal?'<b>'+ (unlimited?'∞':amount)+'</b><small>essai</small>':'');
+ button.title=rehearsal?'Portefeuille d’essai · accès privés '+(unlimited?'illimités':amount):'Mon portefeuille';button.setAttribute('aria-label',button.title);button.dataset.rehearsal=String(rehearsal);
+}
+function headerWalletOpen(){
+ if(!accountReady)return;syncHeaderWallet();const rehearsal=document.querySelector('#headerWallet')?.dataset.rehearsal==='true';
+ if(!rehearsal){go('shop');return}
+ const units=[['entryCredits','↪','Entrées supplémentaires'],['videoCredits','♡','Accès privés'],['hostCredits','⌂','Créations de salon']];
+ modal('<h2>Mon portefeuille <small>· essai</small></h2><div class="wallet-units">'+units.map(([key,icon,label])=>{const n=MomentoShop.balance(salonState.shop,key);return '<div><span aria-hidden="true">'+icon+'</span><b>'+ (n===Infinity?'∞':n)+'</b><small>'+label+'</small></div>'}).join('')+'</div><p class="micro">Crédits fictifs pour tester. Aucun paiement réel.</p><button class="primary wide" id="walletShop">Ouvrir la boutique ↗</button><button class="text-button wide" id="walletClose">Fermer</button>');
+ document.querySelector('#walletClose').onclick=()=>document.querySelector('#modal').close();
+ document.querySelector('#walletShop').onclick=()=>{document.querySelector('#modal').close();go('shop')};
 }

@@ -49,14 +49,12 @@ function callSessionWait(f){
  stage.querySelector('.call-peer').hidden=true;
  stage.querySelector('[data-call-wait]')?.remove();
  const wait=document.createElement('section');wait.className='call-peer call-peer-wait';wait.dataset.callWait='';wait.setAttribute('aria-label','Attente du second participant');
- const logo=document.createElement('img');logo.src='/momento-logo.png';logo.alt='Momento';logo.width=2172;logo.height=724;
- const meeting=document.createElement('div');meeting.className='call-wait-meeting';meeting.setAttribute('aria-hidden','true');meeting.innerHTML='<span>Vous</span><i>♡</i><span>…</span>';
- const title=document.createElement('h2');title.textContent='Votre prochain bonjour arrive…';
- const copy=document.createElement('p');copy.textContent='Le tête-à-tête commencera quand vous serez tous les deux présents. Le chrono et votre entrée restent en attente.';
- const note=document.createElement('p');note.className='micro';note.textContent='Essai local : aucun participant distant n’est connecté.';
- const arrived=document.createElement('button');arrived.type='button';arrived.className='primary';arrived.textContent='Simuler l’arrivée de l’autre personne';arrived.addEventListener('click',()=>callSessionPeerArrived(f));
- const back=document.createElement('button');back.type='button';back.className='text-button';back.textContent='Revenir à mes choix';back.addEventListener('click',()=>{if(!callDemoAlive(f))return;f.waitingPeer=false;f.peerReady=false;if(f.table){f.table.waiting=false;f.table.preferencesConfirmed=false}wait.remove();stage.querySelector('.call-peer').hidden=false;callDemoRefresh(f)});
- wait.append(logo,meeting,title,copy,note,arrived,back);stage.insertBefore(wait,stage.firstChild);callDemoClock(f);const round=document.querySelector('#tableRound');if(round)round.textContent='En attente à deux';
+ const picture=document.createElement('picture'),still=document.createElement('source'),logo=document.createElement('img');still.media='(prefers-reduced-motion: reduce)';still.srcset='/momento-logo.png';logo.src='/momento-wait.gif';logo.alt='Momento — en attente de l’autre personne. Essai local, aucun participant distant connecté.';logo.width=400;logo.height=225;picture.append(still,logo);
+ const actions=document.createElement('div');actions.className='call-wait-actions';
+ const pause=document.createElement('button');pause.type='button';pause.className='text-button';pause.textContent='Ⅱ';pause.title='Mettre l’animation en pause';pause.setAttribute('aria-label',pause.title);pause.setAttribute('aria-pressed','false');pause.addEventListener('click',()=>{const stopped=pause.getAttribute('aria-pressed')!=='true';logo.src=stopped?'/momento-logo.png':'/momento-wait.gif';pause.setAttribute('aria-pressed',String(stopped));pause.textContent=stopped?'▷':'Ⅱ';pause.title=stopped?'Reprendre l’animation':'Mettre l’animation en pause';pause.setAttribute('aria-label',pause.title)});
+ const arrived=document.createElement('button');arrived.type='button';arrived.className='primary';arrived.textContent='▶';arrived.title='Essai local · simuler l’arrivée de l’autre personne';arrived.setAttribute('aria-label',arrived.title);arrived.addEventListener('click',()=>callSessionPeerArrived(f));
+ const back=document.createElement('button');back.type='button';back.className='text-button call-wait-back';back.textContent='↩';back.title='Revenir à mes choix';back.setAttribute('aria-label',back.title);back.addEventListener('click',()=>{if(!callDemoAlive(f))return;f.waitingPeer=false;f.peerReady=false;if(f.table){f.table.waiting=false;f.table.preferencesConfirmed=false}wait.remove();stage.querySelector('.call-peer').hidden=false;callDemoRefresh(f)});
+ actions.append(pause,arrived,back);wait.append(picture,actions);stage.insertBefore(wait,stage.firstChild);callDemoClock(f);const round=document.querySelector('#tableRound');if(round)round.textContent='En attente à deux';
 }
 function callSessionPeerArrived(f=callDemoFlow){
  if(!callDemoAlive(f)||!f.waitingPeer||f.state.phase!=='preview')return;

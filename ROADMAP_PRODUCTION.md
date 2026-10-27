@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Réactions sur les portraits d’essai
+
+La visionneuse propose un like réversible et un message de 1 à 500 caractères, séparés par profil fictif et état de compte/persona. Ces essais restent en mémoire, sans API, stockage persistant, notification distante, vote de rencontre, match, crédit ou envoi réel. Les permissions Premium, le blocage et le contexte du dialogue sont relus à chaque action. Le texte est échappé et les portraits partagés ne servent pas d’identité : un identifiant fictif explicite distingue les destinataires. Pour les photos natives, les actions restent désactivées et leur indisponibilité est annoncée. Validation : 469 tests locaux et build Pages réussis ; aucune mutation Supabase ni envoi réel. Prochaine étape nécessaire : modèle serveur des likes photo et demandes de message, consentement destinataire, pagination, quotas, modération, export/suppression et tests d’accès entre membres avant activation.
+
 ## Photos directement aux places
 
 Les places de la répétition offrent une photo cliquable distincte du choix de partenaire. En 3D, les mêmes vignettes HTML sont projetées sur les chaises visibles ; le repli conserve les boutons aux places. Gratuit : silhouette neutre et invitation Premium, aucune URL originale. Premium : visionneuse existante avec droits relus à l’ouverture. Les portraits restent illustratifs et les photos natives conservent leur route serveur autorisée. Aucun appel, like, swipe ni débit déclenché par une photo. Les vignettes suivent les changements de page et de formule sans texture privée dans le moteur. Validation : 468 tests locaux et build Pages réussis, dont droit Premium, ouverture sans changement de partenaire et retrait des vignettes après navigation. Le navigateur de contrôle sans WebGL ne valide pas la projection GPU.

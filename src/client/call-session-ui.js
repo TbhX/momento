@@ -7,7 +7,7 @@ function callSessionTransition(f){
  const badge=document.createElement('div');badge.className='call-swipe-momento';badge.setAttribute('aria-hidden','true');
  const logo=document.createElement('img');logo.src='/momento-logo.png';logo.alt='';logo.width=2172;logo.height=724;badge.append(logo);stage.append(badge);f.swipeBadge=badge;
  // Visual only: the next person and clock are already updated synchronously.
- f.swipeTimer=setTimeout(()=>callSessionClearTransition(f),340);
+ f.swipeTimer=setTimeout(()=>callSessionClearTransition(f),500);
 }
 function callSessionClearTransition(f){if(!f)return;clearTimeout(f.swipeTimer);f.swipeBadge?.remove();f.swipeBadge=null}
 function callSessionClear(f){callSessionClearTransition(f);if(f)f.reviewRefresh=null;if(document.querySelector('#modal [data-call-review]')){const dialog=document.querySelector('#modal');dialog.onclose=null;dialog.close();dialog.replaceChildren()}}
@@ -50,16 +50,17 @@ function callSessionWait(f){
  stage.querySelector('[data-call-wait]')?.remove();
  const wait=document.createElement('section');wait.className='call-peer call-peer-wait';wait.dataset.callWait='';wait.setAttribute('aria-label','Attente du second participant');
  const logo=document.createElement('img');logo.src='/momento-logo.png';logo.alt='Momento';logo.width=2172;logo.height=724;
+ const meeting=document.createElement('div');meeting.className='call-wait-meeting';meeting.setAttribute('aria-hidden','true');meeting.innerHTML='<span>Vous</span><i>♡</i><span>…</span>';
  const title=document.createElement('h2');title.textContent='Votre prochain bonjour arrive…';
  const copy=document.createElement('p');copy.textContent='Le tête-à-tête commencera quand vous serez tous les deux présents. Le chrono et votre entrée restent en attente.';
  const note=document.createElement('p');note.className='micro';note.textContent='Essai local : aucun participant distant n’est connecté.';
  const arrived=document.createElement('button');arrived.type='button';arrived.className='primary';arrived.textContent='Simuler l’arrivée de l’autre personne';arrived.addEventListener('click',()=>callSessionPeerArrived(f));
  const back=document.createElement('button');back.type='button';back.className='text-button';back.textContent='Revenir à mes choix';back.addEventListener('click',()=>{if(!callDemoAlive(f))return;f.waitingPeer=false;f.peerReady=false;if(f.table){f.table.waiting=false;f.table.preferencesConfirmed=false}wait.remove();stage.querySelector('.call-peer').hidden=false;callDemoRefresh(f)});
- wait.append(logo,title,copy,note,arrived,back);stage.insertBefore(wait,stage.firstChild);callDemoClock(f);const round=document.querySelector('#tableRound');if(round)round.textContent='En attente à deux';
+ wait.append(logo,meeting,title,copy,note,arrived,back);stage.insertBefore(wait,stage.firstChild);callDemoClock(f);const round=document.querySelector('#tableRound');if(round)round.textContent='En attente à deux';
 }
 function callSessionPeerArrived(f=callDemoFlow){
  if(!callDemoAlive(f)||!f.waitingPeer||f.state.phase!=='preview')return;
- if(f.table&&callDemoNow(f)+MomentoConversation.ROUND+MomentoConversation.DECISION>f.table.event.closesAt){f.waitingPeer=false;document.querySelector('[data-call-wait]')?.remove();callDemoRefresh(f);document.querySelector('#tablePreferenceError').textContent='Le créneau ne permet plus un tête-à-tête complet.';return}
+ if(f.table&&callDemoNow(f)+MomentoConversation.roundDuration(f.state)+MomentoConversation.DECISION>f.table.event.closesAt){f.waitingPeer=false;document.querySelector('[data-call-wait]')?.remove();callDemoRefresh(f);document.querySelector('#tablePreferenceError').textContent='Le créneau ne permet plus un tête-à-tête complet.';return}
  f.waitingPeer=false;f.peerReady=true;const stage=document.querySelector('#callDemoStage');stage?.querySelector('[data-call-wait]')?.remove();const peer=stage?.querySelector('.call-peer');if(peer)peer.hidden=false;
  callDemoStart();
 }

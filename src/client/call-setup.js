@@ -4,9 +4,9 @@ function callSetupMount(f){
  const preflight=$('#callDemoPreflight');preflight.classList.add('call-setup');preflight.querySelector('h2').textContent='Qui aimeriez-vous rencontrer ?';preflight.querySelector('p').textContent='Vos envies d’abord. Une proposition après votre validation.';
  preflight.insertAdjacentHTML('afterbegin',`<div class="call-setup-symbol" aria-hidden="true">${MomentoThemes.icon('people')}</div>`);
  preflight.querySelector('label').insertAdjacentHTML('beforebegin',callSetupFields());
- preflight.querySelector('.primary').textContent='Valider et commencer l’essai';
+ preflight.querySelector('.primary').textContent='Rechercher parmi les membres';preflight.querySelector('p').textContent='Votre recherche portera sur les membres disponibles de tout Momento, selon vos envies. Aucun profil n’est proposé automatiquement.';const demo=document.createElement('button');demo.type='button';demo.className='text-button';demo.textContent='Essayer avec des profils fictifs';demo.addEventListener('click',callAudienceLocal);preflight.append(demo);document.querySelector('.conversation-demo-badge').textContent='MEMBRES MOMENTO';document.querySelector('.conversation-intro').textContent='Choisissez qui vous souhaitez rencontrer. Votre caméra et votre micro restent éteints.';
 }
-function callSetupChanged(){const f=callDemoFlow;if(!callDemoAlive(f)||f.table||f.state.phase!=='preview')return;f.choicesConfirmed=false;for(const kind of ['audio','video'])callDemoReleaseDevice(f,kind);callDemoRefresh(f)}
+function callSetupChanged(){const f=callDemoFlow;if(!callDemoAlive(f)||f.table||f.state.phase!=='preview')return;f.choicesConfirmed=false;f.memberCriteria=null;for(const kind of ['audio','video'])callDemoReleaseDevice(f,kind);callDemoRefresh(f)}
 function callSetupConfirm(f=callDemoFlow){
  if(!callDemoAlive(f)||f.table)return !!f?.table;if(f.state.phase!=='preview')return f.choicesConfirmed===true;
  if(f.choicesConfirmed)return true;
@@ -15,8 +15,12 @@ function callSetupConfirm(f=callDemoFlow){
  if(!Object.hasOwn(tableGenderLabels,gender)||!Number.isInteger(minAge)||!Number.isInteger(maxAge)||minAge<18||maxAge>100||minAge>maxAge||!['both','love','friendship'].includes(intent)){
   if(error)error.textContent='Choisissez le genre recherché et une tranche d’âge valide entre 18 et 100 ans.';return false;
  }
+ if(f.audience==='members'){f.memberCriteria={gender,minAge,maxAge,intent,theme};return false}
  const pool=tableCompatible(gender,f.state.blocked,{minAge,maxAge,intent});
  if(!pool.length){if(error)error.textContent='Aucun profil fictif ne correspond. Modifiez vos envies pour cet essai.';return false}
  if(!MomentoConversation.configureParticipants(f.state,pool.map(p=>p.id)))return false;
  f.choices={gender,minAge,maxAge,intent,theme};f.choicesConfirmed=true;if(theme)MomentoThemes.select(theme);if(error)error.textContent='';callDemoRefresh(f);return true;
 }
+
+function callAudienceLocal(){const f=callDemoFlow;if(!callDemoAlive(f)||f.table||f.state.phase!=='preview')return;f.audience='demo';f.memberCriteria=null;document.querySelector('.conversation-demo-badge').textContent='DÉMONSTRATION · PROFILS FICTIFS';document.querySelector('.conversation-intro').textContent='Essai local : aucun autre membre n’est connecté. Vos appareils restent sous votre contrôle.';document.querySelector('#callDemoPreflight .primary').textContent='Valider et commencer l’essai';document.querySelector('#callDemoPreflight>div p').textContent='Choisissez vos envies pour les profils fictifs de cet essai.';callDemoRefresh(f)}
+async function callMemberSearch(f){if(!callDemoAlive(f)||f.memberChecking)return;f.memberCriteria=null;callSetupConfirm(f);if(!f.memberCriteria)return;f.memberChecking=true;const error=document.querySelector('#callChoiceError');error.textContent='Vérification des rencontres disponibles…';try{await api('/status');if(callDemoAlive(f)&&f.audience==='members')error.textContent='La recherche entre membres n’est pas encore ouverte. Vous pouvez essayer le format avec des profils fictifs.'}catch(e){if(callDemoAlive(f))error.textContent=e.message}finally{f.memberChecking=false}}

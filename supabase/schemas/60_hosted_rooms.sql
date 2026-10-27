@@ -65,7 +65,7 @@ create function private.hosted_room_json(p_room uuid) returns jsonb language sql
  select jsonb_build_object('id',r.id,'title',r.title,'theme',r.theme_slug,'city',r.city,'profession',r.profession,
  'minAge',r.min_age,'maxAge',r.max_age,'capacity',r.capacity,'opensAt',r.opens_at,'closesAt',r.closes_at,
  'modes',r.allowed_modes,'status',r.status,'description',h.description,'color',h.color,'visibility',h.visibility,
- 'isTest',h.is_test,'rounds',10,'roundSeconds',300,'breakSeconds',30,
+ 'isTest',h.is_test,'formatVersion',case when r.round_seconds=300 then 1 else 2 end,'rounds',case when r.round_seconds=300 then 10 else r.capacity/2 end,'roundSeconds',r.round_seconds,'breakSeconds',r.break_seconds,
  'women',(select count(*) from private.hosted_room_registrations b where b.room_id=r.id and b.status='confirmed' and b.category='woman'),
  'men',(select count(*) from private.hosted_room_registrations b where b.room_id=r.id and b.status='confirmed' and b.category='man'),
  'waiting',(select count(*) from private.hosted_room_registrations b where b.room_id=r.id and b.status='waiting'))
@@ -137,11 +137,11 @@ begin
  else
   if (select count(*) from private.hosted_rooms h join public.rooms catalog_room on catalog_room.id=h.room_id where h.owner_id=actor and catalog_room.status='draft')>=10 then raise exception 'draft_limit'; end if;
   perform private.community_limit('host-draft',20);
-  insert into public.rooms(title,opens_at,closes_at) values(btrim(p_data->>'title'),moment,moment+interval '55 minutes') returning id into rid;
+  insert into public.rooms(title,opens_at,closes_at) values(btrim(p_data->>'title'),moment,moment+case when cap=20 then interval '60 minutes' when cap=50 then interval '75 minutes' else interval '150 minutes' end) returning id into rid;
   insert into private.hosted_rooms(room_id,owner_id,draft_key) values(rid,actor,p_key);
  end if;
  update public.rooms set title=btrim(p_data->>'title'),theme_slug=p_data->>'theme',city=btrim(p_data->>'city'),profession=nullif(btrim(p_data->>'profession'),''),min_age=lo,max_age=hi,capacity=cap,
-  opens_at=moment,closes_at=moment+interval '55 minutes',round_seconds=300,break_seconds=30,allowed_modes=modes where id=rid;
+  opens_at=moment,closes_at=moment+case when cap=20 then interval '60 minutes' when cap=50 then interval '75 minutes' else interval '150 minutes' end,round_seconds=case when cap=20 then 330 else 150 end,break_seconds=30,allowed_modes=modes where id=rid;
  update private.hosted_rooms set description=coalesce(p_data->>'description',''),color=p_data->>'color',visibility=p_data->>'visibility' where room_id=rid returning * into existing;
  return private.hosted_room_json(rid)||jsonb_build_object('shareCode',existing.share_code);
 end $$;

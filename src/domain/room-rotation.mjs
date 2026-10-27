@@ -1,3 +1,4 @@
+import RoomFormat from '../client/room-format.js';
 // Pure, server-only planning kernel. A proposal is NOT an admission or media grant.
 // See ROTATION_ENGINE.md for the transactional integration still required.
 export const ROUND_MS = 300_000;
@@ -45,7 +46,7 @@ function edgeSet(pairs) {
 export function planRoomRound(snapshot) {
   const {eventId, opensAt, closesAt, capacity, roundIndex, now, participants, seenPairs, blockedPairs} = snapshot;
   if (!idOK(eventId) || ![20, 50, 100].includes(capacity) || !integer(opensAt) || !integer(closesAt) ||
-      closesAt <= opensAt || !integer(now) || !integer(roundIndex) || roundIndex >= 10 ||
+      closesAt <= opensAt || !integer(now) || !integer(roundIndex) || roundIndex >= (snapshot.formatVersion===2?capacity/2:10) ||
       !Array.isArray(participants) || participants.length > capacity) throw new TypeError('invalid_round_snapshot');
   const seen = edgeSet(seenPairs), blocked = edgeSet(blockedPairs), ids = new Set();
   for (const p of participants) {
@@ -53,8 +54,9 @@ export function planRoomRound(snapshot) {
         p.lastMatchedRound < -1 || p.lastMatchedRound >= roundIndex) throw new TypeError('invalid_participant_snapshot');
     ids.add(p.id);
   }
-  const startsAt = opensAt + roundIndex * SLOT_MS;
-  const endsAt = startsAt + ROUND_MS, choicesEndAt = endsAt + CHOICE_MS;
+  const duration=snapshot.formatVersion===2?RoomFormat.get(capacity).roundSeconds*1000:ROUND_MS;
+  const startsAt = opensAt + roundIndex * (duration+CHOICE_MS);
+  const endsAt = startsAt + duration, choicesEndAt = endsAt + CHOICE_MS;
   if (![startsAt, endsAt, choicesEndAt].every(integer)) throw new TypeError('invalid_round_snapshot');
   const base = {eventId, roundIndex, startsAt, endsAt, choicesEndAt, pairs: [], waiting: [], excluded: []};
   // No partial final round, late catch-up round, or retry extending the original clock.

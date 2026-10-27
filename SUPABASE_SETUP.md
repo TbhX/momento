@@ -39,3 +39,7 @@ La fonction native d’aperçu ne retourne plus les valeurs d’âge, ville ou p
 ### Préparation d’un binôme
 
 `96_call_readiness.sql` ajoute les réglages fermés par défaut et les préparations privées liées à une rencontre, une session et une entrée natives. RLS interdit tout accès direct membre aux tables ; seuls les RPC Auth-bound sont exposés via wrappers INVOKER. Le reçu commun n’est jamais un droit média. Les retraits sont persistants et l’export personnel masque les références de session et d’entrée. Le schéma et l’historique avec delta sont testés en local isolé. L’application distante est bloquée par une erreur du connecteur ; le delta demeure dans `supabase/pending/call_readiness.sql` et ne fait pas partie de l’historique appliqué. L’export de compte existant ne dépend pas encore de cette fonction. Voir [CALL_READINESS.md](CALL_READINESS.md).
+
+### Durées des nouveaux salons
+
+Le déclaratif de publication décrit désormais le format version 2 : capacités 20/50/100, durées 60/75/150 minutes, échanges 330/150/150 secondes et transitions de 30 secondes. Le DTO ajoute version et nombre de tours. Les remplacements de fonctions n’altèrent aucun salon publié. Le delta de durée est appliqué et archivé sous sa version native, puis les droits et RLS contrôlés ; les admissions, publications ordinaires et prolongations restent fermées. La préparation du binôme ci-dessus demeure un delta distinct en attente.

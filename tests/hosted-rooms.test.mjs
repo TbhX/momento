@@ -1,10 +1,11 @@
+import {readFile} from 'node:fs/promises';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createSupabaseFixture} from './helpers/supabase-fixture.mjs';
 const uid=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 const draft=(capacity=20,extra={})=>({title:'Sur la même fréquence',description:'Un bonjour autour de la musique',theme:'music',city:'Paris',profession:'',minAge:18,maxAge:100,capacity,opensAt:new Date(Date.now()+86400000).toISOString(),modes:['audio','video'],color:'duo',visibility:'link',...extra});
 for(const kind of ['schemas','migrations'])test('member-hosted events and directory using '+kind,async t=>{
- const db=await createSupabaseFixture(kind);
+ const db=await createSupabaseFixture(kind);if(kind==='migrations')await db.exec(await readFile('supabase/migrations/20261026151711_room_duration_v2.sql','utf8'));
  const scalar=async(sql,args=[])=>Object.values((await db.query(sql,args)).rows[0]??{})[0];
  async function actor(n,sql,args=[]){
   await db.exec('begin');try{
@@ -22,7 +23,7 @@ for(const kind of ['schemas','migrations'])test('member-hosted events and direct
    insert into auth.sessions(id,user_id) select id,id from auth.users;
    insert into public.profiles(id,display_name,age,city,gender,terms_version,privacy_version) select id,'Membre '||row_number() over(order by id),30,'Paris',case when right(id::text,1)::int%2=1 then 'woman' else 'man' end,'test','test' from auth.users;`);
   await t.test('safe defaults, draft ownership, idempotency and validation',async()=>{
-   const k=crypto.randomUUID(),r=await save(1,draft(),k);assert.equal(r.capacity,20);assert.equal(r.roundSeconds,300);assert.equal(r.rounds,10);
+   const k=crypto.randomUUID(),r=await save(1,draft(),k);assert.equal(r.capacity,20);assert.equal(r.roundSeconds,330);assert.equal(r.rounds,10);
    assert.equal((await save(1,draft(),k)).id,r.id);assert.equal(await scalar('select count(*)::int from private.hosted_rooms'),1);
    await assert.rejects(save(2,draft(20,{id:r.id})),/room_unavailable/);
    for(const data of [draft(30),draft(20,{minAge:50,maxAge:30}),draft(20,{modes:['video','video']}),draft(20,{opensAt:'infinity'}),draft(20,{owner_id:uid(2)}),draft(20,{theme:'missing'})])await assert.rejects(save(1,data));

@@ -57,7 +57,7 @@ Hypothèse technique illustrative : chaque participant reçoit un seul flux dist
 | 50 personnes | 2 750 | 20,63 Go | 3,85 $ |
 | 100 personnes | 5 500 | 41,25 Go | 7,70 $ |
 
-Les 100 participants forment des tête-à-tête : aucun navigateur ne doit télécharger 99 vidéos. Dix tours de 5 minutes et leurs transitions tiennent dans un créneau de 55 minutes. Le salon de 100 places ne promet pas de rencontrer les 50 personnes du groupe opposé.
+Les participants forment des tête-à-tête : aucun navigateur ne doit télécharger 99 vidéos. Les nouveaux formats prévoient 1 h / 1 h 15 / 2 h 30 pour 20 / 50 / 100 places. Ils offrent respectivement 10 / 25 / 50 créneaux, sous réserve de présences et de compatibilités réciproques, sans garantie de rencontrer chaque personne. Les calculs de coût ci-dessous restent une référence historique à 55 minutes : à débit identique, multiplier par 60/55, 75/55 ou 150/55 pour une session complète du nouveau format. Une validation économique par format reste nécessaire avant vente.
 
 | Hypothèse mensuelle | Minutes-participants | Sortant estimé | Estimation Ship avec les quotas ci-dessus |
 | --- | ---: | ---: | ---: |

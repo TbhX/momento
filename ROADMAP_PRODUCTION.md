@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Photos directement aux places
+
+Les places de la répétition offrent une photo cliquable distincte du choix de partenaire. En 3D, les mêmes vignettes HTML sont projetées sur les chaises visibles ; le repli conserve les boutons aux places. Gratuit : silhouette neutre et invitation Premium, aucune URL originale. Premium : visionneuse existante avec droits relus à l’ouverture. Les portraits restent illustratifs et les photos natives conservent leur route serveur autorisée. Aucun appel, like, swipe ni débit déclenché par une photo. Les vignettes suivent les changements de page et de formule sans texture privée dans le moteur. Validation : 468 tests locaux et build Pages réussis, dont droit Premium, ouverture sans changement de partenaire et retrait des vignettes après navigation. Le navigateur de contrôle sans WebGL ne valide pas la projection GPU.
+
 ## Salle immersive Three.js
 
 Le décor occupe désormais le cadre central et dispose de vues d’ensemble, à hauteur de table, plein écran explicite et repli simplifié. Three.js est épinglé et compilé sur la même origine, chargé seulement dans les tables. La géométrie représente 10, 25 ou 50 tables pour deux selon la capacité du format ; aucune chaise ne prétend représenter une présence native. Les noms et photos restent dans leurs composants autorisés existants. Le rendu est à la demande, sans animation permanente ni téléchargement de textures, avec résolution bornée et libération des ressources à la sortie. Aucun appareil, donnée membre, jeton ou droit supplémentaire. Tests de navigation, chargement tardif et absence de WebGL ajoutés. Validation : 468 tests locaux et build Pages réussis ; audit des dépendances de production sans avis connu. Déploiement vérifié. Le navigateur de contrôle désactive WebGL : chargement du moteur et repli vérifiés, mais rendu GPU, appareils physiques et présence réelle restent à vérifier.

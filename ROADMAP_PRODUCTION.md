@@ -1,5 +1,10 @@
 # Momento — travaux de production
 
+## Décor de bar chaleureux
+
+La table ronde propose un décor en perspective CSS : comptoir, bois, éclairage ambré, petites tables et chaises face à face. Les membres fictifs gardent seulement leur prénom et une initiale ; les photos restent dans le volet Premium existant. Les tables sont paginées par huit places pour conserver la lisibilité. Le placement est illustratif, pas une attribution de binôme ou une mesure de présence réelle. Le teaser public expose uniquement des chaises vides, sans compte ni appareil. Les choix, horaires, crédits et consentements ne changent pas. Le décor ne charge aucun moteur 3D ni service externe et respecte les animations réduites. Validation : 466 tests locaux et build Pages réussis. Aucun SQL distant, droit, crédit, facteur MFA ou autorisation d’ouverture modifié. Le rendu mobile et les appels distants restent à vérifier sur appareils. Prochaine priorité serveur : préparation persistante, ordonnanceur et médias authentifiés, avant ouverture.
+
+
 ## Ajustements PC, nouveaux formats et prolongations répétées
 
 Le fond clair de la vidéo de marque est détouré par un filtre graphique local pour laisser apparaître la palette choisie. La composition conserve aussi la transparence source, afin de ne pas colorer les zones hors image du cadrage. L’attente du second participant utilise un contraste lisible, deux présences illustrées et un cœur animé ; les swipes disposent d’un fondu Momento de 460 ms sans attendre pour changer l’état. Les animations respectent la préférence de réduction. Les notifications sont placées en haut à droite, bornées à trois, échappées et effacées au masquage ou à la déconnexion. Elles signalent les actions du parcours actuel, sans abonnement à des notifications distantes ni révélation d’un like reçu non réciproque.

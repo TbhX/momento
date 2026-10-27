@@ -2,7 +2,7 @@
 
 ## Ajustements PC, nouveaux formats et prolongations répétées
 
-Le fond clair de la vidéo de marque est détouré par un filtre graphique local pour laisser apparaître la palette choisie. L’attente du second participant utilise un contraste lisible, deux présences illustrées et un cœur animé ; les swipes disposent d’un fondu Momento de 460 ms sans attendre pour changer l’état. Les animations respectent la préférence de réduction. Les notifications sont placées en haut à droite, bornées à trois, échappées et effacées au masquage ou à la déconnexion. Elles signalent les actions du parcours actuel, sans abonnement à des notifications distantes ni révélation d’un like reçu non réciproque.
+Le fond clair de la vidéo de marque est détouré par un filtre graphique local pour laisser apparaître la palette choisie. La composition conserve aussi la transparence source, afin de ne pas colorer les zones hors image du cadrage. L’attente du second participant utilise un contraste lisible, deux présences illustrées et un cœur animé ; les swipes disposent d’un fondu Momento de 460 ms sans attendre pour changer l’état. Les animations respectent la préférence de réduction. Les notifications sont placées en haut à droite, bornées à trois, échappées et effacées au masquage ou à la déconnexion. Elles signalent les actions du parcours actuel, sans abonnement à des notifications distantes ni révélation d’un like reçu non réciproque.
 
 La recherche par nom de salon devient une sélection des noms existants retournés sur la page courante du catalogue. La pagination et les filtres serveur restent disponibles ; aucune liste privée complète ni cache persistant n’est ajouté. Ce menu ne prétend pas charger tous les salons du service simultanément.
 

@@ -1,5 +1,10 @@
 # Momento — travaux de production
 
+## Population fictive élargie
+
+Le jeu local contient 120 profils : 50 femmes, 50 hommes, 10 personnes non binaires et 10 autres genres explicitement définis pour ces fixtures. Les 19 identifiants historiques sont conservés ; les nouveaux profils diversifient âges de 18 à 65 ans, villes, métiers, intérêts et intentions. Le moteur des échanges partage les 120 identifiants et préserve leurs choix au rechargement. Les tables filtrent leur groupe de 19/49/99 autres profils avant les critères pour les capacités 20/50/100, utilisateur compris ; le tête-à-tête peut explorer tout le jeu. Il s’agit de fixtures locales, jamais de comptes Auth, présences ou photos de vrais membres. Validation : 473 tests locaux et build Pages réussis, dont conservation des nouveaux identifiants et 50 échanges sans répétition. Aucun compte ni fixture hébergé créé. La compatibilité réciproque native reste à raccorder.
+
+
 ## Attente chaleureuse à deux
 
 La vidéo de marque convertie en GIF ne sert plus d’écran d’attente. Une composition native légère associe deux silhouettes neutres, un cœur animé, un logo discret et « Votre prochain bonjour se prépare… ». Le statut annonce une attente, sans prétendre qu’un vrai membre arrive. Le badge Essai local est conservé ; les commandes de pause, arrivée simulée et retour sont retirées du visuel à la demande du propriétaire. Les animations se terminent en moins de cinq secondes et respectent la réduction des mouvements, sans démarrer un appel automatiquement. La navigation générale reste disponible. Adaptation aux panneaux étroits et écrans peu hauts ; aucun média, chrono, crédit ou arrivée automatique ajouté. Les anciennes surcharges graphiques ont été retirées. Validation : 470 tests locaux et build Pages réussis ; pas d’essai authentifié sur appareil physique. Feuille de route restaurée depuis sa dernière version documentaire, après écrasement accidentel par le contenu d’un test lors de la livraison précédente.

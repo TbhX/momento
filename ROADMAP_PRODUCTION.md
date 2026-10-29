@@ -1,5 +1,12 @@
 # Momento — travaux de production
 
+
+## Navigation sans actions JavaScript intégrées au HTML
+
+Le cadre initial (menu latéral, logo, en-tête, installation, fermeture mobile et confidentialité) ne contient plus de gestionnaires d’événements HTML. Les actions sont liées dans le script local de navigation à une liste fermée de destinations, capturées lors de l’initialisation. Un attribut ajouté ou modifié ne devient pas un nom de fonction exécutable. Les liens publics conservent leurs URL et les clics modifiés, téléchargements et ouvertures dans un autre onglet gardent le comportement natif du navigateur. Menu mobile, retour du focus et accès soumis au compte restent inchangés.
+
+Validation : 484 tests locaux et build Pages réussis. Cinq tests dédiés couvrent les cinq documents publics pré-rendus sans attribut exécutable, les clics sur icônes, les commandes liées hors HTML, les destinations altérées, les actions masquées et le menu mobile avec focus. Aucun schéma, droit, facteur MFA, média, vente ni donnée hébergée modifié. La CSP globale conserve encore sa compatibilité avec les gestionnaires historiques des panneaux dynamiques : ce chantier ne supprime pas à lui seul tout risque XSS. Prochaine étape sécurité : migrer ces panneaux par blocs avant de retirer `unsafe-inline`, puis vérifier chaque parcours sous la politique stricte. Les essais physiques et authentifiés restent distincts des tests locaux.
+
 ## Salle complète et choix d’une chaise d’attente
 
 La salle prend la place principale de la table ronde : dix, vingt-cinq ou cinquante tables pour deux, selon les capacités 20/50/100. Le plan montre toutes les chaises sans pagination ; les envies, horaires et modes restent dans un panneau de préparation séparé. Le cadrage orthographique prend en compte les coins du décor et le ratio de l’écran. Bois, comptoir, bougies, silhouettes neutres et numéros de table rendent les repères lisibles ; les géométries sont partagées et le moteur reste chargé à la demande depuis la même origine, sans texture de membre ni animation permanente.

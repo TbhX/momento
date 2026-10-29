@@ -18,7 +18,7 @@
 <a class="skip-link" href="#app">Aller au contenu</a>
 <div class="app-frame">
  <aside class="app-sidebar" id="appSidebar" aria-label="Menu Momento">
-  <div class="sidebar-brand"><a class="brand" href="/" onclick="event.preventDefault();go('home')" aria-label="Momento, accueil"><img class="momento-wordmark" src="/momento-logo.png" width="2172" height="724" alt="Momento"></a><button class="sidebar-close icon-button" type="button" onclick="MomentoNavigation.closeMenu(true)" aria-label="Fermer le menu">×</button></div>
+  <div class="sidebar-brand"><a class="brand" href="/" data-shell-home aria-label="Momento, accueil"><img class="momento-wordmark" src="/momento-logo.png" width="2172" height="724" alt="Momento"></a><button class="sidebar-close icon-button" type="button" data-shell-close aria-label="Fermer le menu">×</button></div>
   <p class="sidebar-tagline">Un bonjour peut tout changer.</p>
   <nav class="sidebar-nav" aria-label="Navigation principale">
    <span class="sidebar-label">DÉCOUVRIR</span>
@@ -45,19 +45,19 @@
   </nav>
   <div class="sidebar-bottom">
    <div class="sidebar-moment"><span aria-hidden="true">♡</span><p>Laissons une place<br>à l’inattendu.</p><small>FAITES PLACE À LA RENCONTRE</small></div>
-   <button class="sidebar-install" onclick="installApp()"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></svg>Installer Momento <span aria-hidden="true">↗</span></button>
-   <div class="sidebar-utility"><a href="/confidentialite.html" onclick="event.preventDefault();go('privacy')">Confidentialité</a><span>18+</span></div>
+   <button class="sidebar-install" data-shell-install><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></svg>Installer Momento <span aria-hidden="true">↗</span></button>
+   <div class="sidebar-utility"><a href="/confidentialite.html">Confidentialité</a><span>18+</span></div>
   </div>
  </aside>
- <button class="sidebar-scrim" id="sidebarScrim" aria-label="Fermer le menu" onclick="MomentoNavigation.closeMenu(true)" hidden tabindex="-1"></button>
+ <button class="sidebar-scrim" id="sidebarScrim" aria-label="Fermer le menu" data-shell-close hidden tabindex="-1"></button>
  <div class="app-workspace" id="appWorkspace">
   <header class="app-topbar">
-   <div class="topbar-location"><button id="sidebarToggle" class="icon-button menu-toggle" type="button" aria-label="Ouvrir le menu" aria-controls="appSidebar" aria-expanded="false" onclick="MomentoNavigation.toggleMenu()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><span class="topbar-wordmark"><img class="momento-wordmark" src="/momento-logo.png" width="2172" height="724" alt="Momento"><i aria-hidden="true">/</i></span><span id="shellPageLabel">Pour vous</span></div>
-   <div class="header-actions"><button class="header-signin" data-visitor-action onclick="openAccount('signin')">Se connecter <span aria-hidden="true">↗</span></button><button class="header-profile" data-page="profile" data-member-action hidden aria-label="Mon profil"><span class="avatar own-avatar" data-own-avatar>M</span><span>Mon profil</span></button></div>
+   <div class="topbar-location"><button id="sidebarToggle" class="icon-button menu-toggle" type="button" aria-label="Ouvrir le menu" aria-controls="appSidebar" aria-expanded="false" data-shell-toggle><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><span class="topbar-wordmark"><img class="momento-wordmark" src="/momento-logo.png" width="2172" height="724" alt="Momento"><i aria-hidden="true">/</i></span><span id="shellPageLabel">Pour vous</span></div>
+   <div class="header-actions"><button class="header-signin" data-visitor-action data-shell-signin>Se connecter <span aria-hidden="true">↗</span></button><button class="header-profile" data-page="profile" data-member-action hidden aria-label="Mon profil"><span class="avatar own-avatar" data-own-avatar>M</span><span>Mon profil</span></button></div>
   </header>
   <div id="navigationProgress" class="navigation-progress" role="status" aria-live="polite" hidden><span aria-hidden="true">♡</span> Votre prochain moment arrive…</div>
   <main id="app" tabindex="-1"><div class="empty" role="status"><h1>Votre prochain bonjour.</h1><p>Votre espace se charge…</p></div></main>
-  <footer class="app-statusbar"><span>Un bonjour peut tout changer.</span><a href="/confidentialite.html" onclick="event.preventDefault();go('privacy')">Confidentialité & règles · 18+</a></footer>
+  <footer class="app-statusbar"><span>Un bonjour peut tout changer.</span><a href="/confidentialite.html">Confidentialité & règles · 18+</a></footer>
  </div>
 </div>
 <dialog id="modal" aria-label="Momento"></dialog><div id="toast" role="status" aria-live="polite"></div><span id="count" hidden>0</span>

@@ -26,6 +26,8 @@ Les permissions caméra/micro sont limitées à la même origine, sans activatio
 
 Pour la cible Supabase actuelle, les connexions réseau du navigateur restent sur l’origine Momento et les iframes vidéo tierces sont interdites tant que les médias natifs sont fermés. L’intégration future devra préciser les origines média exactes, les autorisations par binôme et la révocation avant de modifier cette politique.
 
+Le cadre de navigation initial et les cinq documents publics pré-rendus n’utilisent plus d’attributs d’événement exécutables. Les écouteurs du script local capturent uniquement les destinations connues et préservent les comportements natifs des liens ; aucune résolution de nom de fonction depuis le HTML n’est ajoutée. Les tests bloquent la réintroduction de gestionnaires intégrés dans ces documents.
+
 Limite connue : les gestionnaires d’événements HTML historiques restent autorisés par `script-src`. `script-src-elem 'self'` bloque les balises script injectées mais ne remplace pas leur refonte complète. Ne pas présenter la politique comme supprimant tout risque XSS. Les données de membres affichées doivent rester échappées et les accès sensibles validés côté serveur.
 
 ## Données et exploitation

@@ -14,8 +14,18 @@ const MomentoNavigation=(()=>{
   if(result&&typeof result.then==='function'){app.inert=true;app.setAttribute('aria-busy','true');loadingTimer=setTimeout(()=>{if(ticket===sequence&&progress)progress.hidden=false},140);return Promise.resolve(result).then(value=>{finish(ticket,restore,focusFrom);return value},error=>{if(ticket===sequence){app.innerHTML='<div class="empty"><h2>Un petit instant.</h2><p role="alert">Cette page ne peut pas être affichée. Réessayez depuis le menu.</p></div>';finish(ticket,restore,focusFrom)}return undefined})}
   finish(ticket,restore,focusFrom);return result;
  }
+ // Bind only the initial shell controls and capture approved destinations once.
+ // Neither injected data attributes nor a function name from HTML are executed.
+ const routes=new Set(['home','salon','tablePreview','hosted','friends','callDemo','videos','shop','profile','hostedPreview','concept','plans','dates','admin']);
+ function ordinaryLinkClick(event,link){return !event.defaultPrevented&&event.button===0&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey&&!link.hasAttribute('download')&&(!link.target||link.target==='_self')}
+ function bindRoute(control,destination){if(!routes.has(destination))return;control.addEventListener('click',event=>{if(event.defaultPrevented||control.disabled||control.closest('[hidden],[inert]'))return;if(control.tagName==='A'&&!ordinaryLinkClick(event,control))return;event.preventDefault();go(destination)})}
+ document.querySelectorAll('.sidebar-nav [data-page],.header-actions [data-page]').forEach(control=>bindRoute(control,control.dataset.page));
+ document.querySelectorAll('[data-shell-home]').forEach(control=>bindRoute(control,'home'));
+ const bind=(selector,action)=>document.querySelectorAll(selector).forEach(control=>control.addEventListener('click',event=>{if(event.defaultPrevented||control.disabled||control.closest('[hidden],[inert]'))return;action()}));
+ bind('[data-shell-close]',()=>closeMenu(true));bind('[data-shell-toggle]',toggleMenu);
+ bind('[data-shell-install]',()=>installApp());bind('[data-shell-signin]',()=>openAccount('signin'));
  document.addEventListener('keydown',event=>{if(!menuOpen)return;if(event.key==='Escape'){event.preventDefault();closeMenu(true);return}if(event.key!=='Tab')return;const items=[...panel.querySelectorAll('a[href],button:not([disabled])')].filter(el=>!el.closest('[hidden]')&&el.tabIndex!==-1),first=items[0],last=items.at(-1);if(!first)return;if(event.shiftKey&&(document.activeElement===first||!panel.contains(document.activeElement))){event.preventDefault();last.focus()}else if(!event.shiftKey&&(document.activeElement===last||!panel.contains(document.activeElement))){event.preventDefault();first.focus()}});
- document.addEventListener('click',event=>{const link=event.target.closest?.('a[href]');if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||!link||link.target&&link.target!=='_self')return;if(link.getAttribute('href')==='/confidentialite.html'){event.preventDefault();go('privacy')}});
+ document.addEventListener('click',event=>{const link=event.target.closest?.('a[href]');if(!link||!ordinaryLinkClick(event,link))return;if(link.getAttribute('href')==='/confidentialite.html'){event.preventDefault();go('privacy')}});
  small.addEventListener?.('change',()=>closeMenu(true));reduced.addEventListener?.('change',()=>{if(reduced.matches){animation?.cancel();animation=null}});closeMenu();
  return{run,toggleMenu,closeMenu};
 })();

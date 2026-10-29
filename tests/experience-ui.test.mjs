@@ -455,3 +455,16 @@ test('seat preference cannot modify an active turn or bypass the original start 
  await window.go('table');window.pauseCallClock();window.tableChooseSeat(3);window.elapseCall(900);assert.equal(window.callRehearsal().phase,'preview');assert.equal(window.callVisits(),0);assert.equal(document.querySelector('#callDemoMic').getAttribute('aria-pressed'),'false');assert.equal(document.querySelector('#callDemoCam').getAttribute('aria-pressed'),'false');window.tableFilter('all');window.callDemoStart();assert.equal(window.callRehearsal().phase,'preview');assert.equal(window.callVisits(),0);assert.equal(document.querySelector('[data-call-wait-arrive]'),null);window.callSessionPeerArrived();assert.equal(window.callRehearsal().phase,'date');const before=JSON.stringify(window.callRehearsal());assert.equal(window.tableChooseSeat(4),false);window.tableReleaseSeat();assert.equal(document.querySelector('[data-room-seat="3"]').dataset.seatState,'mine');assert.equal(JSON.stringify(window.callRehearsal()),before);
  }finally{v.dom.window.close()}
 });
+
+test('seat opens a non-modal central conversation window that can minimize without changing consent or devices',async()=>{
+ const v=await experience(true),{window,document,calls}=v;try{
+ await window.go('table');window.pauseCallClock();const state=JSON.stringify(window.callRehearsal()),wallet=JSON.stringify(window.callWallet()),requests=calls.length;
+ const root=document.querySelector('.roundtable-demo'),panel=document.querySelector('#tableCallWindow');assert.equal(root.dataset.callFloating,'false');
+ window.tableChooseSeat(3);assert.equal(root.dataset.callFloating,'true');assert.equal(panel.hidden,false);assert.equal(document.querySelector('.table-preparation-panel').open,true);assert.equal(panel.getAttribute('aria-modal'),null);
+ document.querySelector('[data-table-call-minimize]').click();assert.equal(panel.hidden,true);assert.equal(document.activeElement,document.querySelector('[data-table-call-restore]'));window.callDemoRefresh();assert.equal(panel.hidden,true);
+ document.querySelector('[data-table-call-restore]').click();assert.equal(panel.hidden,false);assert.equal(document.activeElement,document.querySelector('[data-table-call-minimize]'));
+ assert.equal(JSON.stringify(window.callRehearsal()),state);assert.equal(JSON.stringify(window.callWallet()),wallet);assert.equal(calls.length,requests);assert.equal(window.callVisits(),0);assert.equal(document.querySelector('#callDemoCam').getAttribute('aria-pressed'),'false');
+ window.elapseCall(900);window.tableFilter('all');window.callDemoStart();assert.equal(document.querySelector('.table-preparation-panel').hidden,true);assert.ok(document.querySelector('[data-call-wait]'));document.querySelector('[data-table-call-minimize]').click();window.callSessionPeerArrived();assert.equal(window.callRehearsal().phase,'date');assert.equal(panel.hidden,true);document.querySelector('[data-table-call-restore]').click();assert.equal(panel.hidden,false);assert.equal(window.callRehearsal().phase,'date');
+ await window.go('home');assert.ok(document.querySelector('[data-call-review]'));document.querySelector('[data-review-leave]').click();assert.equal(document.querySelector('#tableCallWindow'),null);assert.equal(document.querySelector('[data-table-call-restore]'),null);
+ }finally{v.dom.window.close()}
+});

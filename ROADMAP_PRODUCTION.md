@@ -1,5 +1,11 @@
 # Momento — travaux de production
 
+## Tête-à-tête centré dans la salle
+
+Le choix local d’une chaise ouvre un espace central réductible. La préparation conserve les envies et consentements ; l’attente puis la vidéo occupent la même fenêtre large, avec aperçu personnel en miniature pendant l’attente. « Voir la salle » réduit la fenêtre sans modifier le tour, les appareils ou les crédits ; « Mon tête-à-tête » la restaure. La salle reste accessible sans voile ni dialogue modal. Dispositions mobiles, hauteur bornée, défilement interne, clavier et réduction des animations conservés.
+
+Validation : 485 tests locaux et build Pages. Le test dédié couvre choix sans débit/appareil, réduction persistante pendant le rafraîchissement et l’arrivée simulée, restauration et sortie par le récapitulatif. Aucun schéma ou service distant modifié ; les essais restent locaux. Le rendu authentifié sur téléphone physique et les appels réels restent à valider séparément.
+
 
 ## Navigation sans actions JavaScript intégrées au HTML
 

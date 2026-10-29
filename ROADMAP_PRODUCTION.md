@@ -1,5 +1,11 @@
 # Momento — travaux de production
 
+## Direction diorama de jeu mobile pour le speed dating
+
+La salle adopte une vue isométrique plus affirmée, un socle en volume, un damier pastel et du mobilier arrondi par géométries partagées. Les petits avatars neutres gagnent un visage illustré ; les couleurs des sièges indiquent uniquement libre, occupé ou choix local. Les tables restent à deux places, la vidéo centrée conserve la priorité après préparation et les commandes de rencontre sont inchangées. Le plan accessible reprend les mêmes couleurs, reliefs et repères de sélection ; ses transitions respectent la réduction des animations. Aucun classement, récompense ou donnée privée ajouté au décor.
+
+Validation : 485 tests locaux et build Pages réussis, incluant cadrage des capacités 20/50/100, choix des sièges, repli et nettoyage. Géométries arrondies incluses dans le bundle local. Rendu WebGL et performances sur téléphones physiques non validés ; aucun appel ou droit réel activé.
+
 ## Ambiance lounge de la salle 3D
 
 Décor éclairci, parquet à joints décalés, comptoir cannelé avec arches en laiton, tables ivoire cerclées, petits tapis et ombres de contact, fauteuils arrondis, suspensions et plantes composées. Les numéros de table et commandes gardent un contraste lisible. Géométries partagées, résolution plafonnée et rendu à la demande conservés ; aucun téléchargement de textures, photo membre ou nouvelle permission. Les capacités 20/50/100, le cadrage complet et le plan accessible restent inchangés.

@@ -468,3 +468,34 @@ test('seat opens a non-modal central conversation window that can minimize witho
  await window.go('home');assert.ok(document.querySelector('[data-call-review]'));document.querySelector('[data-review-leave]').click();assert.equal(document.querySelector('#tableCallWindow'),null);assert.equal(document.querySelector('[data-table-call-restore]'),null);
  }finally{v.dom.window.close()}
 });
+
+test('admin rehearsal controls restore participant arrival and peer likes with fresh permission',async()=>{
+ const v=await experience(true,{},true),{window,document,calls}=v;try{
+ await window.go('table');window.pauseCallClock();assert.ok(document.querySelector('[data-call-admin-tools]'));
+ const click=async key=>{document.querySelector('[data-admin-call-action="'+key+'"]').click();await new Promise(r=>setTimeout(r,20))};
+ await click('arrival');assert.equal(window.callRehearsal().phase,'preview');assert.equal(window.callVisits(),0);
+ window.tableFilter('all');await click('start');window.callDemoStart();await click('arrival');assert.equal(window.callRehearsal().phase,'date');window.callDemoLike();await click('like');assert.equal(window.MomentoConversation.matched(window.callRehearsal()),true);assert.ok(calls.filter(p=>p==='/api/service/admin/test-access').length>=4);
+ const before=JSON.stringify(window.callRehearsal()),fetch=window.fetch;window.fetch=(path,options)=>path==='/api/service/admin/test-access'?Promise.resolve(Response.json({error:'admin_required'},{status:403})):fetch(path,options);await click('unlike');assert.equal(JSON.stringify(window.callRehearsal()),before);assert.match(document.querySelector('[data-admin-call-status]').textContent,/refusé/);
+ }finally{v.dom.window.close()}
+ const ordinary=await experience(true);try{await ordinary.window.go('table');assert.equal(ordinary.document.querySelector('[data-call-admin-tools]'),null)}finally{ordinary.dom.window.close()}
+});
+
+test('waiting presence survives refresh without remount and expires cleanly without an entry',async()=>{
+ const v=await experience(true),{window,document}=v;try{
+ await window.go('table');window.pauseCallClock();window.tableFilter('all');window.elapseCall(900,false);window.callDemoStart();const wait=document.querySelector('[data-call-wait]');assert.ok(wait);window.callDemoRefresh();assert.equal(document.querySelector('[data-call-wait]'),wait);assert.equal(window.callVisits(),0);
+ window.elapseCall(10000);assert.equal(document.querySelector('[data-call-wait]'),null);assert.equal(window.callVisits(),0);window.callSessionPeerArrived();assert.equal(window.callRehearsal().phase,'preview');assert.equal(window.callVisits(),0);assert.match(document.querySelector('#tablePreferenceError').textContent,/terminé/);
+ }finally{v.dom.window.close()}
+});
+
+test('a delayed admin arrival cannot affect a departed rehearsal',async()=>{
+ const v=await experience(true,{},true),{window,document}=v;try{
+ await window.go('table');window.pauseCallClock();window.tableFilter('all');window.elapseCall(900,false);window.callDemoStart();let resolve;const fetch=window.fetch;window.fetch=(path,options)=>path==='/api/service/admin/test-access'?new Promise(r=>resolve=r):fetch(path,options);
+ document.querySelector('[data-admin-call-action="arrival"]').click();await window.go('home');document.querySelector('[data-review-leave]')?.click();await window.go('table');window.pauseCallClock();const state=JSON.stringify(window.callRehearsal());resolve(Response.json({simulationOnly:true,unlimitedCredits:true,realSessions:false,paymentsEnabled:false}));await new Promise(r=>setTimeout(r,20));assert.equal(JSON.stringify(window.callRehearsal()),state);assert.equal(window.callVisits(),0);assert.equal(document.querySelector('[data-call-wait]'),null);
+ }finally{v.dom.window.close()}
+});
+
+test('restarting a table requires a fresh participant arrival',async()=>{
+ const v=await experience(true),{window,document}=v;try{
+ await window.go('table');window.pauseCallClock();window.tableFilter('all');window.elapseCall(900,false);window.callDemoStart();window.callSessionPeerArrived();assert.equal(window.callRehearsal().phase,'date');window.callRehearsal().phase='ended';window.tableRestart();assert.equal(window.callRehearsal().phase,'preview');window.callDemoStart();assert.equal(window.callRehearsal().phase,'preview');assert.ok(document.querySelector('[data-call-wait]'));window.callSessionPeerArrived();assert.equal(window.callRehearsal().phase,'date');
+ }finally{v.dom.window.close()}
+});

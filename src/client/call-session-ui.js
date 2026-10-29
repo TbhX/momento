@@ -42,10 +42,15 @@ function callSessionReview(destination='salon'){
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden){const f=callDemoFlow;callSessionClearTransition(f);const dialog=document.querySelector('#modal');if(dialog?.querySelector('[data-call-review]')){dialog.close();dialog.replaceChildren()}}});
 
+function callSessionCancelWait(f){
+ if(!f)return;f.waitingPeer=false;f.peerReady=false;
+ const stage=document.querySelector('#callDemoStage');stage?.querySelector('[data-call-wait]')?.remove();const peer=stage?.querySelector('.call-peer');if(peer)peer.hidden=false;
+}
 function callSessionWait(f){
  if(!callDemoAlive(f)||f.state.phase!=='preview')return;
  f.waitingPeer=true;if(f.table)f.table.waiting=false;document.querySelector('.conversation-view').hidden=false;document.querySelector('#callDemoPreflight').hidden=true;
  const stage=document.querySelector('#callDemoStage');if(!stage)return;
+ if(stage.querySelector('[data-call-wait]')){callDemoClock(f);if(f.table)tableCallWindowSync(f);return}
  stage.querySelector('.call-peer').hidden=true;
  stage.querySelector('[data-call-wait]')?.remove();
  const wait=document.createElement('section');wait.className='call-peer call-peer-wait';wait.dataset.callWait='';wait.setAttribute('aria-label','Attente du second participant');
@@ -57,7 +62,26 @@ function callSessionWait(f){
 }
 function callSessionPeerArrived(f=callDemoFlow){
  if(!callDemoAlive(f)||!f.waitingPeer||f.state.phase!=='preview')return;
- if(f.table&&callDemoNow(f)+MomentoConversation.roundDuration(f.state)+MomentoConversation.DECISION>f.table.event.closesAt){f.waitingPeer=false;document.querySelector('[data-call-wait]')?.remove();callDemoRefresh(f);document.querySelector('#tablePreferenceError').textContent='Le créneau ne permet plus un tête-à-tête complet.';return}
+ if(f.table&&callDemoNow(f)+MomentoConversation.roundDuration(f.state)+MomentoConversation.DECISION>f.table.event.closesAt){callSessionCancelWait(f);callDemoRefresh(f);document.querySelector('#tablePreferenceError').textContent='Le créneau ne permet plus un tête-à-tête complet.';return}
  f.waitingPeer=false;f.peerReady=true;const stage=document.querySelector('#callDemoStage');stage?.querySelector('[data-call-wait]')?.remove();const peer=stage?.querySelector('.call-peer');if(peer)peer.hidden=false;
  callDemoStart();
+}
+
+// These controls operate only on the captured local rehearsal, after fresh admin authorization.
+function callAdminToolsMount(f){
+ if(!liveStatus?.admin||!callDemoAlive(f))return;
+ const host=document.querySelector('.table-call-column')||document.querySelector('.conversation-demo');if(!host)return;
+ const panel=document.createElement('details');panel.className='call-admin-tools';panel.dataset.callAdminTools='';panel.open=true;
+ panel.innerHTML='<summary>⚙ Administration · tests locaux</summary><p>Aucun participant réel, message envoyé ou débit bancaire.</p><div data-admin-call-actions></div><p role="status" data-admin-call-status></p>';
+ const actions=[['arrival','Arrivée du participant',()=>callSessionPeerArrived(f)],['like','Son like',()=>callDemoPeerLike(true)],['unlike','Son refus',()=>callDemoPeerLike(false)],['incoming','Demande de prolongation reçue',()=>callDemoIncomingExtension()],['accept','Accepter ma prolongation',()=>callDemoSimulateExtensionAnswer(true)],['decline','Refuser ma prolongation',()=>callDemoSimulateExtensionAnswer(false)],['ending','Alerte de fin',()=>callDemoPreviewEnding()]];
+ if(f.table)actions.unshift(['start','Avancer à l’horaire du salon',()=>tableAdvanceStart()]);
+ let busy=false;const current=()=>panel.isConnected&&callDemoAlive(f)&&liveStatus?.admin&&f.audience==='demo';
+ for(const [key,label,action] of actions){const button=document.createElement('button');button.type='button';button.className='secondary';button.dataset.adminCallAction=key;button.textContent=label;
+ button.addEventListener('click',async()=>{if(busy||!current())return;const person=f.state.personId,round=f.state.round,phase=f.state.phase,token=f.state.records[person]?.requests.continue?.token;busy=true;button.disabled=true;const status=panel.querySelector('[data-admin-call-status]');status.textContent='Vérification de l’accès…';
+ try{const permission=await api('/admin/test-access');if(!current())return;if(permission.simulationOnly!==true||permission.unlimitedCredits!==true||permission.realSessions!==false||permission.paymentsEnabled!==false)throw Error('Accès de test indisponible.');
+ if(key==='arrival'&&!f.waitingPeer){status.textContent='Confirmez d’abord vos envies et votre entrée pour attendre un participant.';return}
+ if(!['start','arrival'].includes(key)&&!['date','vote','continued'].includes(f.state.phase)){status.textContent='Commencez un tête-à-tête simulé avant cette action.';return}
+ if(f.state.personId!==person||f.state.round!==round||f.state.phase!==phase||f.state.records[person]?.requests.continue?.token!==token){status.textContent='La rencontre a changé. Relancez la commande pour la situation actuelle.';return}action();status.textContent='Commande exécutée dans l’essai local. Les conditions de match et de consentement restent nécessaires.';
+ }catch{if(panel.isConnected)status.textContent='Accès administrateur refusé ou indisponible. Vérifiez votre connexion et la double authentification.'}finally{busy=false;button.disabled=false}});
+ panel.querySelector('[data-admin-call-actions]').append(button)}host.append(panel);
 }

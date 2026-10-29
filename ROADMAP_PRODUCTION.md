@@ -1,5 +1,11 @@
 # Momento — travaux de production
 
+## Commandes administrateur et attente de présence
+
+Panneau de test local visible pour l’administrateur pendant la préparation et l’attente : avancer au départ, simuler une arrivée, le like/refus du pair, une demande reçue, son acceptation/refus et l’alerte de fin. Chaque clic relit la permission native de laboratoire (MFA conservée) et vérifie encore le compte, le flux local, le participant, le tour et la demande après la réponse. Aucun droit réel ni présence distante ne découle de ces commandes. Le panneau reste absent pour les membres ordinaires et masqué dans la recherche réelle.
+
+L’attente conserve son élément lors des rafraîchissements, se ferme à l’expiration du salon et ne consomme aucune entrée tardive. Modifier les envies ou recommencer une série efface la présence simulée précédente. Validation : 489 tests locaux et build Pages réussis. Tests dédiés : accès refusé, arrivée avant consentement, accord réciproque, réponse administrative tardive après navigation, expiration et nouvelle arrivée nécessaire après reprise. La présence réelle via les médias n’est pas raccordée : les avatars du décor restent des fixtures, pas des membres connectés. Aucun schéma ou service hébergé modifié.
+
 ## Direction diorama de jeu mobile pour le speed dating
 
 La salle adopte une vue isométrique plus affirmée, un socle en volume, un damier pastel et du mobilier arrondi par géométries partagées. Les petits avatars neutres gagnent un visage illustré ; les couleurs des sièges indiquent uniquement libre, occupé ou choix local. Les tables restent à deux places, la vidéo centrée conserve la priorité après préparation et les commandes de rencontre sont inchangées. Le plan accessible reprend les mêmes couleurs, reliefs et repères de sélection ; ses transitions respectent la réduction des animations. Aucun classement, récompense ou donnée privée ajouté au décor.

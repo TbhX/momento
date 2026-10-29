@@ -108,3 +108,12 @@
 @keyframes table-call-arrive{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
 @media(max-width:600px){.roundtable-demo[data-call-floating=true] .table-call-column{width:calc(100vw - 20px);max-height:calc(100dvh - 100px);border-radius:22px;padding:7px}.table-call-title{font-size:18px}.table-call-chrome{gap:6px;padding:3px 5px 9px}.table-call-chrome button{font-size:11px;padding:7px 10px}.roundtable-demo[data-call-floating=true] .conversation-view{padding:10px}.roundtable-demo[data-call-floating=true] .table-call-column .conversation-preflight{grid-template-columns:1fr;padding:14px}.roundtable-demo[data-call-floating=true] .call-stage:has([data-call-wait]) .wait-composition{grid-template-columns:1fr;gap:14px}.roundtable-demo[data-call-floating=true] .call-stage:has([data-call-wait]) .call-self{width:65px;height:85px}.roundtable-demo[data-call-floating=true] [data-call-wait]{padding:18px 12px 60px}.table-call-restore{bottom:18px;right:18px}.roundtable-demo[data-call-floating=true] .wait-person{height:100px;width:80px}.roundtable-demo[data-call-floating=true] .wait-copy h2{font-size:26px}}
 @media(prefers-reduced-motion:reduce){.roundtable-demo[data-call-floating=true] .table-call-column{animation:none}}
+
+/* Lounge framing: calm brass controls, airy room and readable table markers. */
+.bistro-stage{background:#eadfd4}
+.bistro-scene-tools{gap:8px;bottom:9px}
+.bistro-scene-tools button{border-radius:20px;background:#fff8eef2;color:#624d48;border-color:#cbb6a0;box-shadow:0 3px 10px #533d3020;padding:8px 14px;min-height:38px;font-size:11px}
+.bistro-scene-tools button[aria-pressed=true]{background:#654d56;color:#fff4eb;border-color:#654d56}
+.bistro-table-number{background:#fff9edeb;color:#674e43;border:1px solid #d2b58a;box-shadow:0 2px 7px #4c342624;font-size:10px;min-width:22px;min-height:22px;display:grid;place-items:center;border-radius:50%;font-variant-numeric:tabular-nums}
+.bistro-table-number.is-selected{background:#edf8f3;color:#345e52;border-color:#629a85;box-shadow:0 0 0 3px #b9d8c94d}
+@media(max-width:600px){.bistro-scene-tools{gap:4px}.bistro-scene-tools button{font-size:9px;padding:7px 9px}.bistro-table-number{font-size:8px;min-width:17px;min-height:17px}}

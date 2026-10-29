@@ -1,5 +1,11 @@
 # Momento — travaux de production
 
+## Ambiance lounge de la salle 3D
+
+Décor éclairci, parquet à joints décalés, comptoir cannelé avec arches en laiton, tables ivoire cerclées, petits tapis et ombres de contact, fauteuils arrondis, suspensions et plantes composées. Les numéros de table et commandes gardent un contraste lisible. Géométries partagées, résolution plafonnée et rendu à la demande conservés ; aucun téléchargement de textures, photo membre ou nouvelle permission. Les capacités 20/50/100, le cadrage complet et le plan accessible restent inchangés.
+
+Validation : 485 tests locaux et build Pages réussis. Le moteur est compilé mais le rendu GPU et les performances sur appareils physiques restent à vérifier ; le navigateur de contrôle ne permet pas de valider WebGL. Aucun changement de données, admission ou média réel.
+
 ## Tête-à-tête centré dans la salle
 
 Le choix local d’une chaise ouvre un espace central réductible. La préparation conserve les envies et consentements ; l’attente puis la vidéo occupent la même fenêtre large, avec aperçu personnel en miniature pendant l’attente. « Voir la salle » réduit la fenêtre sans modifier le tour, les appareils ou les crédits ; « Mon tête-à-tête » la restaure. La salle reste accessible sans voile ni dialogue modal. Dispositions mobiles, hauteur bornée, défilement interne, clavier et réduction des animations conservés.

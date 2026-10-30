@@ -1,5 +1,15 @@
 # Momento — travaux de production
 
+## Demande d’ami indépendante du match
+
+Dans la répétition locale, proposer un ajout ami ne nécessite plus deux likes. L’envoi laisse la demande en attente, sans créer d’amitié ni utiliser d’accès. Le destinataire simulé accepte ou refuse ; le lien est ensuite confirmé avec les règles de coût existantes. Retirer un like n’annule plus cette demande indépendante. Une prolongation initiale exige toujours un match. Les boutons du tête-à-tête et de l’encart reflètent cette distinction. La persistance communautaire hébergée n’est pas modifiée par ce chantier local.
+
+## Rotation automatique et renouvellement de l’aparté
+
+Les tours utilisent leur durée configurée (2 min 30, 5 min ou 5 min 30), suivie des 30 secondes de choix puis du passage automatique. Le silence ne devient pas un like. Les demandes sans réponse expirent sans débit et ne retardent pas la rotation. La fin d’une prolongation reprend désormais automatiquement la découverte au lieu de rester sur une fin de session, sans recycler les personnes ni commencer un tour incomplet après fermeture. Les rendez-vous séparés de 15 minutes conservent leur fin distincte.
+
+Après une première acceptation dont le texte annonce cette règle, le même demandeur peut ajouter 3 minutes à cet aparté actif sans nouvelle invitation, sur confirmation de chaque coût. Le partenaire reste libre de quitter. Jeton de confirmation à usage unique, plafond de coût, solde, match, payeur et échéance revérifiés ; pas de crédit, achat ou prolongation automatique sur simple clic répété. Le renouvellement à solde vide invite à ajouter un accès en boutique ; aucun achat de secours. Le droit ne survit ni à une autre personne, ni à une fin, ni à un rechargement. Validation : 496 tests locaux et build Pages réussis, avec durées, renouvellements répétés, rejeu, solde insuffisant, autre payeur, expiration et reprise automatique. Ceci concerne uniquement la simulation locale ; le socle serveur fermé garde ses règles actuelles jusqu’à une évolution et validation séparées.
+
 ## Commandes administrateur et attente de présence
 
 Panneau de test local visible pour l’administrateur pendant la préparation et l’attente : avancer au départ, simuler une arrivée, le like/refus du pair, une demande reçue, son acceptation/refus et l’alerte de fin. Chaque clic relit la permission native de laboratoire (MFA conservée) et vérifie encore le compte, le flux local, le participant, le tour et la demande après la réponse. Aucun droit réel ni présence distante ne découle de ces commandes. Le panneau reste absent pour les membres ordinaires et masqué dans la recherche réelle.

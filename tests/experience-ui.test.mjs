@@ -29,10 +29,10 @@ test('empty or invalid call criteria keep the neutral preparation visible withou
  const v=await experience(true),{window,document}=v;
  try{window.go('callDemo');window.callAudienceLocal();window.pauseCallClock();document.querySelector('#callChoiceGender').value='all';document.querySelector('#callChoiceMin').value='99';document.querySelector('#callChoiceMax').value='100';window.callDemoStart();window.callSessionPeerArrived();assert.match(document.querySelector('#callChoiceError').textContent,/Aucun profil fictif/);assert.equal(document.querySelector('.conversation-view').hidden,true);assert.equal(window.callRehearsal().phase,'preview');document.querySelector('#callChoiceMin').value='101';window.callDemoStart();window.callSessionPeerArrived();assert.match(document.querySelector('#callChoiceError').textContent,/tranche d’âge valide/)}finally{v.dom.window.close()}
 });
-test('the same seven themes reach public round tables and native paged filters without consuming an entry',async()=>{
+test('the eight discovery themes reach public round tables and native paged filters without consuming an entry',async()=>{
  const v=await experience(true),{window,document,calls}=v;
  try{
-  assert.equal(document.querySelectorAll('.home-envies [data-theme]').length,7);window.homeThemeOpen('travel');await new Promise(r=>setImmediate(r));
+  assert.equal(document.querySelectorAll('.home-envies [data-theme]').length,8);window.homeThemeOpen('travel');await new Promise(r=>setImmediate(r));
   const oldFetch=window.fetch;window.fetch=(path,options)=>path==='/api/service/community/overview'?Promise.resolve(Response.json({themes:window.MomentoThemes.catalog,admissionsEnabled:false})):oldFetch(path,options);
   await window.go('salon');window.communityTheme('travel');await new Promise(r=>setTimeout(r,20));
   assert.equal(document.querySelector('#communityFilters').elements.theme.value,'travel');assert.ok(calls.some(p=>p.includes('/community/page?')&&p.includes('theme=travel')));assert.equal(window.callVisits(),undefined);

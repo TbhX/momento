@@ -1,5 +1,13 @@
 # Momento — travaux de production
 
+## Ambiances et rencontres par thème
+
+Huit univers de découverte, dont « Au hasard » : palettes de salle et accessoires 3D propres au thème, volet repliable de questions et idées de rendez-vous. Les questions se renouvellent sans requête ni sauvegarde des réponses. Les ressources externes sont ouvertes seulement sur clic dans un nouvel onglet protégé ; aucun lecteur embarqué, suivi, réservation ou publication automatique. Le plan accessible conserve les mêmes outils.
+
+Le hasard mélange uniquement les profils fictifs déjà filtrés par les envies, les blocages et les rencontres passées, lors de la confirmation ; il ne change aucun consentement ni coût. Ces thèmes sont des points de départ de conversation, sans score amoureux inventé. Le catalogue natif des salons, ses règles SQL et ses réservations restent inchangés : le nouveau salon est une découverte et répétition locale. Prochaine étape : des affinités détaillées explicitement déclarées et réciproques côté serveur, puis le pool réel et son ordonnanceur, avant ouverture des rencontres. Aucun profil synthétique hébergé créé.
+
+Validation : 506 tests locaux et build Pages réussis, dont tests des huit ambiances, des liens et questions sans réseau, de la sélection aléatoire respectant les exclusions, et du cycle de vie 3D. Le rendu GPU et les appels sur deux appareils restent à valider.
+
 ## Réponse de préparation des appels bornée
 
 Le Worker construit maintenant une réponse explicite au lieu de recopier le résultat natif : état, disponibilité réciproque, mode commun et horaires. Les références de session, entrée, participant, crédits et éventuels jetons ajoutés ultérieurement par un RPC ne peuvent pas traverser cette projection. Les réponses incohérentes (état inconnu, dates invalides ou inversées, accord incomplet présenté comme prêt) échouent sans diagnostic privé. Les dates sont normalisées et les réponses restent sans cache ; aucun droit média n’est émis.

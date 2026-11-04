@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
 import {roomLayout,overviewBounds} from '../src/vendor/bistro-layout.js';
-const source=await readFile('src/client/bistro-3d.js','utf8');
+const source=(await readFile('src/client/themes.js','utf8'))+'\n'+(await readFile('src/client/bistro-3d.js','utf8'));
 const tick=()=>new Promise(r=>setTimeout(r,0));
 const room='<section class="roundtable-demo" data-room-capacity="50"><section class="table-room-overview"><div class="table-room-canvas"><div id="tableSeats"><button data-room-seat="0" data-seat-state="occupied"></button><button data-room-seat="1" data-seat-state="free"></button></div></div><select id="tableInspectNumber"><option value="1">1</option><option value="25">25</option></select></section></section>';
 test('3D stays lazy, synchronizes stable seat states without profiles and disposes on navigation',async()=>{

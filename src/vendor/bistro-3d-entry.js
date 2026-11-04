@@ -2,17 +2,17 @@ import * as THREE from 'three';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {roomLayout,overviewBounds} from './bistro-layout.js';
 // Render on demand. No textures, remote assets, profile data or media permissions.
-window.MomentoBistro3D={mount(host,capacity=20,onSeat=()=>{}){
+window.MomentoBistro3D={mount(host,capacity=20,onSeat=()=>{},ambiance={}){
  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});
- renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.setClearColor(0xeee7f5);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.setClearColor(ambiance.floor||0xeee7f5);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;
  renderer.domElement.setAttribute('aria-hidden','true');host.append(renderer.domElement);
  const scene=new THREE.Scene(),camera=new THREE.OrthographicCamera(-20,20,20,-20,.1,200),layout=roomLayout(capacity),{width,depth,centers}=layout;
  let disposed=false,mode='wide',yaw=.52,selectedTable=0,seatStates=[];
  const materials=[],geometries=new Map(),chairs=[],tableTops=[],labels=[];
  const mat=(color,extra={})=>{const m=new THREE.MeshStandardMaterial({color,roughness:.72,...extra});materials.push(m);return m};
- const wood=mat(0xe0b7a6,{roughness:.48}),edge=mat(0xb69bc6),floor=mat(0xf6e5dc),rose=mat(0xe8a6c2),cream=mat(0xf7e1bd),brass=mat(0xe8c790,{metalness:.5}),dark=mat(0x9b85b4),green=mat(0x8bb6a0),occupied=mat(0x9f92c3),mine=mat(0x92c6b6),free=mat(0xb9cdec),glow=mat(0xffd69b,{emissive:0xffbb6a,emissiveIntensity:1});
+ const wood=mat(0xe0b7a6,{roughness:.48}),edge=mat(0xb69bc6),floor=mat(ambiance.floor||0xf6e5dc),rose=mat(ambiance.accent||0xe8a6c2),cream=mat(0xf7e1bd),brass=mat(0xe8c790,{metalness:.5}),dark=mat(0x9b85b4),green=mat(0x8bb6a0),occupied=mat(0x9f92c3),mine=mat(0x92c6b6),free=mat(0xb9cdec),glow=mat(0xffd69b,{emissive:0xffbb6a,emissiveIntensity:1});
  for(const upholstery of [free,rose,mine])upholstery.side=THREE.DoubleSide;
- const stone=mat(0xfff2df,{roughness:.38}),rug=mat(0xe4d4ec),wall=mat(0xcdb5dc),sage=mat(0x819986),trim=mat(0xf3d49c,{metalness:.65,roughness:.35});
+ const stone=mat(0xfff2df,{roughness:.38}),rug=mat(0xe4d4ec),wall=mat(ambiance.wall||0xcdb5dc),sage=mat(0x819986),trim=mat(0xf3d49c,{metalness:.65,roughness:.35});
  const contact=new THREE.MeshBasicMaterial({color:0x43312e,transparent:true,opacity:.12,depthWrite:false});materials.push(contact);
  function geometry(type,args){const key=type+args.join(',');if(!geometries.has(key))geometries.set(key,new THREE[type](...args));return geometries.get(key)}
  function mesh(type,args,material,x,y,z,parent=scene){const m=new THREE.Mesh(geometry(type,args),material);m.position.set(x,y,z);parent.add(m);return m}
@@ -33,6 +33,13 @@ window.MomentoBistro3D={mount(host,capacity=20,onSeat=()=>{}){
  for(let x=-width*.33;x<width*.34;x+=.55)box(.045,1.12,.06,wood,x,.63,-depth/2+2.15);
  box(width*.7,.035,.035,trim,0,1.23,-depth/2+2.25);shadow(0,-depth/2+1.6,1,width*.36,1.1);
  for(const y of [1.9,2.8]){box(width*.64,.1,.48,wood,0,y,-depth/2+.35);for(let x=-width*.29;x<width*.29;x+=1){cylinder(.09,.32,green,x,y+.21,-depth/2+.37);cylinder(.04,.12,brass,x,y+.43,-depth/2+.37)}}
+ // Theme props stay behind the counter, clear of seats and their hit targets.
+ const px=0,py=2.2,pz=-depth/2+.7;
+ if(ambiance.prop==='vinyl'){const disc=mesh('CylinderGeometry',[.55,.55,.08,32],dark,px,py,pz);disc.rotation.x=Math.PI/2;const center=mesh('SphereGeometry',[.12,12,8],brass,px,py,pz+.07);}
+ else if(ambiance.prop==='books'){for(let n=0;n<5;n++)box(.18,.6+(n%3)*.1,.35,n%2?rose:cream,px+(n-2)*.22,py,pz);}
+ else if(ambiance.prop==='globe'||ambiance.prop==='ball'){mesh('SphereGeometry',[.48,20,16],ambiance.prop==='globe'?green:cream,px,py,pz);const ring=mesh('TorusGeometry',[.49,.025,8,32],brass,px,py,pz);ring.rotation.y=.5;}
+ else if(ambiance.prop==='dice'){box(.8,.8,.8,cream,px,py,pz);for(const dx of [-.2,.2])for(const dy of [-.2,.2])mesh('SphereGeometry',[.06,8,6],rose,px+dx,py+dy,pz+.41);}
+ else if(ambiance.prop==='stars'){for(let n=0;n<5;n++){const star=mesh('OctahedronGeometry',[.15,0],brass,(n-2)*.55,py+(n%2)*.4,pz);star.scale.y=1.5;}}
  centers.forEach(({x,z},i)=>{
  const label=document.createElement('span');label.className='bistro-table-number';label.setAttribute('aria-hidden','true');label.textContent=String(i+1).padStart(2,'0');host.append(label);labels.push(label);
  cylinder(1.53,.018,rug,x,.008,z);shadow(x,z,1.4,.95,1.25);

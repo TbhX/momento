@@ -32,3 +32,9 @@ La concurrence sur des connexions Postgres indépendantes, le retrait d’un flu
 ## Application distante en attente
 
 Le connecteur a retourné deux fois `Invalid or expired requestState`. Après chaque tentative, les lectures de l’historique et du catalogue confirment qu’aucune migration de préparation, table ou RPC nouveau n’existe à distance. Le delta reste dans `supabase/pending/call_readiness.sql` ; aucune version distante n’est attribuée ou archivée. Recontrôler identité, historique et absence du schéma avant une prochaine application, puis archiver le numéro réellement attribué, contrôler accès/advisors et raccorder l’export. Ne pas appliquer de SQL synthétique au projet hébergé pour tester.
+
+### Contrôle du 4 novembre 2026
+
+Le connecteur a de nouveau laissé expirer deux confirmations d’application. Le catalogue et l’historique relus confirment l’absence de migration et de fonctions de préparation. Le delta reste en attente ; aucune modification de données ou d’activation n’a été effectuée. Ne pas contourner cette confirmation par une écriture SQL directe.
+
+Le Worker projette désormais une liste fermée de champs et vérifie les états, booléens, modes, baux et dates cohérentes. Une réponse native malformée échoue avec une erreur de service générique ; les champs privés ou futurs ne sont jamais recopiés. Les dates deviennent des ISO UTC, les réponses sont sans cache et `mediaEnabled` reste faux. L’export courant conserve ses dépendances précédentes jusqu’à l’application effective du schéma.

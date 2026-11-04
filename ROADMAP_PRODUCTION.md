@@ -1,5 +1,12 @@
 # Momento — travaux de production
 
+## Réponse de préparation des appels bornée
+
+Le Worker construit maintenant une réponse explicite au lieu de recopier le résultat natif : état, disponibilité réciproque, mode commun et horaires. Les références de session, entrée, participant, crédits et éventuels jetons ajoutés ultérieurement par un RPC ne peuvent pas traverser cette projection. Les réponses incohérentes (état inconnu, dates invalides ou inversées, accord incomplet présenté comme prêt) échouent sans diagnostic privé. Les dates sont normalisées et les réponses restent sans cache ; aucun droit média n’est émis.
+
+Le 4 novembre 2026, les 48 tests ciblés du socle SQL et de ses routes passent avant application, avec rejeu du delta sur les deux sources locales. Deux nouvelles tentatives d’application distante échouent sur une confirmation expirée du connecteur. Historique et catalogue relus : aucun nouveau schéma ni migration de préparation ; admissions toujours fermées. Le delta demeure en attente, sans raccordement à l’export courant. Aucun compte, présence, crédit ou facteur MFA hébergé modifié. Validation finale : 503 tests locaux et build Pages réussis, dont projection, refus et attente. Les appels à deux appareils et la concurrence réelle restent à valider.
+
+
 ## Sécurité du dialogue de double authentification
 
 Les actions du panneau de sécurité sont liées au dialogue et à sa génération courante. Une annulation ou vérification terminée après fermeture, remplacement ou déconnexion ne rouvre plus le panneau et ne déclenche plus sa navigation. La fin d’une ancienne requête ne peut pas déverrouiller une nouvelle opération ; les formulaires retirés du DOM n’envoient plus de requête. Les boutons de secours (réessayer et déconnexion) n’utilisent plus d’attribut JavaScript dans le HTML. Les contrôles serveur, l’obligation MFA administrateur et la suppression des secrets à fermeture restent conservés.

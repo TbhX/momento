@@ -1,5 +1,12 @@
 # Momento — travaux de production
 
+## Sécurité du dialogue de double authentification
+
+Les actions du panneau de sécurité sont liées au dialogue et à sa génération courante. Une annulation ou vérification terminée après fermeture, remplacement ou déconnexion ne rouvre plus le panneau et ne déclenche plus sa navigation. La fin d’une ancienne requête ne peut pas déverrouiller une nouvelle opération ; les formulaires retirés du DOM n’envoient plus de requête. Les boutons de secours (réessayer et déconnexion) n’utilisent plus d’attribut JavaScript dans le HTML. Les contrôles serveur, l’obligation MFA administrateur et la suppression des secrets à fermeture restent conservés.
+
+Validation du 4 novembre 2026 : 500 tests locaux réussis et build Pages réussi. Quatre tests de régression couvrent réponses tardives, deux tentatives successives, formulaires détachés et boutons de secours. Aucune opération SQL distante, modification de facteur, mot de passe, rôle ou donnée du propriétaire. Aucun essai MFA authentifié ni téléphone physique validé. La CSP globale conserve encore les événements historiques des autres panneaux ; poursuivre leur migration avant retrait de cette compatibilité. Le socle de préparation du binôme reste en attente d’application et l’ordonnanceur/média réel demeure une priorité distincte.
+
+
 ## Demande d’ami indépendante du match
 
 Dans la répétition locale, proposer un ajout ami ne nécessite plus deux likes. L’envoi laisse la demande en attente, sans créer d’amitié ni utiliser d’accès. Le destinataire simulé accepte ou refuse ; le lien est ensuite confirmé avec les règles de coût existantes. Retirer un like n’annule plus cette demande indépendante. Une prolongation initiale exige toujours un match. Les boutons du tête-à-tête et de l’encart reflètent cette distinction. La persistance communautaire hébergée n’est pas modifiée par ce chantier local.

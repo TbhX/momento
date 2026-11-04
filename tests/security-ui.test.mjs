@@ -7,3 +7,25 @@ test('closing during enrollment ignores a late secret, and OTP failures clear th
  const c=await setup({enabled:true,level:'aal1',factors:[{id,status:'verified'}]});try{await c.window.security.challenge();assert.match(c.document.querySelector('h1').textContent,/Un code/);const form=c.document.querySelector('#securityVerify');form.elements.code.value='123456';form.requestSubmit();await settle();assert.equal(form.elements.code.value,'');assert.match(c.document.querySelector('#securityStatus').textContent,/incorrect/);assert.equal(c.window.localStorage.length,0)}finally{c.dom.window.close()}});
 test('backgrounding removes the private setup view and unsupported factors do not cause an automatic reload loop',async()=>{const v=await setup(),{window,document}=v;try{await window.security.open();Object.defineProperty(document,'hidden',{value:true,configurable:true});document.dispatchEvent(new window.Event('visibilitychange'));assert.equal(document.querySelector('dialog').open,false);assert.equal(document.querySelector('#securityPanel'),null)}finally{v.dom.window.close()}
  const c=await setup({enabled:true,level:'aal1',factors:[]});try{await c.window.security.challenge();assert.match(c.document.querySelector('#securityPanel').textContent,/Aucune application TOTP/);assert.equal(c.calls.length,1)}finally{c.dom.window.close()}});
+
+test('late cancellation cannot reopen a closed or replaced security dialog',async()=>{
+ for(const replace of [false,true]){
+  let resolve;const v=await setup({enabled:false,level:'aal1',factors:[{id,status:'unverified'}]},()=>new Promise(r=>resolve=r));
+  try{await v.window.security.open();v.document.querySelector('[data-cancel-factor]').click();await settle();v.document.querySelector('dialog').close();if(replace)await v.window.security.open();const reads=v.calls.length;resolve(Response.json({ok:true}));await settle();assert.equal(v.calls.length,reads);assert.equal(v.document.querySelector('dialog').open,replace)}finally{v.dom.window.close()}
+ }
+});
+test('an older operation cannot unlock a newer security submission',async()=>{
+ const pending=[];const v=await setup(undefined,()=>new Promise(resolve=>pending.push(resolve)));
+ try{await v.window.security.open();let f=v.document.querySelector('#securityEnroll');f.elements.password.value='first-local-password';f.requestSubmit();await settle();v.document.querySelector('dialog').close();await v.window.security.open();f=v.document.querySelector('#securityEnroll');f.elements.password.value='second-local-password';f.requestSubmit();await settle();assert.equal(pending.length,2);pending[0](Response.json({error:'invalid_credentials'},{status:401}));await settle();f.dispatchEvent(new v.window.Event('submit',{cancelable:true}));await settle();assert.equal(pending.length,2);assert.equal(f.querySelector('button').disabled,true);pending[1](Response.json({error:'invalid_credentials'},{status:401}));await settle();assert.equal(f.querySelector('button').disabled,false)}finally{v.dom.window.close()}
+});
+test('detached security forms cannot submit credentials after closing',async()=>{
+ const v=await setup();try{await v.window.security.open();const f=v.document.querySelector('#securityEnroll');f.elements.password.value='local-only';v.document.querySelector('dialog').close();const before=v.calls.length;f.dispatchEvent(new v.window.Event('submit',{cancelable:true}));await settle();assert.equal(v.calls.length,before)}finally{v.dom.window.close()}
+});
+test('security fallback buttons work without executable HTML attributes',async()=>{
+ assert.doesNotMatch(source,/\son(?:click|submit|change)\s*=/i);
+ const v=await setup({enabled:true,level:'aal1',factors:[]});let logout=0;v.window.MomentoAuth.logout=async()=>logout++;
+ try{await v.window.security.challenge();v.document.querySelector('#securityLogout').click();assert.equal(logout,1);await v.window.security.challenge();const old=v.document.querySelector('#securityLogout');v.window.security.clear();old.click();assert.equal(logout,1);
+ }finally{v.dom.window.close()}
+ const w=await setup();try{let fails=true;w.window.fetch=async()=>{if(fails)throw Error('network');return Response.json({enabled:false,level:'aal1',factors:[]})};await w.window.security.open();assert.ok(w.document.querySelector('#securityRetry'));fails=false;w.document.querySelector('#securityRetry').click();await settle();assert.ok(w.document.querySelector('#securityEnroll'));
+ }finally{w.dom.window.close()}
+});

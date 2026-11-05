@@ -1,5 +1,11 @@
 # Momento — travaux de production
 
+## Informations facultatives par thème
+
+Chaque univers propose deux rubriques adaptées (musique, sorties, culture, voyages, astrologie, sport, projets et hasard), trois choix maximum par rubrique et une note de 180 caractères. Enregistrement et effacement explicites pendant la visite ; aucune transmission, persistance privée ou modification du filtre de rencontres. Les détails restent attachés au flux local du compte et les actions tardives après navigation ou changement de compte sont ignorées. Prochaine étape : contrat de préférences réciproques et persistance autorisée côté serveur, avant tout classement des membres réels.
+
+Validation : 508 tests locaux et build Pages réussis. Champs bornés, choix inconnus ignorés, texte affiché sans HTML et écritures périmées refusées. Aucun changement SQL distant, appel réel ou essai sur téléphone physique.
+
 ## Ambiances et rencontres par thème
 
 Huit univers de découverte, dont « Au hasard » : palettes de salle et accessoires 3D propres au thème, volet repliable de questions et idées de rendez-vous. Les questions se renouvellent sans requête ni sauvegarde des réponses. Les ressources externes sont ouvertes seulement sur clic dans un nouvel onglet protégé ; aucun lecteur embarqué, suivi, réservation ou publication automatique. Le plan accessible conserve les mêmes outils.

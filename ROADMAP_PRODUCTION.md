@@ -1,5 +1,15 @@
 # Momento — travaux de production
 
+## Stabilisation des comptes avant ouverture
+
+Les demandes de connexion, inscription, récupération et SMS restent sérialisées ; les réponses d’un formulaire quitté ne peuvent plus rediriger, afficher une erreur sur un nouvel écran ou effacer un autre contexte. Les mots de passe révélés sont effacés et remasqués à la navigation ; les codes SMS sont effacés après essai. Les initialisations Auth concurrentes ne remplacent plus une configuration récente. Les fournisseurs affichés sont filtrés sur une liste fermée et les boutons de disponibilité ne portent plus de gestionnaires HTML.
+
+Les créations et modifications de profil refusent les doubles soumissions et ne naviguent plus après remplacement du formulaire. Les réponses de compte et de démarrage reçues après déconnexion ne rétablissent plus l’ancien profil. Les écouteurs d’installation ne sont enregistrés qu’une fois. Aucun facteur, rôle, mot de passe ou compte hébergé modifié.
+
+Validation du 5 novembre 2026 : 522 tests locaux et build Pages réussis ; audit des dépendances de production sans avis connu. Identité du projet, 14 migrations et advisors relus : informations RLS privées deny-all et avertissement de protection des mots de passe compromis inchangés. Aucune migration appliquée. Contrôle HTTP public réussi sur cinq pages, 57 fichiers de démarrage, configuration Auth et vraie erreur 404 ; aucun compte ni appel créé. Parcours public connexion/inscription contrôlé au navigateur sans soumission de credentials. Aucun essai authentifié, GPU ou téléphone physique validé.
+
+Le nouveau `scripts/verify-public.mjs` complète le contrôle des en-têtes et refus API, sans confondre disponibilité publique et ouverture commerciale. [Critères d’ouverture](OPENING_READINESS.md) : domaine et courriels, préparation native et ordonnanceur, médias à deux appareils, charge staging, restauration, modération, paiement et cadre du service restent à valider séparément. Aucun service payant, drapeau de rencontre ou vente activé.
+
 ## Informations facultatives par thème
 
 Chaque univers propose deux rubriques adaptées (musique, sorties, culture, voyages, astrologie, sport, projets et hasard), trois choix maximum par rubrique et une note de 180 caractères. Enregistrement et effacement explicites pendant la visite ; aucune transmission, persistance privée ou modification du filtre de rencontres. Les détails restent attachés au flux local du compte et les actions tardives après navigation ou changement de compte sont ignorées. Prochaine étape : contrat de préférences réciproques et persistance autorisée côté serveur, avant tout classement des membres réels.

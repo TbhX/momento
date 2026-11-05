@@ -60,3 +60,31 @@ test('basic password mode offers only signup and login, explains no recovery, an
  document.querySelector('[data-email-mode="signup"]').click();assert.equal(document.querySelector('#authForgotPassword').hidden,true);assert.equal(document.querySelector('#authResendConfirmation').hidden,true);
  const form=document.querySelector('#authEmailForm');form.elements.email.value='member@example.test';form.elements.password.value='A unique fixture phrase 2026';form.elements.confirmation.value=form.elements.password.value;await submit(window,form);assert.equal(calls[0].path,'/api/auth/email/signup');assert.match(document.querySelector('#authStatus').textContent,/Se connecter/);assert.doesNotMatch(document.querySelector('#authStatus').textContent,/recevrez.*lien/);assert.equal(form.elements.password.value,'');assert.equal(form.elements.confirmation.value,'');assert.equal(window.localStorage.length,0);view.dom.window.close();
 });
+
+test('a response from a replaced signup form cannot write errors or status in the next form',async()=>{
+ for(const response of [()=>Response.json({accepted:true}),()=>Response.json({error:'signup_closed'},{status:409})]){
+ let finish;const v=await ui({},()=>new Promise(resolve=>finish=resolve));v.auth.selectMode('signup');const old=v.document.querySelector('#authEmailForm');old.elements.email.value='fixture@example.test';old.elements.password.value=old.elements.confirmation.value='Long fixture phrase 2026';await submit(v.window,old);v.render();const fresh=v.document.querySelector('#authEmailForm');assert.equal(fresh.querySelector('button').disabled,true);finish(response());await settle();assert.equal(v.document.querySelector('#authError').textContent,'');assert.doesNotMatch(v.document.querySelector('#authStatus').textContent,/recevrez|fermées/);assert.equal(fresh.querySelector('button').disabled,false);assert.equal(old.elements.password.value,'');v.dom.window.close();
+ }
+});
+test('detached credential forms cannot submit and repeated submissions remain serialized',async()=>{
+ let finish;const v=await ui({},()=>new Promise(resolve=>finish=resolve));const old=v.document.querySelector('#authEmailForm');old.elements.email.value='fixture@example.test';old.elements.password.value='fixture phrase';v.render();old.onsubmit({preventDefault(){}});assert.equal(v.calls.length,0);
+ const form=v.document.querySelector('#authEmailForm');form.elements.email.value='fixture@example.test';form.elements.password.value='fixture phrase';await submit(v.window,form);form.onsubmit({preventDefault(){}});assert.equal(v.calls.length,1);finish(Response.json({error:'invalid_credentials'},{status:401}));await settle();v.dom.window.close();
+});
+test('abandoned recovery cannot clear another view or its account state',async()=>{
+ let finish;const v=await ui({recovery:true},()=>new Promise(resolve=>finish=resolve));const form=v.document.querySelector('#newPasswordForm');form.elements.password.value=form.elements.confirmation.value='Long fixture phrase 2026';await submit(v.window,form);v.document.querySelector('#app').innerHTML='<p>Autre page</p>';finish(Response.json({passwordUpdated:true,otherSessionsRevoked:true}));await settle();assert.equal(v.window.localCleared,undefined);assert.equal(v.document.querySelector('#app').textContent,'Autre page');assert.equal(form.elements.password.value,'');v.dom.window.close();
+});
+test('leaving authentication clears revealed passwords and OTP values',async()=>{
+ const v=await ui({sms:true});const form=v.document.querySelector('#authEmailForm');form.elements.password.value='fixture secret';v.document.querySelector('#authShowPassword').click();v.document.querySelector('#authPhoneCode').value='123456';v.auth.clear();assert.equal(form.elements.password.value,'');assert.equal(form.elements.password.type,'password');assert.equal(v.document.querySelector('#authShowPassword').checked,false);assert.equal(v.document.querySelector('#authPhoneCode').value,'');v.dom.window.close();
+});
+test('SMS verification clears its code on refusal and late SMS delivery cannot reopen another form',async()=>{
+ let finish;const v=await ui({sms:true},()=>new Promise(resolve=>finish=resolve));const start=v.document.querySelector('#phoneStartForm');start.elements.phone.value='+33600000000';await submit(v.window,start);v.render();finish(Response.json({maskedPhone:'••00'}));await settle();assert.equal(v.document.querySelector('#phoneVerifyForm').hidden,true);assert.equal(v.document.querySelector('#phoneStartForm').hidden,false);
+ const verify=v.document.querySelector('#phoneVerifyForm');verify.hidden=false;verify.elements.code.value='123456';await submit(v.window,verify);finish(Response.json({error:'invalid_code'},{status:400}));await settle();assert.equal(verify.elements.code.value,'');assert.match(v.document.querySelector('#authError').textContent,/incorrect/);v.dom.window.close();
+});
+test('unavailable auth retries without inline JavaScript and unknown providers never become markup',async()=>{
+ const v=await ui({providers:['google','google','<img src=x onerror=alert(1)>']});assert.equal(v.document.querySelectorAll('[data-provider]').length,1);assert.equal(v.document.querySelector('img'),null);v.dom.window.close();
+ const unavailable=await ui({configured:false});let retries=0;unavailable.window.initAccount=()=>retries++;const button=unavailable.document.querySelector('[data-auth-retry]');assert.equal(button.hasAttribute('onclick'),false);button.click();assert.equal(retries,1);button.remove();button.click();assert.equal(retries,1);unavailable.dom.window.close();
+});
+
+test('only the latest authentication configuration may control signup availability',async()=>{
+ const v=await ui();const replies=[];v.window.fetch=()=>new Promise(resolve=>replies.push(resolve));const old=v.auth.init(),fresh=v.auth.init();replies[1](Response.json({mode:'supabase',configured:true,providers:[],email:true,emailSignup:false}));await fresh;replies[0](Response.json({mode:'supabase',configured:true,providers:[],email:true,emailSignup:true}));await old;assert.equal(v.auth.signupEnabled(),false);v.dom.window.close();
+});

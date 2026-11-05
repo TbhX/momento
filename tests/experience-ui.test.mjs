@@ -513,3 +513,26 @@ test('friend invitation is available without a match and remains pending until t
  openCallWithChoices(window);window.pauseCallClock();window.callDemoStart();window.callSessionPeerArrived();window.setCallCredit(1);const friend=[...document.querySelectorAll('#callDemoNextActions button')].find(b=>b.textContent.includes('Ajouter en ami'));assert.equal(friend.disabled,false);assert.match(friend.getAttribute('onclick'),/callDemoRequest\('friend'\)/);window.callDemoRequest('friend');const state=window.callRehearsal(),record=state.records[state.personId],token=record.requests.friend.token;assert.equal(record.friend,false);assert.equal(window.callWallet().videoCredits,1);assert.equal(record.requests.friend.status,'pending');window.callDemoReply('friend',token,true);assert.equal(record.friend,false);window.callDemoCommit('friend',token);assert.equal(record.friend,true);assert.equal(window.callWallet().videoCredits,0);assert.equal(window.MomentoConversation.matched(state),false);
  }finally{v.dom.window.close()}
 });
+
+test('profile enrollment ignores duplicate submits and cannot navigate after its form was replaced',async()=>{
+ const v=await experience('incomplete'),{window,document}=v;let finish,writes=0;
+ window.fetch=(path,options)=>{assert.equal(path,'/api/me');assert.equal(options.method,'POST');writes++;return new Promise(resolve=>finish=resolve)};
+ const form=document.querySelector('#enrollForm');form.elements.name.value='Fixture';form.elements.age.value='28';form.elements.city.value='Paris';form.elements.adultConfirmed.checked=form.elements.storageConsent.checked=true;
+ const a=form.onsubmit({preventDefault(){},currentTarget:form});await form.onsubmit({preventDefault(){},currentTarget:form});assert.equal(writes,1);await window.go('home');const before=document.querySelector('#app').innerHTML;finish(Response.json({profile:{name:'Fixture',age:28,city:'Paris'}}));await a;assert.equal(document.querySelector('#app').innerHTML,before);assert.equal(window.ready(),false);v.dom.window.close();
+});
+test('account replies after logout cannot restore a profile or mutate a new authentication screen',async()=>{
+ const v=await experience(true),{window}=v;let finish;window.fetch=()=>new Promise(resolve=>finish=resolve);
+ const read=window.accountRequest();window.clearLocalBeforeLogout();finish(Response.json({profile:{name:'Old fixture'}}));await assert.rejects(read,{name:'AbortError'});assert.equal(window.ready(),false);v.dom.window.close();
+});
+test('profile editing serializes submissions and leaves the current page after a late save',async()=>{
+ const v=await experience(true),{window,document}=v;await window.go('profile');let finish,writes=0;window.fetch=()=>{writes++;return new Promise(resolve=>finish=resolve)};
+ const form=document.querySelector('#profileForm');const a=form.onsubmit({preventDefault(){},currentTarget:form});await form.onsubmit({preventDefault(){},currentTarget:form});assert.equal(writes,1);await window.go('home');const before=document.querySelector('#app').innerHTML;finish(Response.json({profile:{name:'Saved fixture',age:29,city:'Paris'}}));await a;assert.equal(document.querySelector('#app').innerHTML,before);v.dom.window.close();
+});
+test('leaving the sign-in page clears a revealed password before the form detaches',async()=>{
+ const v=await experience(false,{email:true,emailSignup:true}),{window,document}=v;window.go('signin');const input=document.querySelector('#authEmailPassword');input.value='Fixture secret';document.querySelector('#authShowPassword').click();window.go('home');assert.equal(input.value,'');assert.equal(input.type,'password');v.dom.window.close();
+});
+
+test('account bootstrap ending after logout cannot sign the visitor back in locally',async()=>{
+ const v=await experience(true),{window,document}=v;let finish;window.fetch=async path=>path==='/api/auth/config'?Response.json({mode:'supabase',configured:true,providers:[],email:true,emailSignup:true}):new Promise(resolve=>finish=resolve);
+ const initializing=window.initAccount();await new Promise(resolve=>setImmediate(resolve));window.clearLocalBeforeLogout();await window.go('home');const before=document.querySelector('#app').innerHTML;finish(Response.json({accountRef:'qa-only',persistence:'supabase',profile:{name:'Old fixture',age:29,city:'Paris'}}));await initializing;assert.equal(window.ready(),false);assert.equal(document.querySelector('#app').innerHTML,before);v.dom.window.close();
+});

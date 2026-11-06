@@ -4,7 +4,6 @@ import RoomFormat from '../client/room-format.js';
 export const ROUND_MS = 300_000;
 export const CHOICE_MS = 30_000;
 export const PRESENCE_TTL_MS = 45_000;
-const SLOT_MS = ROUND_MS + CHOICE_MS;
 const idOK = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,80}$/.test(value);
 const integer = value => Number.isSafeInteger(value) && value >= 0;
 const pairKey = (a, b) => JSON.stringify(a < b ? [a, b] : [b, a]);
@@ -44,8 +43,10 @@ function edgeSet(pairs) {
  * A caller must atomically reserve pairs and revalidate presence/rights before using this proposal.
  */
 export function planRoomRound(snapshot) {
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) throw new TypeError('invalid_round_snapshot');
   const {eventId, opensAt, closesAt, capacity, roundIndex, now, participants, seenPairs, blockedPairs} = snapshot;
-  if (!idOK(eventId) || ![20, 50, 100].includes(capacity) || !integer(opensAt) || !integer(closesAt) ||
+  if (![undefined, 1, 2].includes(snapshot.formatVersion) ||
+      !idOK(eventId) || ![20, 50, 100].includes(capacity) || !integer(opensAt) || !integer(closesAt) ||
       closesAt <= opensAt || !integer(now) || !integer(roundIndex) || roundIndex >= (snapshot.formatVersion===2?capacity/2:10) ||
       !Array.isArray(participants) || participants.length > capacity) throw new TypeError('invalid_round_snapshot');
   const seen = edgeSet(seenPairs), blocked = edgeSet(blockedPairs), ids = new Set();
@@ -68,7 +69,7 @@ export function planRoomRound(snapshot) {
     const ready = p.active === true && p.confirmed === true && p.sessionActive === true &&
       p.preferencesConfirmed === true && ['woman', 'man'].includes(p.gender) &&
       integer(p.age) && p.age >= 18 && p.age <= 100 && preferencesValid(p) &&
-      integer(p.checkedInAt) && p.checkedInAt <= now && now - p.checkedInAt <= PRESENCE_TTL_MS &&
+      integer(p.checkedInAt) && p.checkedInAt <= now && now - p.checkedInAt < PRESENCE_TTL_MS &&
       integer(p.unavailableUntil) && p.unavailableUntil <= now;
     (ready ? eligible : base.excluded).push(ready ? p : p.id);
   }

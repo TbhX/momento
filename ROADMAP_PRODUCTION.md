@@ -1,5 +1,12 @@
 # Momento — travaux de production
 
+## Expiration des présences et rotations complètes
+
+Le noyau serveur refuse désormais une présence âgée d’exactement 45 secondes, en cohérence avec le socle SQL de préparation. Un format inconnu ou mal typé ne reprend plus silencieusement les durées historiques ; les versions absente/1 et 2 restent distinctes. Aucun changement aux horaires des salons publiés.
+
+Validation du 6 novembre 2026 : 526 tests locaux et build Pages réussis. Les nouveaux scénarios couvrent les 10/25/50 tours complets des capacités 20/50/100, 100/625/2 500 paires distinctes dans des groupes entièrement compatibles, sans double affectation, expiration exacte, retour avec check-in frais et fin fixe. Ceci n’est ni un essai de charge ni une preuve de présence réelle. Identité du projet et historique relus : 14 migrations ; aucune application ou modification SQL distante. Le delta de préparation reste en attente, et le noyau n’est toujours pas raccordé aux routes de production. Prochaine priorité : application contrôlée du socle, adaptateur transactionnel de rotation et médias, puis essais staging à deux appareils. Admissions et ventes restent fermées.
+
+
 ## Stabilisation des comptes avant ouverture
 
 Les demandes de connexion, inscription, récupération et SMS restent sérialisées ; les réponses d’un formulaire quitté ne peuvent plus rediriger, afficher une erreur sur un nouvel écran ou effacer un autre contexte. Les mots de passe révélés sont effacés et remasqués à la navigation ; les codes SMS sont effacés après essai. Les initialisations Auth concurrentes ne remplacent plus une configuration récente. Les fournisseurs affichés sont filtrés sur une liste fermée et les boutons de disponibilité ne portent plus de gestionnaires HTML.

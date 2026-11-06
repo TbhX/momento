@@ -24,12 +24,12 @@ test('rounds keep the fixed event clock and never start early, late or partially
 
 test('incomplete preferences, absence, revoked sessions, suspension and private calls exclude participants', () => {
   for (const patch of [{active: false}, {confirmed: false}, {sessionActive: false}, {preferencesConfirmed: false},
-    {checkedInAt: start - PRESENCE_TTL_MS - 1}, {checkedInAt: start + 1}, {unavailableUntil: start + 1},
+    {checkedInAt: start - PRESENCE_TTL_MS - 1}, {checkedInAt: start - PRESENCE_TTL_MS}, {checkedInAt: start + 1}, {unavailableUntil: start + 1},
     {gender: 'nonbinary'}, {age: 17}, {preferences: null}, {preferences: {}}]) {
     const p = planRoomRound(snapshot({participants: [person('a', 'woman', patch), person('b', 'man')]}));
     assert.equal(p.pairs.length, 0, JSON.stringify(patch)); assert.deepEqual(p.excluded, ['a']);
   }
-  assert.equal(planRoomRound(snapshot({participants: [person('a', 'woman', {checkedInAt: start - PRESENCE_TTL_MS}), person('b', 'man')]})).pairs.length, 1);
+  assert.equal(planRoomRound(snapshot({participants: [person('a', 'woman', {checkedInAt: start - PRESENCE_TTL_MS + 1}), person('b', 'man')]})).pairs.length, 1);
 });
 
 test('gender, age, intention and media choices must be compatible in both directions', () => {
@@ -131,4 +131,46 @@ test('proposals contain no profile, session, wallet or media authority', () => {
   const result = planRoomRound(snapshot());
   assert.deepEqual(Object.keys(result.pairs[0]).sort(), ['members', 'mode']);
   assert.ok(!JSON.stringify(result).match(/session|credit|premium|token|preferences/));
+});
+
+
+test('unknown format versions never silently use historical timings', () => {
+  for (const formatVersion of [null, 0, 3, '2', true, {}, []]) {
+    assert.throws(() => planRoomRound(snapshot({formatVersion})), /invalid_round_snapshot/);
+  }
+  assert.deepEqual(planRoomRound(snapshot({formatVersion: 1})), planRoomRound(snapshot()));
+  for (const value of [null, undefined, [], 'event']) {
+    assert.throws(() => planRoomRound(value), /invalid_round_snapshot/);
+  }
+});
+
+for (const capacity of [20, 50, 100]) test(capacity + ' version 2 seats complete every scheduled round and retain history after absence', () => {
+  const rounds = capacity / 2, duration = capacity === 20 ? 330_000 : 150_000;
+  const step = duration + CHOICE_MS, closesAt = start + rounds * step;
+  const participants = Array.from({length: capacity}, (_, i) => person('p' + String(i).padStart(3, '0'), i < rounds ? 'woman' : 'man'));
+  const history = [], seen = new Set();
+  for (let roundIndex = 0; roundIndex < rounds; roundIndex++) {
+    const now = start + roundIndex * step;
+    participants.forEach(p => p.checkedInAt = now);
+    const input = snapshot({formatVersion: 2, capacity, roundIndex, now, closesAt, participants, seenPairs: history});
+    const result = planRoomRound(input);
+    assert.equal(result.pairs.length, rounds);
+    assert.equal(result.endsAt, now + duration);
+    assert.equal(result.choicesEndAt, now + step);
+    assert.equal(new Set(result.pairs.flatMap(p => p.members)).size, capacity);
+    assert.deepEqual(result, planRoomRound({...input, participants: [...participants].reverse()}));
+    // An exact-expiry heartbeat cannot be scheduled, even in a large final round.
+    const expired = participants.map((p, i) => i === 0 ? {...p, checkedInAt: now - PRESENCE_TTL_MS} : p);
+    const without = planRoomRound({...input, participants: expired});
+    assert.ok(without.excluded.includes(participants[0].id));
+    assert.ok(without.pairs.every(p => !p.members.includes(participants[0].id)));
+    // A fresh check-in rejoins this same fixed clock, without recycling history.
+    assert.deepEqual(planRoomRound(input), result);
+    for (const pair of result.pairs) {
+      assert.ok(!seen.has(key(pair.members))); seen.add(key(pair.members)); history.push(pair.members);
+    }
+    participants.forEach(p => p.lastMatchedRound = roundIndex);
+  }
+  assert.equal(seen.size, rounds * rounds);
+  assert.throws(() => planRoomRound(snapshot({formatVersion: 2, capacity, roundIndex: rounds, closesAt, participants, seenPairs: history})), /invalid_round_snapshot/);
 });

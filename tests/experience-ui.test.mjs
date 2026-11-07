@@ -536,3 +536,47 @@ test('account bootstrap ending after logout cannot sign the visitor back in loca
  const v=await experience(true),{window,document}=v;let finish;window.fetch=async path=>path==='/api/auth/config'?Response.json({mode:'supabase',configured:true,providers:[],email:true,emailSignup:true}):new Promise(resolve=>finish=resolve);
  const initializing=window.initAccount();await new Promise(resolve=>setImmediate(resolve));window.clearLocalBeforeLogout();await window.go('home');const before=document.querySelector('#app').innerHTML;finish(Response.json({accountRef:'qa-only',persistence:'supabase',profile:{name:'Old fixture',age:29,city:'Paris'}}));await initializing;assert.equal(window.ready(),false);assert.equal(document.querySelector('#app').innerHTML,before);v.dom.window.close();
 });
+
+test('discovery navigation buttons work without HTML event handlers and keep account gates',async()=>{
+ const v=await experience(false,{email:true,emailSignup:true}),{window,document}=v;
+ try{
+  const buttons=()=>[...document.querySelectorAll('#app [data-discovery-page],#app [data-discovery-action]')];
+  assert.ok(buttons().length>=5);assert.ok(buttons().every(b=>!b.hasAttribute('onclick')));
+  document.querySelector('.home-actions [data-discovery-page="concept"] span').click();
+  assert.equal(window.route(),'concept');
+  document.querySelector('.home-view-tabs [data-discovery-page="plans"]').click();
+  assert.equal(window.route(),'plans');assert.ok(buttons().every(b=>!b.hasAttribute('onclick')));
+  document.querySelector('[data-discovery-page="shop"]').click();
+  assert.ok(document.querySelector('#authEmailForm'),'shop still requires a member account');
+  await window.go('home');document.querySelector('[data-discovery-action="account"]').click();
+  assert.equal(document.querySelector('#authEmailSubmit').textContent,'Créer mon compte');
+ }finally{v.dom.window.close()}
+});
+
+test('discovery actions capture their destination and ignore detached, hidden and disabled buttons',async()=>{
+ const v=await experience(),{window,document}=v;
+ try{
+  const concept=document.querySelector('.home-actions [data-discovery-page="concept"]');
+  concept.dataset.discoveryPage='admin';concept.click();assert.equal(window.route(),'concept');
+  await window.go('home');concept.click();assert.equal(window.route(),'home','old button is detached');
+  const plans=document.querySelector('[data-discovery-page="plans"]');
+  plans.hidden=true;plans.click();assert.equal(window.route(),'home');plans.hidden=false;
+  plans.disabled=true;plans.dispatchEvent(new window.MouseEvent('click'));assert.equal(window.route(),'home');plans.disabled=false;
+  const fake=document.createElement('button');fake.dataset.discoveryAction='constructor';document.querySelector('#app').append(fake);window.bindDiscoveryActions();fake.click();assert.equal(window.route(),'home');
+  let hits=0;window.go=()=>hits++;window.bindDiscoveryActions();window.bindDiscoveryActions();plans.click();assert.equal(hits,1);
+ }finally{v.dom.window.close()}
+});
+
+test('secondary discovery views and unavailable privacy document retain bound navigation',async()=>{
+ const v=await experience(),{window,document}=v;
+ try{
+  await window.go('dates');document.querySelector('[data-discovery-page="audit"]').click();assert.equal(window.route(),'audit');
+  document.querySelector('[data-discovery-page="home"]').click();assert.equal(window.route(),'home');
+  window.renderPreparedPage('matches');document.querySelector('[data-discovery-page="home"]').click();assert.equal(window.route(),'home');
+  const old=window.fetch;let attempts=0;
+  window.fetch=(url,options)=>url==='/confidentialite.html'?(attempts++,Promise.reject(Error('offline'))):old(url,options);
+  await window.go('privacy');await new Promise(r=>setImmediate(r));
+  const retry=document.querySelector('[data-discovery-page="privacy"]');assert.ok(retry);assert.equal(retry.hasAttribute('onclick'),false);
+  retry.click();await new Promise(r=>setImmediate(r));assert.equal(attempts,2);
+ }finally{v.dom.window.close()}
+});

@@ -1,5 +1,12 @@
 # Momento — travaux de production
 
+## Actions des pages de découverte hors HTML
+
+Les boutons de navigation et de compte rendus par `home.js` (accueil, concept, formules, aperçu physique, état du projet, pages préparées et secours confidentialité) utilisent désormais des écouteurs liés à une liste fermée de routes et d’actions. Leur destination est capturée à la création ; les boutons détachés, masqués, désactivés ou appartenant à un ancien rendu ne déclenchent plus d’action. Une nouvelle liaison ne multiplie pas les écouteurs. Les accès membre, l’inscription native et l’installation restent soumis à leurs contrôles existants.
+
+Validation du 6 novembre 2026 : 529 tests locaux et build Pages réussis, dont trois nouveaux scénarios de navigation, garde de compte, altération d’attribut, ancien bouton, double liaison et réessai confidentialité. Aucun changement SQL distant, compte, facteur, rôle ou drapeau de service. La CSP globale conserve `unsafe-inline` pour les autres composants historiques, notamment ceux inclus dans les pages : cette étape ne constitue pas une suppression complète de la surface XSS. Prochaine priorité sécurité : migrer les composants restants puis valider la CSP stricte ; les préparations persistantes, rotations et médias réels restent des blocages distincts avant ouverture.
+
+
 ## Expiration des présences et rotations complètes
 
 Le noyau serveur refuse désormais une présence âgée d’exactement 45 secondes, en cohérence avec le socle SQL de préparation. Un format inconnu ou mal typé ne reprend plus silencieusement les durées historiques ; les versions absente/1 et 2 restent distinctes. Aucun changement aux horaires des salons publiés.

@@ -29,3 +29,14 @@ test('theme details have bounded choices and text, with explicit save and erase 
  const clean=w.MomentoThemes.cleanPreferences('music',{choices:[['Rap / R&B','Rap / R&B','unknown'],['Concert']],note:12});assert.deepEqual(Array.from(clean.choices[0]),['Rap / R&B']);assert.equal(clean.note,'');dom.window.close();
 });
 test('theme details cannot write after account or flow replacement',async()=>{const dom=new JSDOM('<main></main>',{runScripts:'outside-only'}),w=dom.window;w.eval(await readFile('src/client/themes.js','utf8'));let active=true,writes=0;const panel=w.MomentoThemes.mountPreferences(w.document.querySelector('main'),'travel',{onSave:()=>writes++,isActive:()=>active});active=false;panel.querySelector('[data-save]').click();panel.querySelector('[data-clear]').click();assert.equal(writes,0);dom.window.close()});
+
+test('missing or malformed theme preferences keep every form usable',async()=>{
+ for(const t of themes.catalog)for(const raw of [null,undefined,false,42,'invalid',[]])assert.deepEqual(themes.cleanPreferences(t.slug,raw),{choices:[[],[]],note:''});
+ const dom=new JSDOM('<main></main>',{runScripts:'outside-only'}),w=dom.window;w.eval(await readFile('src/client/themes.js','utf8'));
+ for(const t of w.MomentoThemes.catalog){const host=w.document.querySelector('main');host.replaceChildren();let saved;const panel=w.MomentoThemes.mountPreferences(host,t.slug,{value:null,onSave:v=>saved=v});panel.querySelector('input').click();panel.querySelector('[data-save]').click();assert.equal(saved.choices[0].length,1);panel.querySelector('[data-clear]').click();assert.equal(saved.choices.flat().length,0)}dom.window.close();
+});
+
+test('opened theme panels reveal their contents within the app without moving focus',async()=>{
+ const dom=new JSDOM('<main id="app"></main>',{runScripts:'outside-only'}),w=dom.window;w.eval(await readFile('src/client/themes.js','utf8'));const host=w.document.querySelector('main');host.getBoundingClientRect=()=>({top:100,bottom:600,height:500});
+ for(const mount of [()=>w.MomentoThemes.mount(host,'music'),()=>w.MomentoThemes.mountPreferences(host,'music')]){const panel=mount();panel.getBoundingClientRect=()=>({top:450,bottom:750,height:300});host.scrollTop=0;panel.open=true;panel.dispatchEvent(new w.Event('toggle'));assert.equal(host.scrollTop,166);panel.getBoundingClientRect=()=>({top:150,bottom:450,height:300});panel.dispatchEvent(new w.Event('toggle'));assert.equal(host.scrollTop,166);panel.getBoundingClientRect=()=>({top:450,bottom:1250,height:800});panel.dispatchEvent(new w.Event('toggle'));assert.equal(host.scrollTop,500);panel.open=false;panel.dispatchEvent(new w.Event('toggle'));assert.equal(host.scrollTop,500);panel.remove();panel.open=true;panel.dispatchEvent(new w.Event('toggle'));assert.equal(host.scrollTop,500)}dom.window.close();
+});

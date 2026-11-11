@@ -1,5 +1,11 @@
 # Momento — travaux de production
 
+## Ancrage des panneaux thématiques et affinités
+
+À l’ouverture des questions ou affinités, le cadre central défile juste assez pour montrer le panneau entier lorsqu’il tient à l’écran, sinon son début. Un panneau déjà visible ne déplace pas la vue ; fermeture et éléments détachés sont ignorés. Aucun déplacement du focus ni animation imposée. Les longs formulaires restent défilables. Tests de géométrie simulée ; validation sur téléphone physique encore nécessaire.
+
+Le panneau des affinités accepte désormais une valeur absente, nulle ou de type incorrect sans interrompre son affichage. Ces valeurs deviennent des choix vides ; les limites et listes de choix autorisés restent appliquées. Un test couvre les huit thèmes, puis la sélection, l’enregistrement et l’effacement à partir d’une valeur nulle. Aucun envoi ni stockage distant ajouté. Validation : 531 tests locaux et build Pages réussis ; aucun test de compte réel ou d’appareil physique. La persistance native des affinités et les rotations réelles restent à raccorder avant ouverture.
+
 ## Actions des pages de découverte hors HTML
 
 Les boutons de navigation et de compte rendus par `home.js` (accueil, concept, formules, aperçu physique, état du projet, pages préparées et secours confidentialité) utilisent désormais des écouteurs liés à une liste fermée de routes et d’actions. Leur destination est capturée à la création ; les boutons détachés, masqués, désactivés ou appartenant à un ancien rendu ne déclenchent plus d’action. Une nouvelle liaison ne multiplie pas les écouteurs. Les accès membre, l’inscription native et l’installation restent soumis à leurs contrôles existants.

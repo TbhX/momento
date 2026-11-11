@@ -54,3 +54,15 @@ test('mobile open, close and scrim controls preserve focus and escape behavior w
   toggle.click();f.d.dispatchEvent(new f.w.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));assert.equal(toggle.getAttribute('aria-expanded'),'false');assert.equal(f.d.activeElement,toggle);
  }finally{f.dom.window.close()}
 });
+
+test('expanded filters and room settings stay visible without stealing focus',()=>{
+ const {dom,w,d}=fixture();try{const app=w.app;app.getBoundingClientRect=()=>({top:100,bottom:600,height:500});
+ for(const markup of ['<form class="directory-filters"><details><summary>Filtres</summary></details></form>','<details class="hosted-details"><summary>Personnaliser</summary></details>']){
+ app.innerHTML=markup;const el=app.querySelector('details'),summary=el.querySelector('summary');summary.focus();el.open=true;el.getBoundingClientRect=()=>({top:450,bottom:750,height:300});app.scrollTop=0;el.dispatchEvent(new w.Event('toggle'));assert.equal(app.scrollTop,166);assert.equal(d.activeElement,summary);
+ el.getBoundingClientRect=()=>({top:150,bottom:450,height:300});el.dispatchEvent(new w.Event('toggle'));assert.equal(app.scrollTop,166);
+ el.hidden=true;el.getBoundingClientRect=()=>({top:450,bottom:1250,height:800});el.dispatchEvent(new w.Event('toggle'));assert.equal(app.scrollTop,166);el.hidden=false;el.dispatchEvent(new w.Event('toggle'));assert.equal(app.scrollTop,500);
+ el.open=false;el.dispatchEvent(new w.Event('toggle'));assert.equal(app.scrollTop,500);el.remove();el.open=true;el.dispatchEvent(new w.Event('toggle'));assert.equal(app.scrollTop,500);
+ }
+ app.innerHTML='<details class="call-moment-more" open><summary>Appel</summary></details>';const other=app.firstElementChild;other.getBoundingClientRect=()=>({top:450,bottom:750,height:300});app.scrollTop=0;other.dispatchEvent(new w.Event('toggle'));assert.equal(app.scrollTop,0);
+ }finally{dom.window.close()}
+});

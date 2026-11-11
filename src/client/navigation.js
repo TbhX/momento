@@ -14,6 +14,15 @@ const MomentoNavigation=(()=>{
   if(result&&typeof result.then==='function'){app.inert=true;app.setAttribute('aria-busy','true');loadingTimer=setTimeout(()=>{if(ticket===sequence&&progress)progress.hidden=false},140);return Promise.resolve(result).then(value=>{finish(ticket,restore,focusFrom);return value},error=>{if(ticket===sequence){app.innerHTML='<div class="empty"><h2>Un petit instant.</h2><p role="alert">Cette page ne peut pas être affichée. Réessayez depuis le menu.</p></div>';finish(ticket,restore,focusFrom)}return undefined})}
   finish(ticket,restore,focusFrom);return result;
  }
+ // Reveal expanded catalogue filters and room settings inside the fixed app frame.
+ app.addEventListener('toggle',event=>{
+  const details=event.target;
+  if(!details.matches?.('.directory-filters details,details.hosted-details')||!details.open||!details.isConnected||details.closest('[hidden],[inert]'))return;
+  const box=details.getBoundingClientRect(),frame=app.getBoundingClientRect(),margin=16;
+  if(!box.height||!frame.height)return;
+  if(box.top>=frame.top+margin&&box.bottom<=frame.bottom-margin)return;
+  app.scrollTop+=box.height>frame.height-2*margin||box.top<frame.top+margin?box.top-frame.top-margin:box.bottom-frame.bottom+margin;
+ },true);
  // Bind only the initial shell controls and capture approved destinations once.
  // Neither injected data attributes nor a function name from HTML are executed.
  const routes=new Set(['home','salon','tablePreview','hosted','friends','callDemo','videos','shop','profile','hostedPreview','concept','plans','dates','admin']);

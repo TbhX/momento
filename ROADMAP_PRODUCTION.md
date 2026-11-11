@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Ancrage des filtres et de la personnalisation
+
+Les filtres avancés du catalogue et « Personnaliser davantage » se révèlent dans le cadre central à leur ouverture, même après un nouveau rendu. Un panneau déjà visible ne déplace pas la vue ; les contenus longs sont alignés sur leur début. Le focus reste sur la commande. Les encarts d’appel ne sont pas concernés. Validation locale : 532 tests et build Pages réussis ; géométrie simulée, sans validation sur téléphone physique ni compte réel. Aucun changement SQL distant, MFA ou autorisation de service. Prochaine étape : contrôle visuel des parcours membres aux petites hauteurs d’écran.
+
 ## Ancrage des panneaux thématiques et affinités
 
 À l’ouverture des questions ou affinités, le cadre central défile juste assez pour montrer le panneau entier lorsqu’il tient à l’écran, sinon son début. Un panneau déjà visible ne déplace pas la vue ; fermeture et éléments détachés sont ignorés. Aucun déplacement du focus ni animation imposée. Les longs formulaires restent défilables. Tests de géométrie simulée ; validation sur téléphone physique encore nécessaire.

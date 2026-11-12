@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Retour au brouillon dans le cadre central
+
+Modifier un brouillon aligne le formulaire dans le défilement interne de l’application, sans appeler le défilement des ancêtres de la page. Le titre reçoit le focus sans mouvement supplémentaire. Une commande tardive après navigation, fermeture du compte ou disparition du formulaire est ignorée. Test intégré de consultation puis modification et navigation : 532 tests locaux et build Pages réussis. Aucun changement SQL distant ni donnée réelle ; géométrie simulée, contrôle visuel membre et téléphone physique restant à réaliser.
+
 ## Test de quota indépendant du changement de minute
 
 Le test des lectures communautaires vérifie désormais 90 lectures autorisées puis 91 refusées dans deux transactions isolées avec compteur remis à zéro. Chaque lot utilise une heure transactionnelle stable : franchir une minute réelle ne répartit plus le lot entre deux quotas. Le RPC membre et les deux sources de schéma restent testés, sans modifier le quota de production. Validation : 532 tests locaux et build Pages réussis. Aucun SQL distant ni migration. Le contrôle visuel authentifié sur petit écran reste à réaliser avec un compte de test autorisé.

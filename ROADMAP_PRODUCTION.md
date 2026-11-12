@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Test de quota indépendant du changement de minute
+
+Le test des lectures communautaires vérifie désormais 90 lectures autorisées puis 91 refusées dans deux transactions isolées avec compteur remis à zéro. Chaque lot utilise une heure transactionnelle stable : franchir une minute réelle ne répartit plus le lot entre deux quotas. Le RPC membre et les deux sources de schéma restent testés, sans modifier le quota de production. Validation : 532 tests locaux et build Pages réussis. Aucun SQL distant ni migration. Le contrôle visuel authentifié sur petit écran reste à réaliser avec un compte de test autorisé.
+
 ## Ancrage des filtres et de la personnalisation
 
 Les filtres avancés du catalogue et « Personnaliser davantage » se révèlent dans le cadre central à leur ouverture, même après un nouveau rendu. Un panneau déjà visible ne déplace pas la vue ; les contenus longs sont alignés sur leur début. Le focus reste sur la commande. Les encarts d’appel ne sont pas concernés. Validation locale : 532 tests et build Pages réussis ; géométrie simulée, sans validation sur téléphone physique ni compte réel. Aucun changement SQL distant, MFA ou autorisation de service. Prochaine étape : contrôle visuel des parcours membres aux petites hauteurs d’écran.

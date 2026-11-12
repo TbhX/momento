@@ -103,8 +103,10 @@ for(const kind of ['schemas','migrations'])test('member-hosted events and direct
   });
   await t.test('read budgets and fresh session checks protect member discovery',async()=>{
    await db.exec("delete from private.rate_limits where key_hash like 'community-read:%'");
-   for(let n=0;n<90;n++)await actor(5000,'select public.community_overview()');
-   await assert.rejects(actor(5000,'select public.community_overview()'),/rate_limit/);
+   // now() stays fixed within each actor transaction, even across a wall-clock minute.
+   assert.equal(await actor(5000,'select count(public.community_overview())::int from generate_series(1,90)'),90);
+   await db.exec("delete from private.rate_limits where key_hash like 'community-read:%'");
+   await assert.rejects(actor(5000,'select count(public.community_overview())::int from generate_series(1,91)'),/rate_limit/);
    assert.equal((await actor(5001,'select public.community_overview()')).memberId,uid(5001));
    await db.query('delete from auth.sessions where user_id=$1',[uid(5001)]);
    await assert.rejects(actor(5001,'select public.hosted_room_dashboard()'),/registration_required/);

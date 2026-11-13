@@ -69,8 +69,17 @@ async function renderPrivacyPanel(generation){
   if(generation!==liveGeneration||page!=='privacy')return;
   const source=new DOMParser().parseFromString(html,'text/html'),copy=source.querySelector('.legal-copy'),nav=source.querySelector('.legal-nav'),notice=source.querySelector('.legal-intro .notice');if(!copy||!nav||!notice)throw Error();
   app.innerHTML=`<section class="privacy-panel"><div class="privacy-heading"><div><span class="home-eyebrow">VOTRE CONFIANCE COMPTE</span><h1>Confidentialité & règles.</h1></div><a class="secondary" href="/confidentialite.html" target="_blank" rel="noopener">Ouvrir à part ↗</a></div><div class="notice">${notice.innerHTML}</div><div class="legal-grid">${nav.outerHTML}${copy.outerHTML}</div></section>`;
-  app.querySelectorAll('a[href="/"]').forEach(link=>link.onclick=event=>{event.preventDefault();go('home')});
-  app.querySelectorAll('a[href^="#"]').forEach(link=>link.onclick=event=>{event.preventDefault();document.getElementById(link.getAttribute('href').slice(1))?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})});
+  const panel=app.querySelector('.privacy-panel');
+  panel.querySelectorAll('a[href="/"],a[href^="#"]').forEach(link=>{
+   const href=link.getAttribute('href'),target=href==='/'?null:[...panel.querySelectorAll('[id]')].find(node=>node.id===href.slice(1));
+   link.addEventListener('click',event=>{
+    event.preventDefault();
+    if(generation!==liveGeneration||page!=='privacy'||!panel.isConnected||!app.contains(panel)||!panel.contains(link)||link.closest('[hidden],[inert]'))return;
+    if(href==='/'){go('home');return}
+    if(!target?.isConnected||!panel.contains(target)||target.closest('[hidden],[inert]'))return;
+    app.scrollTop=Math.max(0,app.scrollTop+target.getBoundingClientRect().top-app.getBoundingClientRect().top-16);
+   });
+  });
  }catch{if(generation===liveGeneration&&page==='privacy')app.innerHTML='<section class="prepared-page"><h1>Confidentialité & règles.</h1><p role="alert">Le document est momentanément indisponible. Réessayez ou ouvrez sa version complète.</p><div class="home-actions"><button class="primary" data-discovery-page="privacy">Réessayer</button><a class="secondary" href="/confidentialite.html">Ouvrir le document ↗</a></div></section>'}
  bindDiscoveryActions();
 }

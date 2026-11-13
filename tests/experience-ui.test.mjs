@@ -580,3 +580,17 @@ test('secondary discovery views and unavailable privacy document retain bound na
   retry.click();await new Promise(r=>setImmediate(r));assert.equal(attempts,2);
  }finally{v.dom.window.close()}
 });
+
+test('privacy anchors scroll only the app and ignore hidden targets and obsolete panels',async()=>{
+ const v=await experience(false,{},false,'#confidentialite'),{window,document}=v;
+ try{
+  const app=document.querySelector('#app'),panel=app.querySelector('.privacy-panel'),link=panel.querySelector('.legal-nav a'),target=panel.querySelector(link.getAttribute('href')),back=panel.querySelector('a[href="/"]');
+  let ancestorScroll=0;window.HTMLElement.prototype.scrollIntoView=()=>ancestorScroll++;
+  app.scrollTop=100;app.getBoundingClientRect=()=>({top:80});target.getBoundingClientRect=()=>({top:320});
+  link.focus();link.click();assert.equal(app.scrollTop,324);assert.equal(document.activeElement,link);assert.equal(ancestorScroll,0);assert.equal(window.location.hash,'#confidentialite');
+  target.hidden=true;link.click();assert.equal(app.scrollTop,324);target.hidden=false;
+  link.setAttribute('href','#outside');link.click();assert.equal(app.scrollTop,548,'destination is captured at render time');
+  await window.go('concept');app.scrollTop=75;link.click();back.click();assert.equal(app.scrollTop,75);assert.equal(document.body.dataset.page,'concept');
+  app.append(panel);link.click();back.click();assert.equal(app.scrollTop,75);assert.equal(document.body.dataset.page,'concept');
+ }finally{v.dom.window.close()}
+});

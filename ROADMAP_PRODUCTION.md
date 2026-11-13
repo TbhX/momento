@@ -1,5 +1,12 @@
 # Momento — travaux de production
 
+## Sommaire de confidentialité dans le cadre central
+
+Le 13 novembre 2026, les liens du sommaire alignent leur rubrique dans le panneau central avec une marge de 16 pixels, sans déplacer les ancêtres de la page ni imposer d’animation. La cible est capturée dans le document affiché ; éléments masqués, ancienne vue et commandes reçues après navigation sont ignorés, y compris le retour à l’accueil. Les liens de la version autonome restent inchangés.
+
+Validation : 533 tests locaux et build Pages réussis ; régression intégrée avec géométrie simulée, focus conservé et ancien panneau réinséré. Audit des dépendances de production sans avis connu, sans équivalence avec un audit complet. Aucun SQL distant, compte, facteur MFA ou drapeau modifié. Les essais visuels authentifiés et sur téléphone physique restent à réaliser ; ordonnanceur, médias, courriels et exploitation demeurent les blocages d’ouverture.
+
+
 ## Retour au brouillon dans le cadre central
 
 Modifier un brouillon aligne le formulaire dans le défilement interne de l’application, sans appeler le défilement des ancêtres de la page. Le titre reçoit le focus sans mouvement supplémentaire. Une commande tardive après navigation, fermeture du compte ou disparition du formulaire est ignorée. Test intégré de consultation puis modification et navigation : 532 tests locaux et build Pages réussis. Aucun changement SQL distant ni donnée réelle ; géométrie simulée, contrôle visuel membre et téléphone physique restant à réaliser.

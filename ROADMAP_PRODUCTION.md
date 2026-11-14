@@ -1,5 +1,11 @@
 # Momento — travaux de production
 
+## Disponibilité Auth et procédure de reprise
+
+Le 14 novembre 2026, le 503 de configuration Auth est reproduit et le projet natif est déclaré inactif. La remise en service du projet existant est acceptée ; la cause de son inactivité reste inconnue. Aucun contournement des réglages Auth, compte, rôle, facteur MFA ou drapeau de rencontres n’est ajouté. La procédure [Disponibilité des comptes](AUTH_AVAILABILITY.md) distingue page publique, disponibilité Auth, reprise du projet et validation authentifiée.
+
+Validation locale : 533 tests et build Pages réussis. Les contrôles HTTP de sécurité passent. Pendant le démarrage natif, les lectures SQL restent indisponibles : les résultats vides de migrations et advisors ne valent pas validation. Le rétablissement doit être confirmé par un état sain, une relecture SQL et le contrôle HTTP public complet. Les appels réels, appareils physiques et ventes restent non validés.
+
 ## Sommaire de confidentialité dans le cadre central
 
 Le 13 novembre 2026, les liens du sommaire alignent leur rubrique dans le panneau central avec une marge de 16 pixels, sans déplacer les ancêtres de la page ni imposer d’animation. La cible est capturée dans le document affiché ; éléments masqués, ancienne vue et commandes reçues après navigation sont ignorés, y compris le retour à l’accueil. Les liens de la version autonome restent inchangés.

@@ -4,7 +4,7 @@
 
 Une page publique HTTP 200 et un déploiement Pages réussi ne prouvent pas que les comptes sont disponibles. Le contrôle de disponibilité doit aussi lire `/api/auth/config` sans cookie ni credentials. Une réponse 503 `auth_provider_unavailable` signifie que le Worker n’a pas pu lire une configuration Auth utilisable ; elle ne prouve pas à elle seule que le projet est en pause.
 
-Le 14 novembre 2026, cette erreur a été observée alors que le projet natif était déclaré inactif. La remise en service du projet existant a été demandée, sans réinitialisation de compte ni changement des gardes. La cause de l’inactivité n’a pas été établie.
+Le 14 novembre 2026, cette erreur a été observée alors que le projet natif était déclaré inactif. La remise en service du projet existant a été demandée, sans réinitialisation de compte ni changement des gardes. La reprise a ensuite été confirmée par un état actif et sain, les 14 migrations retrouvées, les gardes d’ouverture fermées et le contrôle HTTP public complet réussi. La cause de l’inactivité n’a pas été établie.
 
 ## Diagnostic et remise en service
 

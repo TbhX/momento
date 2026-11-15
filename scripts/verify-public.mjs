@@ -10,6 +10,9 @@ export async function verifyPublic(origin,fetcher=fetch){
   if(!response.headers.get('content-type')?.includes(type))throw Error('Unexpected content type on '+path);
   checks.push({path,status:response.status});return response;
  }
+ // Check the account dependency before spending requests on static assets.
+ const configuration=await (await read('/api/auth/config','application/json')).json();
+ if(configuration.mode!=='supabase'||configuration.configured!==true||configuration.email!==true)throw Error('Public email authentication unavailable');
  for(const path of ['/','/concept/','/formules/','/speed-dating/','/creer-un-salon/']){
   const r=await read(path,'text/html');if(!r.headers.get('cache-control')?.includes('no-store'))throw Error('HTML must not be cached: '+path);
   const html=await r.text(),title=html.match(/<title>([^<]+)<\/title>/i)?.[1],canonical=html.match(/<link\b[^>]*rel="canonical"[^>]*href="([^"]+)"/i)?.[1];
@@ -22,8 +25,6 @@ export async function verifyPublic(origin,fetcher=fetch){
  }
  const entries=[...assets.entries()];if(!entries.length||entries.length>100)throw Error('Unexpected startup asset inventory');
  for(let i=0;i<entries.length;i+=4)await Promise.all(entries.slice(i,i+4).map(async([path,type])=>{const r=await read(path,type);await r.body?.cancel()}));
- const configuration=await (await read('/api/auth/config','application/json')).json();
- if(configuration.mode!=='supabase'||configuration.configured!==true||configuration.email!==true)throw Error('Public email authentication unavailable');
  await (await read('/__momento_release_missing__','text/html',404)).body?.cancel();
  return{passed:true,checks,publicPages:titles.size,startupAssets:assets.size,auth:{mode:configuration.mode,email:configuration.email,signup:configuration.emailSignup===true,recovery:configuration.emailRecovery===true},authenticatedMemberTested:false,mediaTested:false,commercialOpeningValidated:false};
 }

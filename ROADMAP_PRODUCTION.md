@@ -1,5 +1,11 @@
 # Momento — travaux de production
 
+## Détection prioritaire des indisponibilités Auth
+
+Le 15 novembre 2026, le contrôle HTTP public vérifie la configuration Auth avant les pages et fichiers statiques. Un 503, un 429 ou une configuration inutilisable arrête immédiatement le contrôle sans lancer les lectures restantes ; une fermeture des seules inscriptions reste compatible avec une connexion disponible. Aucun réessai automatique ni trafic de maintien en activité ajouté.
+
+Validation : 535 tests locaux et build Pages réussis, dont arrêt anticipé et poursuite complète avec inscriptions fermées ; audit des dépendances de production sans avis connu, distinct d’un audit complet. La configuration Auth réelle répond 200 après la reprise précédente. Aucun SQL distant, migration, compte ou facteur modifié. Les contrôles sans credentials ne valident ni connexion membre, ni médias, ni téléphone physique. Prochaines priorités : supervision opérationnelle, préparation persistante et ordonnanceur, courriels et essais à deux appareils avant ouverture.
+
 ## Disponibilité Auth et procédure de reprise
 
 Le 14 novembre 2026, le 503 de configuration Auth est reproduit et le projet natif est déclaré inactif. La remise en service du projet existant est acceptée ; la cause de son inactivité reste inconnue. Aucun contournement des réglages Auth, compte, rôle, facteur MFA ou drapeau de rencontres n’est ajouté. La procédure [Disponibilité des comptes](AUTH_AVAILABILITY.md) distingue page publique, disponibilité Auth, reprise du projet et validation authentifiée.

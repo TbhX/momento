@@ -1,5 +1,11 @@
 # Momento — travaux de production
 
+## Partage lié au dialogue courant
+
+Le 16 novembre 2026, les commandes Copier le lien et Partager sont liées à leur fenêtre d’origine et à la génération du parcours membre. Une réponse tardive après remplacement, fermeture ou perte du contexte ne modifie plus un nouveau dialogue et ne déplace plus son focus. Les opérations sont sérialisées ; les boutons périmés sont ignorés. Le refus du presse-papiers propose toujours la sélection du lien courant, et l’annulation native reste silencieuse. Ces deux commandes utilisent des écouteurs hors HTML ; les autres gestionnaires historiques et la CSP globale restent à migrer.
+
+Validation : 537 tests locaux et build Pages réussis, dont régressions de réponses tardives, doubles clics, fermeture, perte du compte, copie manuelle et annulation native. Audit des dépendances de production sans avis connu, sans équivalence avec un audit complet. Aucun SQL distant, migration, compte, facteur MFA ou drapeau modifié. Les tests utilisent un presse-papiers et un partage simulés ; aucun partage social réel ni téléphone physique validé. Prochaine priorité : préparation persistante et ordonnanceur, courriels et essais à deux appareils avant ouverture.
+
 ## Détection prioritaire des indisponibilités Auth
 
 Le 15 novembre 2026, le contrôle HTTP public vérifie la configuration Auth avant les pages et fichiers statiques. Un 503, un 429 ou une configuration inutilisable arrête immédiatement le contrôle sans lancer les lectures restantes ; une fermeture des seules inscriptions reste compatible avec une connexion disponible. Aucun réessai automatique ni trafic de maintien en activité ajouté.

@@ -343,7 +343,7 @@ test('salon sharing offers a thematic link preview and downloadable social forma
  const v=await experience(true),{window,document}=v;let shared=0;
  const room={id:'00000000-0000-4000-8000-000000000001',title:'Voyages',theme:'travel',status:'published',opensAt:new Date(Date.now()+86400000).toISOString(),capacity:20,women:0,men:0,waiting:0,shareCode:'00000000-0000-4000-8000-000000000002'};
  const fetch=window.fetch;window.fetch=(path,options)=>path==='/api/service/hosted'?Promise.resolve(Response.json({rooms:[room]})):fetch(path,options);window.navigator.share=async()=>shared++;
- try{await window.go('hosted');window.hostedShare(room.id);assert.equal(shared,0);assert.match(document.querySelector('.hosted-share-image').src,/share-travel-link-v1.png$/);assert.equal(document.querySelectorAll('.hosted-share a[download]').length,2);assert.match(document.querySelector('#hostedShareLink').value,/\/salon\//);await window.hostedNativeShare(room.id);assert.equal(shared,1)}finally{v.dom.window.close()}
+ try{await window.go('hosted');window.hostedShare(room.id);assert.equal(shared,0);assert.match(document.querySelector('.hosted-share-image').src,/share-travel-link-v1.png$/);assert.equal(document.querySelectorAll('.hosted-share a[download]').length,2);assert.match(document.querySelector('#hostedShareLink').value,/\/salon\//);document.querySelector('[data-hosted-share="native"]').click();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(shared,1)}finally{v.dom.window.close()}
 });
 
 test('the waiting video view consumes no entry or time before an explicit simulated peer arrival',async()=>{
@@ -593,4 +593,35 @@ test('privacy anchors scroll only the app and ignore hidden targets and obsolete
   await window.go('concept');app.scrollTop=75;link.click();back.click();assert.equal(app.scrollTop,75);assert.equal(document.body.dataset.page,'concept');
   app.append(panel);link.click();back.click();assert.equal(app.scrollTop,75);assert.equal(document.body.dataset.page,'concept');
  }finally{v.dom.window.close()}
+});
+
+test('share operations ignore late completion, stale controls and double clicks',async()=>{
+ const v=await experience(true),{window,document}=v;
+ const room={id:'00000000-0000-4000-8000-000000000001',title:'Voyages',theme:'travel',status:'published',opensAt:new Date(Date.now()+86400000).toISOString(),capacity:20,women:0,men:0,waiting:0,shareCode:'00000000-0000-4000-8000-000000000002'};
+ const fetch=window.fetch;window.fetch=(path,options)=>path==='/api/service/hosted'?Promise.resolve(Response.json({rooms:[room]})):fetch(path,options);
+ let pending,requests=0;const operation=()=>{requests++;return new Promise((resolve,reject)=>{pending={resolve,reject}})};
+ window.navigator.share=operation;Object.defineProperty(window.navigator,'clipboard',{value:{writeText:operation}});
+ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
+ try{
+  await window.go('hosted');
+  for(const [action,outcome] of [['copy','resolve'],['copy','reject'],['native','reject']]){
+   window.hostedShare(room.id);const old=document.querySelector('.hosted-share'),button=old.querySelector('[data-hosted-share="'+action+'"]'),before=requests;
+   assert.equal(old.querySelector('[onclick]'),null);button.click();button.click();assert.equal(requests,before+1);
+   const first=pending;window.hostedShare(room.id);const current=document.querySelector('.hosted-share');current.querySelector('[data-hosted-share="copy"]').click();assert.equal(requests,before+2);
+   first[outcome](new Error('unavailable'));await tick();assert.equal(current.querySelector('[role=status]').textContent,'');assert.equal(current.querySelector('button').disabled,true);assert.notEqual(document.activeElement,current.querySelector('input'));
+   button.disabled=false;button.click();assert.equal(requests,before+2);
+   pending.resolve();await tick();assert.equal(current.querySelector('[role=status]').textContent,'Lien copié.');assert.equal(current.querySelector('button').disabled,false);
+  }
+  window.hostedShare(room.id);const button=document.querySelector('[data-hosted-share="copy"]'),before=requests;document.querySelector('#modal').close();button.click();assert.equal(requests,before);
+  document.querySelector('#modal').showModal();button.click();assert.equal(requests,before);
+  window.hostedShare(room.id);const stale=document.querySelector('[data-hosted-share="copy"]');window.setReady(false);stale.click();assert.equal(requests,before);
+ }finally{v.dom.window.close()}
+});
+
+test('copy failure selects only its current link and native cancellation stays silent',async()=>{
+ const v=await experience(true),{window,document}=v;
+ const room={id:'00000000-0000-4000-8000-000000000001',title:'Voyages',theme:'travel',status:'published',opensAt:new Date(Date.now()+86400000).toISOString(),capacity:20,women:0,men:0,waiting:0,shareCode:'00000000-0000-4000-8000-000000000002'};
+ const fetch=window.fetch;window.fetch=(path,options)=>path==='/api/service/hosted'?Promise.resolve(Response.json({rooms:[room]})):fetch(path,options);
+ window.navigator.share=async()=>{throw new window.DOMException('Cancelled','AbortError')};Object.defineProperty(window.navigator,'clipboard',{value:{writeText:async()=>{throw Error('Denied')}}});
+ try{await window.go('hosted');window.hostedShare(room.id);document.querySelector('[data-hosted-share="native"]').click();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(document.querySelector('#hostedShareStatus').textContent,'');document.querySelector('[data-hosted-share="copy"]').click();await new Promise(resolve=>setTimeout(resolve,0));const input=document.querySelector('#hostedShareLink');assert.equal(document.activeElement,input);assert.equal(input.selectionEnd,input.value.length);assert.match(document.querySelector('#hostedShareStatus').textContent,/sélectionné/)}finally{v.dom.window.close()}
 });

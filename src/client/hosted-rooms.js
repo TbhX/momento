@@ -61,10 +61,28 @@ async function hostedAction(id,action,maxCredits=0){
 function hostedShare(id){
  const r=hostedState?.rooms.find(x=>x.id===id);if(!r||r.status!=='published')return;
  const url=location.origin+'/salon/'+r.shareCode,theme=MomentoThemes.get(r.theme);
- modal(`<section class="hosted-share"><h2>Un lien, un premier bonjour.</h2><img class="hosted-share-image" src="/share-${theme.slug}-link-v1.png" width="1200" height="630" alt="Momento · ${txt(theme.title)}"><label>Lien de votre salon<input id="hostedShareLink" readonly value="${txt(url)}"></label><div class="home-actions">${navigator.share?`<button class="primary" onclick="hostedNativeShare('${r.id}')">Partager…</button>`:''}<button class="secondary" onclick="hostedCopyLink('${r.id}')">Copier le lien</button></div><p>Le lien utilise le visuel du thème pour son aperçu. L’affichage final dépend du réseau.</p><div class="hosted-share-formats"><a href="/share-home-square-v1.png" download="momento-publication.png">Image carrée · 1080 × 1080 ↓</a><a href="/share-home-story-v1.png" download="momento-story.png">Story · 1080 × 1920 ↓</a></div><p class="hosted-fine">Pour une publication ou une story, ajoutez votre lien en légende ou avec un sticker. Ces deux images présentent Momento, sans les détails de votre événement. Chaque invité doit créer son compte et réserver.</p><p id="hostedShareStatus" role="status"></p></section>`);
+ modal(`<section class="hosted-share"><h2>Un lien, un premier bonjour.</h2><img class="hosted-share-image" src="/share-${theme.slug}-link-v1.png" width="1200" height="630" alt="Momento · ${txt(theme.title)}"><label>Lien de votre salon<input id="hostedShareLink" readonly value="${txt(url)}"></label><div class="home-actions">${navigator.share?`<button class="primary" data-hosted-share="native">Partager…</button>`:''}<button class="secondary" data-hosted-share="copy">Copier le lien</button></div><p>Le lien utilise le visuel du thème pour son aperçu. L’affichage final dépend du réseau.</p><div class="hosted-share-formats"><a href="/share-home-square-v1.png" download="momento-publication.png">Image carrée · 1080 × 1080 ↓</a><a href="/share-home-story-v1.png" download="momento-story.png">Story · 1080 × 1920 ↓</a></div><p class="hosted-fine">Pour une publication ou une story, ajoutez votre lien en légende ou avec un sticker. Ces deux images présentent Momento, sans les détails de votre événement. Chaque invité doit créer son compte et réserver.</p><p id="hostedShareStatus" role="status"></p></section>`);
+ const dialog=$('#modal'),panel=dialog.querySelector('.hosted-share'),status=panel.querySelector('[role="status"]'),input=panel.querySelector('input'),generation=liveGeneration,title=r.title;
+ let closed=false,busy=false;
+ dialog.onclose=()=>{closed=true};
+ const active=()=>!closed&&dialog.open&&panel.isConnected&&dialog.querySelector('.hosted-share')===panel&&generation===liveGeneration&&accountReady&&hostedState?.rooms.some(room=>room.id===id&&room.status==='published'&&location.origin+'/salon/'+room.shareCode===url);
+ const buttons=[...panel.querySelectorAll('[data-hosted-share]')];
+ for(const button of buttons){
+  const action=button.dataset.hostedShare;
+  button.addEventListener('click',async()=>{
+   if(!active()||busy||button.disabled)return;
+   busy=true;buttons.forEach(b=>b.disabled=true);
+   try{
+    if(action==='native')await navigator.share({title,text:'Un premier bonjour avec Momento.',url});
+    else{await navigator.clipboard.writeText(url);if(active())status.textContent='Lien copié.'}
+   }catch(error){
+    if(!active())return;
+    if(action==='copy'){input.focus({preventScroll:true});input.select();status.textContent='Copiez le lien sélectionné.'}
+    else if(error.name!=='AbortError')status.textContent='Copiez le lien pour le partager.';
+   }finally{busy=false;if(active())buttons.forEach(b=>b.disabled=false)}
+  });
+ }
 }
-async function hostedNativeShare(id){const r=hostedState?.rooms.find(x=>x.id===id);if(!r||r.status!=='published'||!navigator.share)return;try{await navigator.share({title:r.title,text:'Un premier bonjour avec Momento.',url:location.origin+'/salon/'+r.shareCode})}catch(e){if(e.name!=='AbortError'&&$('#hostedShareStatus'))$('#hostedShareStatus').textContent='Copiez le lien pour le partager.'}}
-async function hostedCopyLink(id){const r=hostedState?.rooms.find(x=>x.id===id);if(!r||r.status!=='published')return;try{await navigator.clipboard.writeText(location.origin+'/salon/'+r.shareCode);if($('#hostedShareStatus'))$('#hostedShareStatus').textContent='Lien copié.'}catch{const input=$('#hostedShareLink');if(input){input.focus();input.select();$('#hostedShareStatus').textContent='Copiez le lien sélectionné.'}}}
 function hostedOpenInvitation(id){hostedInvitationTarget=id;go('invite')}
 async function hostedLoadInvitation(generation){
  const target=hostedInvitationTarget;hostedInvitationTarget=null;const code=new URLSearchParams(location.search).get('salon');

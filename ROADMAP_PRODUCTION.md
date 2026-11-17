@@ -1,5 +1,11 @@
 # Momento — travaux de production
 
+## Accueil centré sur la rencontre
+
+Le 17 novembre 2026, l’accueil présente directement le speed dating : choix du salon, conversation à deux, intérêt réciproque et suite consentie. Le bouton principal propose de commencer gratuitement si les inscriptions sont ouvertes, la connexion sinon, et les salons pour un membre. Deux portraits illustratifs donnent un aperçu du tête-à-tête ; aucun compteur de présence ni profil réel inventé. L’ouverture future des rencontres reste annoncée. La vidéo de marque est conservée dans un format secondaire, avec pause, chargement différé et réduction des animations. Le cadre fixe et le défilement interne restent conservés.
+
+Validation : 554 tests locaux et build Pages réussis. Tests couvrant les textes, le parcours d’inscription selon les réglages natifs, les actions sans gestionnaire HTML et l’absence d’entrée ou appareil automatique. L’essai authentifié par un proche sur téléphone reste à réaliser ; les rencontres réelles restent fermées. Aucun SQL distant ni drapeau de service modifié.
+
 ## Parcours simplifié avant essai utilisateur
 
 Le 17 novembre 2026, la navigation membre met Salons, Amis et Mon profil au premier plan. Les autres destinations sont regroupées dans Plus, avec ouverture de la rubrique active et navigation clavier dans le tiroir mobile. Le catalogue nomme ses actions et relie les invitations à Amis. La préparation du salon apparaît immédiatement ; le décor et les places sont facultatifs. Les réglages vidéo et outils administrateur locaux sont repliés. Passer, J’aime, le match et Quitter le salon utilisent des libellés explicites. Les confirmations de coût, consentements et contrôles Gratuit/Premium sont conservés.

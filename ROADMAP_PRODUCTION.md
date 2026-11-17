@@ -1,5 +1,13 @@
 # Momento — travaux de production
 
+## Socle de préparation appliqué et export raccordé
+
+Le 17 novembre 2026, l’application native de la préparation des binômes réussit après revue et rejeu local du delta. La version attribuée est archivée ; l’historique contient quinze migrations. Les deux nouvelles tables restent privées avec RLS, wrappers publics INVOKER réservés aux membres et vérificateur interne inaccessible aux membres. L’export personnel inclut désormais les propres préparations via le client membre, sans session, entrée ou pair ; une erreur refuse le fichier entier plutôt qu’un export incomplet.
+
+Les lectures SQL distantes confirment préparation, admissions, publication et prolongations fermées, zéro préparation, zéro crédit et aucune table public/private sans RLS. Advisors : quinze informations de tables privées deny-all, dont les deux nouvelles, et avertissement de protection des mots de passe compromis inchangé ; aucun abonnement modifié. Aucun compte ou fixture hébergé créé. Les anciens constats de delta en attente ci-dessous sont historiques et remplacés par cette livraison. L’ordonnanceur persistant, la concurrence sur connexions indépendantes et les médias à deux appareils restent à réaliser avant ouverture.
+
+Validation : 538 tests locaux et build Pages réussis ; rejeu sur déclarations et historique, export membre, erreur générique et limite de taille couverts. Audit des dépendances de production sans avis connu, distinct d’un audit complet. Aucun export authentifié réel, appel média ni téléphone physique validé.
+
 ## Partage lié au dialogue courant
 
 Le 16 novembre 2026, les commandes Copier le lien et Partager sont liées à leur fenêtre d’origine et à la génération du parcours membre. Une réponse tardive après remplacement, fermeture ou perte du contexte ne modifie plus un nouveau dialogue et ne déplace plus son focus. Les opérations sont sérialisées ; les boutons périmés sont ignorés. Le refus du presse-papiers propose toujours la sélection du lien courant, et l’annulation native reste silencieuse. Ces deux commandes utilisent des écouteurs hors HTML ; les autres gestionnaires historiques et la CSP globale restent à migrer.

@@ -38,7 +38,7 @@ La fonction native d’aperçu ne retourne plus les valeurs d’âge, ville ou p
 
 ### Préparation d’un binôme
 
-`96_call_readiness.sql` ajoute les réglages fermés par défaut et les préparations privées liées à une rencontre, une session et une entrée natives. RLS interdit tout accès direct membre aux tables ; seuls les RPC Auth-bound sont exposés via wrappers INVOKER. Le reçu commun n’est jamais un droit média. Les retraits sont persistants et l’export personnel masque les références de session et d’entrée. Le schéma et l’historique avec delta sont testés en local isolé. L’application distante est bloquée par une erreur du connecteur ; le delta demeure dans `supabase/pending/call_readiness.sql` et ne fait pas partie de l’historique appliqué. L’export de compte existant ne dépend pas encore de cette fonction. Voir [CALL_READINESS.md](CALL_READINESS.md).
+`96_call_readiness.sql` ajoute les réglages fermés par défaut et les préparations privées liées à une rencontre, une session et une entrée natives. RLS interdit tout accès direct membre aux tables ; seuls les RPC Auth-bound sont exposés via wrappers INVOKER. Le reçu commun n’est jamais un droit média. Les retraits sont persistants et l’export personnel masque les références de session et d’entrée. Le schéma et l’historique avec delta sont testés en local isolé. Le delta a été appliqué le 17 novembre 2026 et archivé sous sa version native dans les migrations. Les autorisations de préparation et d’admission restent fermées. L’export personnel appelle désormais le RPC membre de préparation ; il échoue sans fichier partiel si celui-ci est indisponible ou trop volumineux. Voir [CALL_READINESS.md](CALL_READINESS.md).
 
 ### Durées des nouveaux salons
 

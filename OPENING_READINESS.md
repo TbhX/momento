@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | Version publique | Tests et build Pages, commit déployé identique, cinq pages publiques, fichiers de démarrage, erreurs 404, refus API sans session et cross-site | Contrôles automatisés disponibles ; exécuter à chaque livraison |
 | Comptes | Domaine et expéditeur configurés ; confirmation et récupération testées sur comptes autorisés ; MFA administrateur et révocation validées | Mode mot de passe simple actif ; courriels et essais authentifiés à terminer |
-| Préparation des appels | Delta de préparation appliqué avec historique exact, gardes relues et régression SQL ; ordonnanceur persistant, check-in et préférences réciproques | Delta de préparation encore en attente ; ordonnanceur réel à raccorder |
+| Préparation des appels | Delta de préparation appliqué avec historique exact, gardes relues et régression SQL ; ordonnanceur persistant, check-in et préférences réciproques | Socle appliqué, fermé et droits relus ; ordonnanceur réel et essais concurrents à réaliser |
 | Médias | Jetons réservés au binôme et à son échéance ; deux appareils autorisés ; départ, refus, déconnexion, blocage, reconnexion et expiration | Non validé ; aucun média réel ouvert |
 | Capacité | Pilote 20, puis 50/100 ; latence, erreurs, bande passante et coût mesurés ; refus de double affectation et absence de répétition | Tests locaux disponibles ; mesures staging et appels réels à effectuer |
 | Exploitation | Alerte d’erreurs sans secrets, restauration de sauvegarde démontrée, procédure de retour au commit précédent, modération et support organisés | À valider avant lancement commercial |

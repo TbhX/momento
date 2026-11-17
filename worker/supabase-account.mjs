@@ -1,4 +1,4 @@
-import {supabaseCallReadinessAPI} from './supabase-call-readiness.mjs';
+import {supabaseCallReadinessAPI,exportCallReadiness} from './supabase-call-readiness.mjs';
 import {accountFailure,serverClient,serverRPC} from './supabase-server.mjs';
 import {hostedRoomsAPI,exportHostedRooms} from './supabase-hosted.mjs';
 import {supabaseCommunityAPI} from './supabase-community.mjs';
@@ -101,6 +101,7 @@ async function exportAccount(context,userId){
   records[table]=data;
  }
  records.call_extensions=await exportCallExtensions(context);
+ records.call_readiness=await exportCallReadiness(context);
  records.hosted_rooms=await exportHostedRooms(context);
  const body=JSON.stringify({exportedAt:new Date().toISOString(),accountId:userId,data:records});
  if(new TextEncoder().encode(body).length>2097152)throw accountFailure('export_too_large',413);

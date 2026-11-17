@@ -34,6 +34,7 @@ function fixture(){
     case 'room_photo_path':return json(f.roomPhoto??null);
     case 'account_status':return json({premium:false,admin:false,unlimited:false,dailyLimit:1,used:0,bookingLimit:1});
     case 'export_hosted_rooms':return json({owned:[],registrations:[]});
+    case 'export_call_readiness':return f.readinessExportError?Response.json({message:f.readinessExportError},{status:400}):json([{encounterId:'fixture-encounter',mode:'audio',preparedAt:'2026-11-17T00:00:00Z',checkedAt:'2026-11-17T00:00:00Z',leftAt:null}]);
     case 'export_call_extensions':return json([{id:'fixture-extension',outgoing:true,status:'declined',chargedCredits:0}]);
     default:throw Error('Unexpected RPC '+u.pathname);
    }
@@ -180,7 +181,8 @@ test('personal exports include conditional call consent through the member RPC',
  await registered(c);c.f.calls=[];
  const response=await c.worker.fetch(req('/api/me/export',{cookie:c.b.header()}),c.e);assert.equal(response.status,200);
  const data=await response.json();assert.deepEqual(data.data.call_extensions,[{id:'fixture-extension',outgoing:true,status:'declined',chargedCredits:0}]);
- assert.equal(c.f.calls.some(x=>x.path.endsWith('/export_call_readiness')),false,'pending SQL must not become an export dependency');
+ assert.deepEqual(data.data.call_readiness,[{encounterId:'fixture-encounter',mode:'audio',preparedAt:'2026-11-17T00:00:00Z',checkedAt:'2026-11-17T00:00:00Z',leftAt:null}]);
+ const readiness=c.f.calls.find(x=>x.path.endsWith('/export_call_readiness'));assert.equal(readiness.apikey,pub);assert.notEqual(readiness.authorization,'Bearer '+secret);assert.deepEqual(readiness.body,{});
  const call=c.f.calls.find(x=>x.path.endsWith('/export_call_extensions'));assert.equal(call.apikey,pub);assert.notEqual(call.authorization,'Bearer '+secret);
  assert.match(response.headers.get('cache-control'),/no-store/);
 }));
@@ -214,4 +216,15 @@ test('pending readiness schema cannot break closed routes or bypass revoked sess
  let response=await c.worker.fetch(req(path,{cookie:c.b.header()}),c.e);assert.equal(response.status,200);assert.deepEqual(await response.json(),{state:'disabled',mediaEnabled:false});
  response=await c.worker.fetch(req(path,{method:'POST',cookie:c.b.header(),body:{action:'prepare',mode:'video'}}),c.e);assert.equal(response.status,200);assert.equal((await response.json()).state,'disabled');
  c.f.active=false;response=await c.worker.fetch(req(path,{cookie:c.b.header()}),c.e);assert.equal(response.status,401);assert.equal(c.f.calls.some(x=>/call_readiness/.test(x.path)),false);
+}));
+
+
+test('personal export fails atomically if readiness is unavailable or oversized',async()=>run(async c=>{
+ await registered(c);
+ for(const [error,status,expected] of [['export_too_large',413,'export_too_large'],['private diagnostic',503,'call_readiness_unavailable']]){
+  c.f.readinessExportError=error;c.f.calls=[];
+  const response=await c.worker.fetch(req('/api/me/export',{cookie:c.b.header()}),c.e);
+  assert.equal(response.status,status);assert.deepEqual(await response.json(),{error:expected});assert.match(response.headers.get('cache-control'),/no-store/);
+  assert.equal(c.f.calls.filter(x=>x.path.endsWith('/export_call_readiness')).length,1);
+ }
 }));

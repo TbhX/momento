@@ -19,7 +19,7 @@ test('seat indicators refresh on visibility, preserve focus, avoid overlap and s
  const v=setup();try{
   assert.equal(v.calls.length,1);v.hide(true);v.hide(false);assert.equal(v.calls.length,1,'no overlapping request');
   const snapshot={id,capacity:50,balanced:true,women:24,men:23,present:12,expected:35,waiting:2};
-  v.calls[0].resolve({items:[snapshot]});await tick();assert.equal(v.root.querySelector('[data-seat=women]').textContent,'1 / 25');assert.equal(v.root.querySelector('[data-seat=men]').textContent,'2 / 25');assert.equal(v.root.querySelector('[data-seat=expected]').textContent,'35');assert.equal([...v.timers.values()][0].delay,10000);
+  v.calls[0].resolve({items:[snapshot]});await tick();assert.equal(v.root.querySelector('[data-seat=women]').textContent,'1 / 25');assert.equal(v.root.querySelector('[data-seat=men]').textContent,'2 / 25');assert.equal(v.root.querySelector('[data-seat=expected]').textContent,'35');assert.equal(v.root.querySelector('[data-seat=confirmed]').textContent,'47 / 50');assert.equal([...v.timers.values()][0].delay,10000);
   const button=v.root.querySelector('button');button.focus();v.run();v.calls[1].resolve({items:[{...snapshot,women:25,present:15,expected:33}]});await tick();assert.equal(v.window.document.activeElement,button);assert.equal(v.root.querySelector('[data-seat=women]').textContent,'0 / 25');
   v.hide(true);assert.equal(v.timers.size,0);v.hide(false);assert.equal(v.calls.length,3);
   v.window.seats.stop();v.calls[2].resolve({items:[{...snapshot,women:20}]});await tick();assert.equal(v.timers.size,0);assert.equal(v.root.querySelector('[data-seat=women]').textContent,'0 / 25','late response ignored');

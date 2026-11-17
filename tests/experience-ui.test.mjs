@@ -664,3 +664,16 @@ test('homepage explains the encounter flow without fake presence or device activ
  document.querySelector('.home-actions .primary').click();assert.equal(document.querySelector('#authEmailSubmit').textContent,'Créer mon compte');
  }finally{v.dom.window.close()}
 });
+
+test('free members reach functional fictional purchases directly without payment API',async()=>{
+ const v=await experience(true);try{await v.window.go('shop');assert.ok(v.document.querySelector('#salonContent'));v.window.salonBuyReview('entry');v.document.querySelector('#shopTerms').checked=true;v.window.salonConfirmPurchase();assert.equal(v.window.callWallet().entryCredits,1);assert.equal(v.window.callWallet().orders.length,1);assert.equal(v.calls.some(p=>/checkout|shop-test/.test(p)),false);assert.match(v.document.querySelector('#app').textContent,/Aucun débit/)}finally{v.dom.window.close()}
+});
+test('chosen room bar expires, clears on navigation and cannot admit real members',async()=>{
+ const v=await experience(true);try{let actions=0,now=Date.now();v.window.selectedRoomBar({title:'<b>Salon</b>',opensAt:now+60000,closesAt:now+120000},()=>actions++,{demo:true,now:()=>now,participants:()=>8});const button=v.document.querySelector('[data-room-join]');assert.match(v.document.querySelector('[data-room-countdown]').textContent,/1 min/);assert.match(v.document.querySelector('[data-demo-participants]').textContent,/8 profils fictifs/);assert.equal(v.document.querySelector('#selectedRoomBar strong').textContent,'<b>Salon</b>');button.click();assert.equal(actions,1);now+=120000;button.click();assert.equal(actions,1);assert.equal(button.disabled,true);v.window.go('home');assert.equal(v.document.querySelector('#selectedRoomBar'),null);button.click();assert.equal(actions,1);v.window.selectedRoomBar({id:'00000000-0000-4000-8000-000000000002',title:'Réel',opensAt:Date.now()-1000,closesAt:Date.now()+100000},null);assert.equal(v.document.querySelector('[data-room-join]').disabled,true)}finally{v.dom.window.close()}
+});
+test('modern filters retain native radio selection and reset semantics',async()=>{
+ const v=await experience(true);try{await v.window.go('salon');const f=v.document.querySelector('#communityFilters');assert.ok(f);const audio=f.querySelector('[name=mode][value=audio]');audio.checked=true;assert.equal(new v.window.FormData(f).get('mode'),'audio');f.reset();assert.equal(new v.window.FormData(f).get('mode'),'');assert.equal(f.querySelector('details').open,false)}finally{v.dom.window.close()}
+});
+test('home explains the room, private pair and next rotation without fabricated presence',async()=>{
+ const v=await experience();try{assert.equal(v.document.querySelectorAll('.rotation-seat').length,6);assert.match(v.document.querySelector('.home-rotation-map').textContent,/20 · 50 · 100/);assert.match(v.document.querySelector('.home-rotation-next').textContent,/nouvelle rencontre/);assert.match(v.document.querySelector('.home-entry-illustration').textContent,/aucun appel/)}finally{v.dom.window.close()}
+});

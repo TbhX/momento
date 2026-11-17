@@ -1,5 +1,15 @@
 # Momento — travaux de production
 
+## Boutique fictive, salon choisi et découverte visuelle
+
+Le 17 novembre 2026, la boutique membre ouvre directement les achats fictifs, y compris pour les comptes gratuits. Les confirmations et tarifs restent visibles ; les crédits et formules obtenus ne concernent que la répétition locale. Aucun paiement Stripe, crédit serveur ou droit réel n’est créé.
+
+Une barre sous l’en-tête rappelle le salon consulté, son début et le temps restant. Les invitations et aperçus réels affichent les compteurs natifs (confirmés/capacité, présents, attendus) actualisés toutes les dix secondes pendant la consultation. Une entrée réelle reste indisponible ; la barre ne contourne aucune admission. Dans la table fictive, le bouton ramène à la préparation, sans démarrage ni appareil automatique. La barre est retirée à la navigation, ses compteurs s’arrêtent quand l’onglet est masqué et les commandes périmées sont ignorées.
+
+Les filtres disposent de champs arrondis, choix audio/vidéo en boutons radio, cases visuelles et options avancées repliées, avec focus clavier et réduction des animations. L’accueil illustre un salon, un binôme privé et la rotation suivante, sans inventer de présence réelle.
+
+Validation : 558 tests locaux et build Pages réussis ; achat fictif membre gratuit sans appel de paiement, compte à rebours/expiration/navigation, radios/réinitialisation et présentation des rotations couverts. Aucun SQL distant ou drapeau modifié. Essais authentifiés et téléphone physique restant à réaliser ; ordonnanceur persistant, médias, courriels et exploitation restent nécessaires avant ouverture.
+
 ## Accueil centré sur la rencontre
 
 Le 17 novembre 2026, l’accueil présente directement le speed dating : choix du salon, conversation à deux, intérêt réciproque et suite consentie. Le bouton principal propose de commencer gratuitement si les inscriptions sont ouvertes, la connexion sinon, et les salons pour un membre. Deux portraits illustratifs donnent un aperçu du tête-à-tête ; aucun compteur de présence ni profil réel inventé. L’ouverture future des rencontres reste annoncée. La vidéo de marque est conservée dans un format secondaire, avec pause, chargement différé et réduction des animations. Le cadre fixe et le défilement interne restent conservés.

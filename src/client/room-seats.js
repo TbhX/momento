@@ -3,12 +3,13 @@ const MomentoRoomSeats=(()=>{
  const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  let dispose=null;
  const number=n=>Number.isSafeInteger(n)&&n>=0;
- function markup(id){if(!uuid.test(id))return '';return `<div class="room-seats" data-room-seats="${id}" aria-label="Places et présences de cette table ronde"><div class="room-seat-genders"><span>Femmes <b data-seat="women">—</b></span><span>Hommes <b data-seat="men">—</b></span></div><div class="room-seat-attendance"><span>Présents <b data-seat="present">—</b></span><span>Attendus <b data-seat="expected">—</b></span>${MomentoThemes.hint('info','Places libres calculées sur les inscriptions confirmées, hors liste d’attente. Présents : présences actives récentes. Attendus : inscrits confirmés qui ne sont pas encore présents. Actualisation toutes les dix secondes, seulement pendant la consultation. La confirmation de votre inscription reste vérifiée côté serveur.')}</div><small data-seat="status">Actualisation…</small></div>`}
+ function markup(id){if(!uuid.test(id))return '';return `<div class="room-seats" data-room-seats="${id}" aria-label="Places et présences de cette table ronde"><div class="room-seat-genders"><span>Femmes <b data-seat="women">—</b></span><span>Hommes <b data-seat="men">—</b></span></div><div class="room-seat-attendance"><span>Confirmés <b data-seat="confirmed">—</b></span><span>Présents <b data-seat="present">—</b></span><span>Attendus <b data-seat="expected">—</b></span>${MomentoThemes.hint('info','Places libres calculées sur les inscriptions confirmées, hors liste d’attente. Présents : présences actives récentes. Attendus : inscrits confirmés qui ne sont pas encore présents. Actualisation toutes les dix secondes, seulement pendant la consultation. La confirmation de votre inscription reste vérifiée côté serveur.')}</div><small data-seat="status">Actualisation…</small></div>`}
  function paint(el,s){
   const put=(name,text)=>{const target=el.querySelector('[data-seat="'+name+'"]');if(target)target.textContent=text};
   const balanced=s?.balanced===true&&[20,50,100].includes(s.capacity)&&number(s.women)&&number(s.men);
   put('women',balanced?Math.max(0,s.capacity/2-s.women)+' / '+s.capacity/2:'—');
   put('men',balanced?Math.max(0,s.capacity/2-s.men)+' / '+s.capacity/2:'—');
+  put('confirmed',balanced?(s.women+s.men)+' / '+s.capacity:'—');
   put('present',number(s?.present)?s.present:'—');put('expected',number(s?.expected)?s.expected:'—');
   put('status',balanced?'Places restantes · '+(number(s.waiting)&&s.waiting?s.waiting+' en attente · ':'')+'auto 10 s':'Répartition non disponible · auto 10 s');
   el.dataset.fresh='true';

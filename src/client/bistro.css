@@ -134,3 +134,9 @@
 .table-map-seat.is-mine{background:#bce6d7;border-color:#edfff7;color:#426f60;outline-color:#85b9a7;box-shadow:0 4px 0 #85b9a7}
 .table-map-pair.is-inspected{outline:2px solid #c1a4d2;background:#fff6ff70}
 @media(prefers-reduced-motion:no-preference){.table-map-seat{transition:transform .15s ease,box-shadow .15s ease}.table-map-seat:hover{transform:translateY(-3px)}.table-map-seat:active{transform:translateY(1px)}}
+
+/* Preparation and conversation lead; the illustrative room is optional. */
+.roundtable-demo .table-layout{grid-template-columns:minmax(0,1fr)}
+.roundtable-demo .table-call-column{order:0;width:100%}
+.roundtable-demo .table-room-column{order:1;min-width:0}
+.roundtable-demo .table-participants{margin-top:16px}

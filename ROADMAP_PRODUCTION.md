@@ -1,5 +1,11 @@
 # Momento — travaux de production
 
+## Parcours simplifié avant essai utilisateur
+
+Le 17 novembre 2026, la navigation membre met Salons, Amis et Mon profil au premier plan. Les autres destinations sont regroupées dans Plus, avec ouverture de la rubrique active et navigation clavier dans le tiroir mobile. Le catalogue nomme ses actions et relie les invitations à Amis. La préparation du salon apparaît immédiatement ; le décor et les places sont facultatifs. Les réglages vidéo et outils administrateur locaux sont repliés. Passer, J’aime, le match et Quitter le salon utilisent des libellés explicites. Les confirmations de coût, consentements et contrôles Gratuit/Premium sont conservés.
+
+La démonstration propose une arrivée fictive explicite sans compte administrateur, sans requête serveur ni participant réel ; une commande provenant d’un ancien essai est ignorée. Les rencontres réelles restent fermées. Validation : 553 tests locaux et build Pages réussis. Tests intégrés : navigation, préparation sans sélection de chaise, like sans changement de personne, arrivée locale et commande périmée. L’essai par un proche reste à faire : trouver un salon, préparer l’entrée, passer, matcher, prolonger, retrouver les amis et quitter sans aide. Aucun SQL distant ni droit modifié. Le navigateur local est indisponible dans cet environnement ; ne pas confondre tests DOM et validation visuelle ou téléphone physique.
+
 ## Une affectation par personne et par tour
 
 Le 17 novembre 2026, une contrainte privée réserve deux places techniques par rencontre et interdit une seconde affectation de la même personne dans le même salon et le même tour, quel que soit son côté dans le binôme. Une annulation conserve ces places ; changer les participants ou le tour est refusé. La suppression du compte conserve ses cascades de suppression. Le delta issu du déclaratif est rejoué localement, puis appliqué et archivé sous sa version native : seize migrations au total. Aucun ordonnanceur ni accès média ajouté.

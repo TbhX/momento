@@ -66,3 +66,8 @@ test('expanded filters and room settings stay visible without stealing focus',()
  app.innerHTML='<details class="call-moment-more" open><summary>Appel</summary></details>';const other=app.firstElementChild;other.getBoundingClientRect=()=>({top:450,bottom:750,height:300});app.scrollTop=0;other.dispatchEvent(new w.Event('toggle'));assert.equal(app.scrollTop,0);
  }finally{dom.window.close()}
 });
+
+test('mobile focus loop excludes folded secondary links but includes their summary',()=>{
+ const f=fixture(true);try{f.d.querySelector('#sidebarToggle').click();const last=f.d.querySelector('.sidebar-utility a');last.focus();f.d.dispatchEvent(new f.w.KeyboardEvent('keydown',{key:'Tab',bubbles:true,cancelable:true}));assert.equal(f.d.activeElement,f.d.querySelector('[data-shell-home]'));const summary=f.d.querySelector('.sidebar-more>summary');summary.focus();assert.equal(f.d.activeElement,summary);assert.equal(summary.parentElement.open,false);
+ }finally{f.dom.window.close()}
+});

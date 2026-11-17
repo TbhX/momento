@@ -58,7 +58,9 @@ function callSessionWait(f){
  const content=document.createElement('div');content.className='wait-composition';
  const person='<svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><circle cx="20" cy="13" r="7"/><path d="M7 35v-4a13 13 0 0 1 26 0v4"/></svg>';
  content.innerHTML='<div class="wait-duo" aria-hidden="true"><div class="wait-person wait-person-you">'+person+'<span>Vous</span></div><div class="wait-connection"><svg viewBox="0 0 24 24"><path d="M12 20S3 14.5 3 8.5a4.5 4.5 0 0 1 9-1 4.5 4.5 0 0 1 9 1C21 14.5 12 20 12 20Z"/></svg></div><div class="wait-person wait-person-peer">'+person+'<span>Votre rencontre</span><div class="wait-dots"><i></i><i></i><i></i></div></div></div><div class="wait-copy"><span class="wait-eyebrow">UNE PLACE POUR L’INATTENDU</span><h2>Votre prochain<br><em>bonjour se prépare…</em></h2><p>L’échange commencera lorsque vous serez tous les deux là.</p><span class="wait-state"><i aria-hidden="true"></i>En attente de l’autre personne</span></div>';
- const note=document.createElement('small');note.className='wait-demo-label';note.textContent='Essai local';note.title='Aucun participant distant connecté.';wait.append(logo,content,note);stage.insertBefore(wait,stage.firstChild);callDemoClock(f);const round=document.querySelector('#tableRound');if(round)round.textContent='En attente à deux';if(f.table)tableCallWindowSync(f);
+ const note=document.createElement('small');note.className='wait-demo-label';note.textContent='Essai local';note.title='Aucun participant distant connecté.';wait.append(logo,content,note);
+ if(f.audience==='demo'){const arrival=document.createElement('button');arrival.type='button';arrival.className='secondary';arrival.dataset.localPeerArrival='';arrival.textContent='Simuler l’arrivée du participant';arrival.addEventListener('click',()=>{if(!arrival.isConnected||!callDemoAlive(f)||f.audience!=='demo'||!f.waitingPeer||f.state.phase!=='preview')return;callSessionPeerArrived(f)});wait.append(arrival)}
+ stage.insertBefore(wait,stage.firstChild);callDemoClock(f);const round=document.querySelector('#tableRound');if(round)round.textContent='En attente à deux';if(f.table)tableCallWindowSync(f);
 }
 function callSessionPeerArrived(f=callDemoFlow){
  if(!callDemoAlive(f)||!f.waitingPeer||f.state.phase!=='preview')return;
@@ -71,7 +73,7 @@ function callSessionPeerArrived(f=callDemoFlow){
 function callAdminToolsMount(f){
  if(!liveStatus?.admin||!callDemoAlive(f))return;
  const host=document.querySelector('.table-call-column')||document.querySelector('.conversation-demo');if(!host)return;
- const panel=document.createElement('details');panel.className='call-admin-tools';panel.dataset.callAdminTools='';panel.open=true;
+ const panel=document.createElement('details');panel.className='call-admin-tools';panel.dataset.callAdminTools='';panel.open=false;
  panel.innerHTML='<summary>⚙ Administration · tests locaux</summary><p>Aucun participant réel, message envoyé ou débit bancaire.</p><div data-admin-call-actions></div><p role="status" data-admin-call-status></p>';
  const actions=[['arrival','Arrivée du participant',()=>callSessionPeerArrived(f)],['like','Son like',()=>callDemoPeerLike(true)],['unlike','Son refus',()=>callDemoPeerLike(false)],['incoming','Demande de prolongation reçue',()=>callDemoIncomingExtension()],['accept','Accepter ma prolongation',()=>callDemoSimulateExtensionAnswer(true)],['decline','Refuser ma prolongation',()=>callDemoSimulateExtensionAnswer(false)],['ending','Alerte de fin',()=>callDemoPreviewEnding()]];
  if(f.table)actions.unshift(['start','Avancer à l’horaire du salon',()=>tableAdvanceStart()]);

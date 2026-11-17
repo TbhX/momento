@@ -36,3 +36,6 @@ body.momento-shell main#app{flex:1;min-width:0;min-height:0;width:100%;max-width
 @media(max-width:700px){.privacy-panel .legal-grid{grid-template-columns:1fr;gap:24px}.privacy-panel .legal-nav{position:static;display:flex;flex-direction:row;flex-wrap:wrap;gap:0 16px;border-bottom:1px solid #ead6e1;padding-bottom:15px}.privacy-panel .legal-nav a{font-size:10px;min-height:40px}.privacy-panel .legal-copy h2{font-size:21px}}
 
 .sidebar-nav a{text-decoration:none;font:inherit}.app-statusbar>a{color:inherit;text-decoration:none;font-size:9px}
+
+/* Essential destinations first; secondary navigation stays keyboard accessible. */
+.sidebar-more>summary{cursor:pointer;min-height:44px;padding:14px 18px;color:var(--muted,#685c69);font-weight:600;border-radius:12px}.sidebar-more[open]>summary{margin-bottom:6px}.sidebar-more>a,.sidebar-more>button{width:100%}.sidebar-more .sidebar-member-group{margin:0}.journey-guide{line-height:1.7;margin:12px 0 20px}.journey-guide small{font-size:13px}.call-display-options{margin:8px 0}.call-display-options>summary,.table-optional-room>summary{cursor:pointer;min-height:44px;padding:12px 16px;font-weight:600}.table-optional-room{border:1px solid #e5dce5;border-radius:16px}.call-display-options .call-view-tools{flex-wrap:wrap}

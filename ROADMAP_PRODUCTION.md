@@ -1,5 +1,11 @@
 # Momento — travaux de production
 
+## Une affectation par personne et par tour
+
+Le 17 novembre 2026, une contrainte privée réserve deux places techniques par rencontre et interdit une seconde affectation de la même personne dans le même salon et le même tour, quel que soit son côté dans le binôme. Une annulation conserve ces places ; changer les participants ou le tour est refusé. La suppression du compte conserve ses cascades de suppression. Le delta issu du déclaratif est rejoué localement, puis appliqué et archivé sous sa version native : seize migrations au total. Aucun ordonnanceur ni accès média ajouté.
+
+Validation locale : 549 tests et build Pages réussis avant application ; capacités 20/50/100, conflits atomiques, annulation, immutabilité, suppression et reprise d’historique couverts. Un historique contradictoire fait échouer le delta. Les contraintes ne constituent pas une validation de concurrence sur connexions indépendantes. Préférences et check-in natifs, réservation idempotente du tour, revalidation et médias restent à raccorder. Lecture distante après application : zéro rencontre et affectation, RLS activée, aucune lecture membre ni écriture directe du rôle de service, fonction de déclencheur non appelable par un membre. Advisors : seize informations de tables privées deny-all et avertissement de mots de passe compromis inchangé. Aucun essai authentifié ni appareil physique validé.
+
 ## Socle de préparation appliqué et export raccordé
 
 Le 17 novembre 2026, l’application native de la préparation des binômes réussit après revue et rejeu local du delta. La version attribuée est archivée ; l’historique contient quinze migrations. Les deux nouvelles tables restent privées avec RLS, wrappers publics INVOKER réservés aux membres et vérificateur interne inaccessible aux membres. L’export personnel inclut désormais les propres préparations via le client membre, sans session, entrée ou pair ; une erreur refuse le fichier entier plutôt qu’un export incomplet.

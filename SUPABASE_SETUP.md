@@ -43,3 +43,7 @@ La fonction native d’aperçu ne retourne plus les valeurs d’âge, ville ou p
 ### Durées des nouveaux salons
 
 Le déclaratif de publication décrit désormais le format version 2 : capacités 20/50/100, durées 60/75/150 minutes, échanges 330/150/150 secondes et transitions de 30 secondes. Le DTO ajoute version et nombre de tours. Les remplacements de fonctions n’altèrent aucun salon publié. Le delta de durée est appliqué et archivé sous sa version native, puis les droits et RLS contrôlés ; les admissions, publications ordinaires et prolongations restent fermées. La préparation du binôme ci-dessus demeure un delta distinct en attente.
+
+## Unicité des affectations de tour
+
+Le déclaratif `97_round_assignments.sql` et sa migration native archivée ajoutent une table privée RLS maintenue exclusivement par déclencheur sur les rencontres. Aucun accès membre ni écriture directe de service ajouté ; les binômes restent uniques par événement et les personnes par salon/tour. Annuler ne libère pas une place pour le même tour. L’historique comporte seize migrations ; ne pas rejouer celles déjà appliquées. Le planificateur persistant et sa concurrence restent à valider.

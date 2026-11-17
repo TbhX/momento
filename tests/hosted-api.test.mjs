@@ -44,3 +44,8 @@ test('admin test publication uses a dedicated Auth-bound RPC, no credit or live 
  await assert.rejects(invoke(f,'/hosted/publish-test',{room:id},{},{Origin:'https://evil.invalid'}),e=>e.status===403);
  f.fail({message:'admin_required',code:'42501'});await assert.rejects(invoke(f,'/hosted/publish-test',{room:id},{}),e=>e.status===403);
 });
+test('joined room reads accept only a bounded cursor and never a browser identity',async()=>{
+ const f=fixture();await invoke(f,'/hosted/joined');assert.deepEqual(f.calls[0],{name:'joined_rooms_page',args:{p_after:null,p_after_id:null}});
+ for(const query of ['?user=other','?limit=999','?after=infinity&afterId='+id,'?afterId='+id,'?after=2026-11-17T00:00:00Z&afterId=bad','?afterId='+id+'&afterId='+id])await assert.rejects(invoke(f,'/hosted/joined'+query),e=>e.status===400);
+ assert.equal(f.calls.length,1);
+});

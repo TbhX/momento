@@ -5,7 +5,7 @@ function hostedCleanup(){hostedState=null;hostedDraftId=null;hostedRequestId=nul
 function hostedLocalDate(date){const d=new Date(date);return new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
 async function hostedNavigate(view,generation){
  if(view==='invite')return hostedLoadInvitation(generation);
- const data=await api('/hosted');if(generation!==liveGeneration||!accountReady)return;hostedState=data;renderHostedBuilder(false);
+ const data=await api('/hosted');if(generation!==liveGeneration||!accountReady)return;hostedState=data;renderHostedBuilder(false);hostedMountJoined(generation);
 }
 function renderHostedBuilder(preview=true){
  if(preview){renderHostedTeaser();return}
@@ -41,7 +41,7 @@ function hostedView(id){
  const theme=MomentoThemes.get(r.theme),published=['published','live'].includes(r.status);
  modal(`<section class="hosted-room-preview" data-ambiance="${txt(r.color)}"><span class="badge">${r.isTest?'Salon de test · ':''}${({draft:'Brouillon privé',published:'Publié',live:'En cours',cancelled:'Annulé',ended:'Terminé'})[r.status]||''}</span><h2>${txt(r.title)}</h2><p>${txt(r.description||'Un thème commun, de nouvelles conversations.')}</p><dl><div><dt>Thème</dt><dd>${txt(theme.label)}</dd></div><div><dt>Départ</dt><dd>${txt(when(r.opensAt))}</dd></div><div><dt>Lieu</dt><dd>${txt(r.city)}</dd></div><div><dt>Capacité</dt><dd>${Number(r.capacity)} places · ${Number(r.capacity)/2} femmes et ${Number(r.capacity)/2} hommes</dd></div><div><dt>Échanges</dt><dd>${(r.modes||[]).map(v=>v==='audio'?'Audio':'Vidéo').join(' + ')} · ${Number(r.minAge)}–${Number(r.maxAge)} ans</dd></div></dl><div class="home-actions">${r.status==='draft'?`<button class="primary" onclick="$('#modal').close();hostedEdit('${r.id}')">Modifier mon brouillon</button>`:''}${published?`<button class="primary" onclick="$('#modal').close();hostedOpenInvitation('${r.id}')">Voir l’invitation</button>`:''}</div><p class="hosted-fine">${r.status==='draft'?'Cet aperçu reste privé. Ouvrir le brouillon ne le publie pas et ne consomme aucun crédit.':'Consulter ce salon ne réserve aucune place et ne consomme aucune entrée.'}</p></section>`);
 }
-function hostedEdit(id){
+function hostedEdit(id){document.querySelector('#hostedCreatedSection')?.setAttribute('open','');
  const f=$('#hostedForm'),r=hostedState?.rooms.find(x=>x.id===id);if(!accountReady||!f||!app.contains(f)||f.closest('[hidden],[inert]')||!r||r.status!=='draft'||hostedBusy)return;hostedDraftId=id;hostedRequestId=crypto.randomUUID();
  for(const key of ['title','description','theme','city','profession','minAge','maxAge','color','visibility'])f.elements[key].value=r[key]??'';
  f.elements.capacity.value=String(r.capacity);f.elements.opensAt.value=hostedLocalDate(r.opensAt);f.elements.mode.value=r.modes.length===2?'both':r.modes[0];hostedUpdatePreview();f.elements.title.focus({preventScroll:true});app.scrollTop=Math.max(0,app.scrollTop+f.getBoundingClientRect().top-app.getBoundingClientRect().top-16);$('#hostedFormStatus').textContent='Vous modifiez ce brouillon. Aucun crédit consommé.';
@@ -100,3 +100,23 @@ function hostedRefreshInvitation(){if(!hostedInvitation||hostedBusy)return;hoste
 
 function renderHostedTeaser(){app.innerHTML=`<section class="hosted-public-teaser table-public-teaser"><div class="table-public-heading"><span class="home-eyebrow">VOTRE AMBIANCE, LEURS PREMIERS BONJOURS</span><h1>Et si vous créiez<br><em>le prochain rendez-vous ?</em></h1><p>Une passion commune, une heure de départ, des conversations qui se découvrent au fil des voix et des regards.</p><div class="home-actions"><button class="primary" onclick="hostedPublicJoin()">Créer mon compte ↗</button></div></div><div class="table-teaser-grid"><div class="table-teaser-copy"><h2>Imaginez la soirée.<br>Gardez la surprise.</h2><ol class="table-teaser-steps"><li><b>Donnez le ton.</b><span>Choisissez votre thème, votre date et votre capacité : 20, 50 ou 100 places.</span></li><li><b>Partagez l’invitation.</b><span>Un lien de salon pour rassembler les personnes autour de la même envie.</span></li><li><b>Laissez les échanges commencer.</b><span>Prénoms seulement, audio ou vidéo, et de nouvelles rencontres à chaque tour.</span></li></ol><button class="primary wide" onclick="hostedPublicJoin()">Créer mon compte pour préparer mon salon ↗</button><button class="text-button wide" onclick="pendingMemberPage='hosted';openAccount('signin')">J’ai déjà un compte</button><p class="table-teaser-note">Enregistrer un brouillon est gratuit. La création de salons se décline avec Premium ou une option dédiée.</p></div><div class="table-teaser-scene" aria-label="Illustration de votre futur salon"><span class="table-teaser-time">◷ Une heure de départ commune</span><div class="table-public-await"><span aria-hidden="true">✳</span><h2>Votre point commun.<br>Le début d’un peut-être.</h2><p>Les réglages et le lien de partage<br>vous attendent dans votre espace.</p></div></div></div></section>`}
 function hostedPublicJoin(){pendingMemberPage='hosted';openAccount('signup')}
+
+function hostedMountJoined(generation){
+ const created=document.createElement('details');created.id='hostedCreatedSection';created.className='hosted-created-section';
+ const summary=document.createElement('summary');summary.textContent='Mes salons créés · créer ou gérer';created.append(summary);
+ while(app.firstChild)created.append(app.firstChild);app.append(created);
+ const section=document.createElement('section');section.className='hosted-joined-section';section.innerHTML='<span class="home-eyebrow">MES RENDEZ-VOUS</span><h1>Salons rejoints</h1><p>Vos réservations confirmées et en attente, dans l’ordre des prochains départs. Réserver ne signifie pas être entré.</p><div data-joined-list></div><nav data-joined-pager aria-label="Pages des salons rejoints"></nav>';
+ app.prepend(section);const cursors=[null];let sequence=0;
+ async function load(){const ticket=++sequence,list=section.querySelector('[data-joined-list]'),pager=section.querySelector('[data-joined-pager]');list.textContent='Chargement de vos salons…';pager.replaceChildren();MomentoRoomSeats.stop();
+  const current=()=>section.isConnected&&accountReady&&generation===liveGeneration&&ticket===sequence;
+  try{const cursor=cursors.at(-1),params=cursor?'?'+new URLSearchParams({after:cursor.at,afterId:cursor.id}):'',data=await api('/hosted/joined'+params);if(!current())return;
+   list.innerHTML=data.items.length?'<div class="hosted-room-list">'+data.items.map(r=>`<article class="hosted-room-item"><div><span class="badge">${r.registration==='confirmed'?'Place confirmée':'En liste d’attente'}${r.isTest?' · Salon de test':''}</span><h2>${txt(r.title)}</h2><p>${txt(when(r.opensAt))} · ${txt(r.city)} · ${Number(r.capacity)} places</p>${MomentoRoomSeats.markup(r.id)}</div><button class="primary" data-joined-open="${txt(r.id)}">Retrouver ce salon</button></article>`).join('')+'</div>':'<div class="empty"><h2>Votre prochain salon vous attend.</h2><p>Aucune réservation à venir. Choisissez un salon et réservez votre place pour le retrouver ici.</p><button class="primary" data-joined-discover>Découvrir les salons</button></div>';
+   list.querySelector('[data-joined-discover]')?.addEventListener('click',()=>{if(current())go('salon')});
+   list.querySelectorAll('[data-joined-open]').forEach(button=>{const id=button.dataset.joinedOpen;button.addEventListener('click',()=>{if(current())hostedOpenInvitation(id)})});
+   pager.innerHTML='<button class="secondary" data-joined-prev>← Précédent</button><span>Page '+cursors.length+'</span><button class="secondary" data-joined-next>Suivant →</button>';
+   const prev=pager.querySelector('[data-joined-prev]'),next=pager.querySelector('[data-joined-next]');prev.disabled=cursors.length===1;next.disabled=!data.hasMore||!data.next;
+   prev.addEventListener('click',()=>{if(current()&&cursors.length>1){cursors.pop();load()}});next.addEventListener('click',()=>{if(current()&&data.hasMore&&data.next){cursors.push(data.next);load()}});MomentoRoomSeats.mount(section);
+  }catch(error){if(!current())return;list.textContent='Vos réservations ne peuvent pas être chargées. '+error.message;const retry=document.createElement('button');retry.className='secondary';retry.textContent='Réessayer';retry.addEventListener('click',()=>{if(current())load()});list.append(retry)}
+ }
+ load();
+}

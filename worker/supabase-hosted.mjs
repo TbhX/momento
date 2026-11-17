@@ -10,6 +10,14 @@ async function rpc(context,name,args={}){
 }
 export async function hostedRoomsAPI(request,env,{context,origin,readJSON}){
  const path=new URL(request.url).pathname.slice('/api/service'.length);
+ if(path==='/hosted/joined'){
+  if(request.method!=='GET')throw accountFailure('method_not_allowed',405);
+  const params=new URL(request.url).searchParams;
+  if([...params.keys()].some(k=>!['after','afterId'].includes(k)||params.getAll(k).length!==1))throw accountFailure('invalid_request',400);
+  const at=params.get('after'),id=params.get('afterId');
+  if((at===null)!==(id===null)||at!==null&&(!Number.isFinite(Date.parse(at))||!/^\d{4}-\d{2}-\d{2}T/.test(at)))throw accountFailure('invalid_request',400);
+  return Response.json(await rpc(context,'joined_rooms_page',{p_after:at,p_after_id:id===null?null:uuid(id)}));
+ }
  if(path==='/hosted'){
   if(request.method!=='GET')throw accountFailure('method_not_allowed',405);
   const value=await rpc(context,'hosted_room_dashboard');

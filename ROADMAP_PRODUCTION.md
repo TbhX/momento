@@ -1,5 +1,14 @@
 # Momento — travaux de production
 
+## Retrouver les salons rejoints
+
+Le 17 novembre 2026, Mes salons affiche d’abord les réservations à venir confirmées ou en attente, avec horaire, capacité, compteurs agrégés et bouton Retrouver ce salon. La création et la gestion des propres salons restent dans une section repliable. Une réservation ne constitue pas une présence ; les salons terminés ne constituent pas un historique dans cette vue.
+
+Lecture membre paginée par 12, curseur horaire/identifiant, session active et visibilité revérifiées ; aucune identité fournie par navigateur ni liste de participants. Les réponses périmées sont ignorées. Validation : 562 tests locaux et build Pages réussis, delta rejoué deux fois sur déclarations et historique isolés. Migration additive appliquée et archivée sous sa version native (17 migrations) ; wrapper INVOKER, anon refusé, membre autorisé, toutes les tables public/private sous RLS. Advisors inchangés (16 informations deny-all privées et avertissement mots de passe compromis). Aucun compte, réservation, crédit ou drapeau modifié.
+
+Restent à valider : parcours authentifié avec réservations existantes et téléphone physique ; ordonnanceur et médias demeurent fermés jusqu’à leurs validations séparées.
+
+
 ## Boutique fictive, salon choisi et découverte visuelle
 
 Le 17 novembre 2026, la boutique membre ouvre directement les achats fictifs, y compris pour les comptes gratuits. Les confirmations et tarifs restent visibles ; les crédits et formules obtenus ne concernent que la répétition locale. Aucun paiement Stripe, crédit serveur ou droit réel n’est créé.

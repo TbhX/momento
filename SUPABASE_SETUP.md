@@ -1,5 +1,7 @@
 # Supabase dans Momento
 
+La migration additive `20261117202651_joined_rooms_page` est appliquée et archivée : 17 migrations au 17 novembre 2026. Ne pas la rejouer sur le projet hébergé. Déclaratif `98_joined_rooms.sql` : lecture des propres réservations à venir, par pages de 12, Auth/session et visibilité imposées ; wrapper public INVOKER réservé aux membres. Delta rejoué localement sur déclarations et historique ; permissions et RLS relues après application.
+
 Supabase est utilisé pour les comptes Auth, profils et consentements, médias privés, catalogue des salons, relations, invitations, blocages et signalements. Les services non raccordés restent fermés et la démonstration est présentée comme telle.
 
 Le schéma déclaratif et les migrations versionnées se trouvent dans `supabase/`. Les derniers ajouts couvrent les accords de prolongation et les salons créés par les membres, avec tables privées et droits séparés. Les contrôles d’accès entre comptes et la révocation des sessions demeurent requis.

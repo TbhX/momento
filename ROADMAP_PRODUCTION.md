@@ -1,5 +1,14 @@
 # Momento — travaux de production
 
+## Salon sélectionné conservé pendant la navigation
+
+Le 18 novembre 2026, la barre sous l’en-tête reste visible dans les pages de l’application tant que le membre reste connecté. Elle conserve le salon, le début et le compte à rebours ; Retrouver le salon recharge l’invitation ou l’aperçu autorisé. La démonstration retrouve son thème, ou l’invitation de son salon hébergé, sans démarrage ni appareil automatique. Déconnexion, changement de compte et fermeture de page nettoient la sélection en mémoire ; aucune persistance privée ajoutée.
+
+Les compteurs gardent un seul cycle d’actualisation visible toutes les dix secondes. La barre et les cartes partagent leurs lectures ; treize salons distincts (barre + douze cartes) utilisent deux requêtes successives de douze maximum. Arrêt onglet caché, réponses périmées ignorées, délai de reprise après erreur et droits serveur conservés. Aucun SQL distant, migration ou drapeau modifié.
+
+Validation locale : tests de navigation, retour, expiration, déconnexion, compteurs partagés et lot de treize salons ; 565 tests réussis et build Pages réussi. Audit de production sans avis connu, sans équivalence avec un audit complet. Essai authentifié et téléphone physique restent à réaliser. Prochaine priorité : validation de ce parcours avec un proche, puis raccordement de l’ordonnanceur et des médias sur développement avant ouverture.
+
+
 ## Retrouver les salons rejoints
 
 Le 17 novembre 2026, Mes salons affiche d’abord les réservations à venir confirmées ou en attente, avec horaire, capacité, compteurs agrégés et bouton Retrouver ce salon. La création et la gestion des propres salons restent dans une section repliable. Une réservation ne constitue pas une présence ; les salons terminés ne constituent pas un historique dans cette vue.

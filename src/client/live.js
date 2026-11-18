@@ -4,7 +4,7 @@ const errors={mfa_required:'Confirmez votre application d’authentification.',m
 /* Deduplicate only pending GETs. No completed response is cached. */
 const pendingServiceReads=new Map();let serviceEpoch=0;
 function invalidateServiceReads(){serviceEpoch++;for(const entry of pendingServiceReads.values())entry.controller.abort();pendingServiceReads.clear()}
-function resetPrivateServiceState(){if(typeof adminSandboxReset==='function')adminSandboxReset();invalidateServiceReads();liveStatus=null;liveEvents=[];if(typeof communityData!=='undefined')communityData=null;if(typeof communityCleanup==='function')communityCleanup();if(typeof hostedCleanup==='function')hostedCleanup();if(typeof adminReportCache!=='undefined')adminReportCache.clear()}
+function resetPrivateServiceState(){if(typeof selectedRoomBarClear==='function')selectedRoomBarClear();if(typeof adminSandboxReset==='function')adminSandboxReset();invalidateServiceReads();liveStatus=null;liveEvents=[];if(typeof communityData!=='undefined')communityData=null;if(typeof communityCleanup==='function')communityCleanup();if(typeof hostedCleanup==='function')hostedCleanup();if(typeof adminReportCache!=='undefined')adminReportCache.clear()}
 function api(path,body){
  const reading=body===undefined;if(reading&&pendingServiceReads.has(path))return pendingServiceReads.get(path).promise;
  if(!reading)invalidateServiceReads();const epoch=serviceEpoch,controller=new AbortController();
@@ -18,7 +18,7 @@ function api(path,body){
  })().finally(()=>{if(!reading)invalidateServiceReads();else if(pendingServiceReads.get(path)?.promise===promise)pendingServiceReads.delete(path)});
  if(reading)pendingServiceReads.set(path,{promise,controller});return promise;
 }
-function leaveLiveRoom(){if(typeof selectedRoomBarClear==='function')selectedRoomBarClear();if(typeof adminResetRehearsalClear==='function')adminResetRehearsalClear();if(typeof MomentoRoomSeats!=='undefined')MomentoRoomSeats.stop();if(typeof communityCleanup==='function')communityCleanup();if(typeof hostedCleanup==='function')hostedCleanup();if(typeof callDemoCleanup==='function')callDemoCleanup();if(typeof callCleanupLayout==='function')callCleanupLayout();if(typeof appearanceCleanup==='function')appearanceCleanup();if(typeof salonCleanup==='function')salonCleanup();if(typeof stopVideoExperience==='function')stopVideoExperience();liveGeneration++;clearTimeout(livePoll);livePoll=null;liveRoomKey='';liveEventId=null;const frame=$('#liveVideo');if(frame)frame.remove()}
+function leaveLiveRoom(){if(typeof adminResetRehearsalClear==='function')adminResetRehearsalClear();if(typeof MomentoRoomSeats!=='undefined')MomentoRoomSeats.stop();if(typeof communityCleanup==='function')communityCleanup();if(typeof hostedCleanup==='function')hostedCleanup();if(typeof callDemoCleanup==='function')callDemoCleanup();if(typeof callCleanupLayout==='function')callCleanupLayout();if(typeof appearanceCleanup==='function')appearanceCleanup();if(typeof salonCleanup==='function')salonCleanup();if(typeof stopVideoExperience==='function')stopVideoExperience();liveGeneration++;clearTimeout(livePoll);livePoll=null;liveRoomKey='';liveEventId=null;const frame=$('#liveVideo');if(frame)frame.remove()}
 async function liveNavigate(p){
  if(!accountReady){renderAccountGate();return}leaveLiveRoom();stop();page=p;const gen=liveGeneration;
  try{

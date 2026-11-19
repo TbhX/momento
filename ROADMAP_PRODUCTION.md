@@ -1,5 +1,15 @@
 # Momento — travaux de production
 
+## Préférences thématiques et import Spotify — 19 novembre 2026
+
+La préparation du salon propose une ville et un rayon déclaré de 1 à 20 km, des pays de destination, un signe astrologique unique, les sports pratiqués et le métier. Culture conserve ses sujets facultatifs ; Hasard conserve le mélange des personnes admissibles dans la répétition. Ces préférences restent dans la visite courante : aucun filtre géographique réel, profil partagé ou rapprochement serveur n’est annoncé.
+
+Musique propose une connexion Spotify facultative par code d’autorisation PKCE, puis la lecture explicite des vingt titres aimés récents. Le membre sélectionne au plus trois titres et copie lui-même les liens à partager. Une playlist peut aussi être collée sans connexion. Aucun envoi aux membres, lecture audio ou modification de bibliothèque. Le retour utilise `/spotify` ; aucun secret client Spotify n’est nécessaire.
+
+Accès Momento frais, session active et MFA si activée, CSRF, compteurs compte/IP, état à usage unique via le mécanisme serveur existant. Jeton chiffré dans un cookie HttpOnly/Secure lié au compte et à la session, dix minutes maximum ; aucun refresh token conservé, aucun jeton transmis au JavaScript. Déconnexion Spotify efface les cookies locaux ; la révocation globale de l’autorisation se fait dans Spotify. Aucun SQL distant, migration, fixture hébergée ou drapeau modifié.
+
+Validation : tests locaux du PKCE, rejeu, cookies altérés/expirés, isolation compte/session, MFA, déconnexion, réponses Spotify malformées/401/429, sélection et réponses UI tardives. 576 tests locaux réussis, build Pages réussi et audit des dépendances de production sans avis connu (ce contrôle ne constitue pas un audit complet). Essai OAuth avec un vrai compte Spotify et téléphone physique non réalisés. Le mode développement impose des utilisateurs autorisés (cinq maximum) et Premium pour le propriétaire de l’application selon la documentation Spotify ; aucun abonnement souscrit. Prochaine priorité : essai consenti du parcours, puis persistance et filtrage thématique sur développement avec protection de la localisation. Ordonnanceur, médias et ventes restent soumis à leurs validations séparées.
+
 ## Salon sélectionné conservé pendant la navigation
 
 Le 18 novembre 2026, la barre sous l’en-tête reste visible dans les pages de l’application tant que le membre reste connecté. Elle conserve le salon, le début et le compte à rebours ; Retrouver le salon recharge l’invitation ou l’aperçu autorisé. La démonstration retrouve son thème, ou l’invitation de son salon hébergé, sans démarrage ni appareil automatique. Déconnexion, changement de compte et fermeture de page nettoient la sélection en mémoire ; aucune persistance privée ajoutée.

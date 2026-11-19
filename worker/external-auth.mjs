@@ -1,8 +1,9 @@
+import {spotifyRoute,SPOTIFY_COOKIES} from './spotify.mjs';
 import {hardenResponse} from './security-headers.mjs';
 import {mfaRoute,requireMFA} from './security-mfa.mjs';
 import {createServerClient,parseCookieHeader,serializeCookieHeader} from '@supabase/ssr';
 import {createClient} from '@supabase/supabase-js';
-import {usesSupabaseData,hasServerKey,serverRPC,requireActiveSession,reserveRecovery} from './supabase-server.mjs';
+import {usesSupabaseData,hasServerKey,serverRPC,requireActiveSession,reserveRecovery,accessSessionId} from './supabase-server.mjs';
 import {publicHostedRoom} from './supabase-hosted.mjs';
 import {supabaseAccountAPI} from './supabase-account.mjs';
 import {activateAdministrator} from './admin-setup.mjs';
@@ -72,7 +73,7 @@ function normalizedEmail(value){if(typeof value!=='string')throw authFailure('in
 function validPassword(value,{newPassword=false}={}){if(typeof value!=='string'||value.length<1||value.length>1024)throw authFailure('invalid_password');if(newPassword&&([...value].length<12||[...value].length>64||new TextEncoder().encode(value).length>72))throw authFailure('invalid_password');return value}
 async function verifierFingerprint(context,env){const values=[...context.jar].filter(([name,value])=>name.startsWith(AUTH_COOKIE)&&name.includes('code-verifier')&&value).sort(([a],[b])=>a.localeCompare(b));if(!values.length)throw authFailure('recovery_expired',401);return hmac(env.AUTH_COOKIE_SECRET,JSON.stringify(values))}
 function sessionId(session){try{const payload=JSON.parse(atob(session.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return typeof payload.session_id==='string'&&/^[0-9a-f-]{36}$/i.test(payload.session_id)?payload.session_id:null}catch{return null}}
-function clearIdentityCookies(context){for(const name of context.jar.keys())if(name.startsWith(AUTH_COOKIE)||[PHONE_COOKIE,EMAIL_FLOW_COOKIE,RECOVERY_COOKIE].includes(name))context.put(name,'',{maxAge:0})}
+function clearIdentityCookies(context){for(const name of context.jar.keys())if(name.startsWith(AUTH_COOKIE)||[PHONE_COOKIE,EMAIL_FLOW_COOKIE,RECOVERY_COOKIE,...SPOTIFY_COOKIES].includes(name))context.put(name,'',{maxAge:0})}
 async function recoveryGrant(context,env){
  const grant=await readEmailRecord(env,context.jar.get(RECOVERY_COOKIE),'password',900000);
  const {data,error}=await context.supabase.auth.getUser();if(error||!verifiedIdentity(data?.user)||data.user.id!==grant.user)throw authFailure('recovery_expired',401);
@@ -278,7 +279,8 @@ export function withExternalAuth(application,{staticHeaders={},staticBinding='PU
  if(url.pathname.startsWith('/salon/')){
   try{if(/^\/salon\/[0-9a-f-]{36}$/i.test(url.pathname))await countAttempt(env,'shared-salon-ip',clientIP(clean),60,60000);return await publicHostedRoom(clean,env)}catch(error){const response=responseJSON({error:error.momentoAuthError?error.message:'hosting_unavailable'},error.status??503);if(error.status===429)response.headers.set('Retry-After',String(error.retryAfter||60));return response}
  }
- if(!authPath&&!protectedPath){const staticAssets=env[staticBinding];const response=!url.pathname.startsWith('/api/')&&staticAssets?await staticAssets.fetch(clean):await application.fetch(clean,{...env,MOMENTO_IDENTITY_PROVIDER:'supabase'},ctx);const h=new Headers(response.headers);for(const [key,value] of Object.entries(staticHeaders))h.set(key,value);h.set('Strict-Transport-Security',AUTH_HEADERS['Strict-Transport-Security']);return new Response(response.body,{status:response.status,headers:h})}
+ const spotifyPath=url.pathname==='/spotify'||url.pathname.startsWith('/api/spotify/');
+ if(!authPath&&!protectedPath&&!spotifyPath){const staticAssets=env[staticBinding];const response=!url.pathname.startsWith('/api/')&&staticAssets?await staticAssets.fetch(clean):await application.fetch(clean,{...env,MOMENTO_IDENTITY_PROVIDER:'supabase'},ctx);const h=new Headers(response.headers);for(const [key,value] of Object.entries(staticHeaders))h.set(key,value);h.set('Strict-Transport-Security',AUTH_HEADERS['Strict-Transport-Security']);return new Response(response.body,{status:response.status,headers:h})}
  const config={...externalAuthConfiguration(env),key:env.SUPABASE_PUBLISHABLE_KEY};let context;
  try{
   if(config.configured&&url.origin!==config.origin)throw authFailure('invalid_origin',403);
@@ -289,6 +291,7 @@ export function withExternalAuth(application,{staticHeaders={},staticBinding='PU
   if(error||!identity)throw authFailure('authentication_required',401);
   await requireActiveSession(env,context,data.user.id);
   await requireMFA(context,data.user);
+  if(spotifyPath){const current=await context.supabase.auth.getSession();return context.finish(await spotifyRoute(clean,{env,context,user:data.user,session:accessSessionId(current.data?.session),origin:config.origin,limit:async id=>{await countAttempt(env,'spotify-account',id,20,60000);await countAttempt(env,'spotify-ip',clientIP(clean),40,60000)},claim:(key,expires)=>reserveRecovery(env,key,expires)}))}
   if(usesSupabaseData(env)){
    const response=await supabaseAccountAPI(clean,env,context,data.user.id,{readJSON:limitedJSON,mediaCodec,origin:config.origin});
    if(url.pathname==='/api/me'&&clean.method==='DELETE'&&response.ok)clearIdentityCookies(context);

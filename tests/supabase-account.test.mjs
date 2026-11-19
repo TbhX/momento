@@ -228,3 +228,12 @@ test('personal export fails atomically if readiness is unavailable or oversized'
   assert.equal(c.f.calls.filter(x=>x.path.endsWith('/export_call_readiness')).length,1);
  }
 }));
+
+test('Spotify connection preserves active-session and MFA guards, secure cookies and logout cleanup',async()=>run(async({f,worker,e,b})=>{
+ const connect=()=>worker.fetch(req('/api/spotify/connect',{method:'POST',cookie:b.header()}),e);
+ let r=await connect();assert.equal(r.status,200);assert.ok((await r.json()).url.startsWith('https://accounts.spotify.com/authorize?'));
+ const flow=r.headers.getSetCookie().find(c=>c.startsWith('__Host-momento-spotify-flow='));for(const flag of ['HttpOnly','Secure','SameSite=Lax','Max-Age=600','Path=/'])assert.ok(flow.includes(flag));b.apply(r);
+ f.active=false;assert.equal((await connect()).status,401);f.active=true;
+ user.factors=[{factor_type:'totp',status:'verified',id:'fixture'}];try{assert.equal((await connect()).status,403)}finally{delete user.factors}
+ r=await worker.fetch(req('/api/auth/logout',{method:'POST',cookie:b.header()}),e);assert.equal(r.status,200);assert.ok(r.headers.getSetCookie().some(c=>c.startsWith('__Host-momento-spotify-flow=')&&c.includes('Max-Age=0')));
+}));

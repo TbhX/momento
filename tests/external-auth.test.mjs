@@ -229,3 +229,10 @@ test('an enrolled member cannot access protected data or globally sign out other
 test('global logout uses native global revocation and clears browser cookies',async()=>withFixture(async f=>{
  const env={...setup(),AUTH_EMAIL_ENABLED:'true'},browser=jar();browser.apply(await worker.fetch(request('/api/auth/email/signin',{email:user.email,password:'A unique fixture phrase 2026'}),env));const r=await worker.fetch(request('/api/auth/logout-all',{},browser.header()),env);assert.equal(r.status,200);assert.ok(f.calls.some(c=>c.path==='/auth/v1/logout'&&c.query.get('scope')==='global'));browser.apply(r);assert.equal(browser.values.size,0);
 }));
+
+test('Spotify routes require native authentication and reject cross-site requests before Auth',async()=>withFixture(async f=>{
+ const env=setup();env.SUPABASE_DATA_ENABLED='true';env.SUPABASE_SECRET_KEY='sb_secret_isolated_fixture_only';
+ for(const path of ['/api/spotify/likes','/spotify?state=x&code=x'])assert.equal((await worker.fetch(request(path),env)).status,401);
+ assert.equal((await worker.fetch(request('/api/spotify/connect',{},'',{Origin:'https://foreign.example','Sec-Fetch-Site':'cross-site'}),env)).status,403);
+ assert.equal(f.calls.length,0);
+}));

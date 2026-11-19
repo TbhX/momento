@@ -44,7 +44,7 @@ function tableCallWindowSync(f){
  const floating=Number.isInteger(f.table.waitSeat)||f.waitingPeer||f.table.hasStarted;
  root.dataset.callFloating=String(!!floating);root.dataset.callMinimized=String(!!f.table.callMinimized);
  const panel=root.querySelector('.table-call-column'),restore=root.querySelector('[data-table-call-restore]');
- panel.hidden=!!floating&&!!f.table.callMinimized;restore.hidden=!floating||!f.table.callMinimized;
+ MomentoNotices.place();panel.hidden=!!floating&&!!f.table.callMinimized;restore.hidden=!floating||!f.table.callMinimized;
  root.querySelector('.table-call-chrome').hidden=!floating;
  root.querySelector('.table-call-title').textContent=f.waitingPeer?'Votre prochain bonjour':f.table.hasStarted?'Votre tête-à-tête':'Votre place à deux';
  if(floating&&!f.waitingPeer&&!f.table.hasStarted)root.querySelector('.table-preparation-panel').open=true;
@@ -55,7 +55,7 @@ function tableCallWindowBind(root,column){
  const chrome=document.createElement('div');chrome.className='table-call-chrome';chrome.hidden=true;
  chrome.innerHTML='<span class="table-call-title">Votre place à deux</span><button type="button" data-table-call-minimize aria-label="Réduire le tête-à-tête et voir la salle" title="Voir la salle"><span aria-hidden="true">↙</span> Voir la salle</button>';
  const leave=document.createElement('button');leave.type='button';leave.className='room-mobile-leave';leave.textContent='Quitter';leave.setAttribute('aria-label','Quitter le salon');leave.addEventListener('click',callDemoExit);chrome.append(leave);column.prepend(chrome);
- const restore=document.createElement('button');restore.type='button';restore.hidden=true;restore.className='table-call-restore';restore.dataset.tableCallRestore='';restore.setAttribute('aria-controls','tableCallWindow');restore.innerHTML='<span aria-hidden="true">↗</span> Mon tête-à-tête';root.append(restore);
+ const restore=document.createElement('button');restore.type='button';restore.hidden=true;restore.className='table-call-restore';restore.dataset.tableCallRestore='';restore.setAttribute('aria-controls','tableCallWindow');restore.innerHTML='<span aria-hidden="true">↗</span> Mon tête-à-tête';root.querySelector('.room-mobile-nav').after(restore);
  chrome.querySelector('button').addEventListener('click',()=>{const f=callDemoFlow;if(!f?.table)return;f.table.callMinimized=true;tableCallWindowSync(f);restore.focus({preventScroll:true})});
  restore.addEventListener('click',()=>{const f=callDemoFlow;if(!f?.table)return;f.table.callMinimized=false;tableCallWindowSync(f);chrome.querySelector('button').focus({preventScroll:true})});
 }

@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Stabilité visuelle du salon
+
+Les notifications disposent de leur propre ligne dans la salle et le tête-à-tête. Sur téléphone, les choix de fin de tour suivent la vidéo et la commande de reprise dispose de sa place dans la salle réduite. Contrôle visuel sur appareils physiques encore nécessaire.
+
 ## Salon mobile et prolongations successives — 19 novembre 2026
 
 Dans la répétition, la salle puis l’espace à deux occupent la fenêtre mobile disponible, en portrait et en paysage compact. Le contenu long défile ; « Voir la salle » réduit le tête-à-tête sans le terminer et « Quitter » reste dans sa barre. Les avis sont affichés dans l’application. Le premier appel ne propose plus de rendez-vous de 15 minutes pendant la conversation. Après le premier accord, le demandeur peut ajouter 3 minutes à la même conversation autant de fois qu’il le souhaite avant son expiration. Chaque ajout affiche son coût et demande confirmation ; si le solde est vide, un achat explicitement fictif est possible dans l’appel. L’invité ne paie rien.

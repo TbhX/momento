@@ -718,3 +718,11 @@ test('declared man on free plan: audio only and a fresh 15-second swipe delay fo
  w.setCallPremium(true);w.callDemoRefresh();assert.equal(d.querySelector('#callDemoCam').disabled,false);assert.equal(d.querySelector('.conversation-pass').disabled,false);
  }finally{v.dom.window.close()}
 });
+test('mobile room reserves separate rows for choices, notices and returning to the call',async()=>{
+ const v=await experience(true,{},false,'',{mobile:true}),{window:w,document:d}=v;try{
+ await w.go('table');w.pauseCallClock();w.tableChooseSeat(3);w.toast('Message du salon');
+ const notifications=d.querySelector('.momento-notices');assert.equal(notifications.previousElementSibling.className,'table-call-chrome');
+ d.querySelector('[data-table-call-minimize]').click();assert.equal(notifications.previousElementSibling.className,'room-mobile-nav');d.querySelector('[data-table-call-restore]').click();assert.equal(notifications.previousElementSibling.className,'table-call-chrome');
+ w.elapseCall(900);w.tableFilter('all');w.callDemoStart();w.callSessionPeerArrived();w.callDemoMomentOpen();assert.equal(d.querySelector('#callDemoStage').nextElementSibling.id,'callMomentPanel');d.querySelector('[data-moment-action="dismiss"]').click();assert.equal(d.querySelector('#callMomentPanel'),null);
+ }finally{v.dom.window.close()}
+});

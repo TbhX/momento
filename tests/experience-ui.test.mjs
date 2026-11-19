@@ -232,8 +232,8 @@ test('the compact reminder preserves an open friend confirmation and closing can
 test('a late extension acceptance advances the round and cannot purchase for the old person',async()=>{
  const v=await experience(true),{window,document}=v;openCallWithChoices(window);window.pauseCallClock();window.callDemoStart();window.callSessionPeerArrived();window.callDemoLike();window.callDemoPeerLike(true);window.callDemoRequest('continue');window.callDemoSendExtension();const token=window.callRehearsal().records['demo-0'].requests.continue.token;window.elapseCall(331,false);window.callDemoExtensionAnswer('peer',true,token);assert.equal(window.callRehearsal().personId,'demo-1');assert.ok(['cancelled','expired'].includes(window.callRehearsal().records['demo-0'].requests.continue.status));assert.equal(window.callWallet().orders.length,0);assert.equal(window.callWallet().videoCredits,0);assert.equal(document.querySelector('#modal').open,false);assert.equal(window.callRehearsal().records['demo-1'].mine,null);v.dom.window.close();
 });
-test('the extension end automatically rotates, cancels pending dates and never enables devices',async()=>{
- const v=await experience(true),{window,document}=v;let permissions=0;Object.defineProperty(window.navigator,'mediaDevices',{value:{getUserMedia:async()=>{permissions++;throw Error('must remain off')}}});openCallWithChoices(window);window.pauseCallClock();window.callDemoStart();window.callSessionPeerArrived();window.callDemoLike();window.callDemoPeerLike(true);window.setCallCredit(2);window.callDemoRequest('friend');let token=window.callRehearsal().records['demo-0'].requests.friend.token;window.callDemoReply('friend',token,true);window.callDemoCommit('friend',token);window.callDemoRequest('continue');window.callDemoSendExtension();window.callDemoSimulateExtensionAnswer(true);window.callDemoRequest('date');window.elapseCall(180.1);assert.equal(window.callRehearsal().records['demo-0'].requests.date.status,'cancelled');assert.equal(permissions,0);assert.equal(document.querySelector('#callDemoCam').getAttribute('aria-pressed'),'false');assert.equal(window.callRehearsal().phase,'date');assert.equal(window.callRehearsal().personId,'demo-1');assert.equal(window.callWallet().videoCredits,1);assert.equal(window.callVisits(),0);v.dom.window.close();
+test('the first call never offers a second date while connected and rotates without activating devices',async()=>{
+ const v=await experience(true),{window,document}=v;let permissions=0;Object.defineProperty(window.navigator,'mediaDevices',{value:{getUserMedia:async()=>{permissions++;throw Error('must remain off')}}});openCallWithChoices(window);window.pauseCallClock();window.callDemoStart();window.callSessionPeerArrived();window.callDemoLike();window.callDemoPeerLike(true);window.setCallCredit(2);window.callDemoRequest('friend');let token=window.callRehearsal().records['demo-0'].requests.friend.token;window.callDemoReply('friend',token,true);window.callDemoCommit('friend',token);window.callDemoRequest('continue');window.callDemoSendExtension();window.callDemoSimulateExtensionAnswer(true);assert.equal(document.querySelector('[data-moment-action="date"]'),null);window.callDemoRequest('date');assert.equal(window.callRehearsal().records['demo-0'].requests.date,undefined);window.elapseCall(180.1);assert.equal(permissions,0);assert.equal(document.querySelector('#callDemoCam').getAttribute('aria-pressed'),'false');assert.equal(window.callRehearsal().phase,'date');assert.equal(window.callRehearsal().personId,'demo-1');assert.equal(window.callWallet().videoCredits,1);assert.equal(window.callVisits(),0);v.dom.window.close();
 });
 test('background tabs do not open a stale popup and returning renders only the current round',async()=>{
  const v=await experience(true),{window,document}=v;let visibility='hidden';Object.defineProperty(document,'visibilityState',{configurable:true,get:()=>visibility});openCallWithChoices(window);window.pauseCallClock();window.callDemoStart();window.callSessionPeerArrived();window.elapseCall(270);assert.equal(document.querySelector('#callMomentPanel'),null);window.elapseCall(61);visibility='visible';document.dispatchEvent(new window.Event('visibilitychange'));assert.equal(window.callRehearsal().personId,'demo-1');assert.equal(document.querySelector('#callMomentPanel'),null);window.elapseCall(270);assert.ok(document.querySelector('#callMomentPanel'));assert.equal(document.querySelector('[data-call-moment]').dataset.cycle.startsWith('demo-1:'),true);v.dom.window.close();
@@ -684,4 +684,37 @@ test('my rooms foregrounds joined reservations and keeps creation separate',asyn
 
 test('selected room stays across public and member pages and returns without admission',async()=>{
  const v=await experience(true);try{let returns=0;v.window.selectedRoomBar({title:'Mon salon',opensAt:Date.now()+60000,closesAt:Date.now()+3600000},()=>returns++);const bar=v.document.querySelector('#selectedRoomBar');for(const page of ['home','concept','plans','profile']){await v.window.go(page);assert.equal(v.document.querySelector('#selectedRoomBar'),bar);bar.querySelector('button').click()}assert.equal(returns,4);v.window.clearLocalBeforeLogout();assert.equal(v.document.querySelector('#selectedRoomBar'),null);bar.querySelector('button').click();assert.equal(returns,4)}finally{v.dom.window.close()}
+});
+
+test('the pair can keep the same call for over fifteen minutes with separate explicit fictional purchases',async()=>{
+ const v=await experience(true),{window:w,document:d}=v;try{
+ openCallWithChoices(w);w.pauseCallClock();w.callDemoStart();w.callSessionPeerArrived();w.callDemoLike();w.callDemoPeerLike(true);w.setCallCredit(1);
+ w.callDemoRequest('continue');w.callDemoSendExtension();w.callDemoSimulateExtensionAnswer(true);
+ const person=w.callRehearsal().personId,originalEnd=w.callRehearsal().endsAt,orders=w.callWallet().orders.length;
+ for(let i=0;i<6;i++){
+  d.querySelector('[data-moment-action="continue"]').click();
+  const confirm=d.querySelector('[data-moment-action="send"]');assert.match(confirm.textContent,/Simuler.*1,90/);assert.equal(w.callWallet().orders.length,orders+i);
+  confirm.click();assert.equal(w.callRehearsal().personId,person);assert.equal(w.callRehearsal().endsAt,originalEnd+180000*(i+1));assert.equal(w.callWallet().orders.length,orders+i+1);
+ }
+ w.callMomentDismiss();w.elapseCall(21*60-29);assert.ok(d.querySelector('[data-moment-action="continue"]'));assert.equal(w.callRehearsal().phase,'continued');
+ }finally{v.dom.window.close()}
+});
+test('room recap separates received requests, refusal and consensual return, and closes at the event deadline',async()=>{
+ const v=await experience(true),{window:w,document:d}=v;try{
+ await w.go('table');w.pauseCallClock();w.tableFilter('all');w.elapseCall(900,false);w.callDemoStart();w.callSessionPeerArrived();
+ const recap=d.querySelector('#tableRecap'),click=action=>recap.querySelector('[data-recap="'+action+'"]').click();
+ assert.ok(recap.hidden);for(let i=0;i<20&&w.callRehearsal().phase!=='ended';i++)w.callDemoSwipe('pass');assert.equal(recap.hidden,false);
+ const entries=w.callVisits(),balance=w.callWallet().videoCredits;click('requests');assert.match(recap.textContent,/Aucune demande/);click('people');click('simulate');click('decline');assert.match(recap.textContent,/refusée/);assert.equal(w.callRehearsal().phase,'ended');
+ click('people');click('simulate');const person=recap.querySelector('[data-recap="accept"]').dataset.peer;click('accept');assert.ok(recap.hidden);assert.equal(w.callRehearsal().phase,'date');assert.equal(w.callRehearsal().personId,person);assert.equal(w.callVisits(),entries);assert.equal(w.callWallet().videoCredits,balance);assert.equal(d.querySelector('#callDemoCam').getAttribute('aria-pressed'),'false');
+ w.callDemoSwipe('pass');assert.equal(recap.hidden,false);click('people');click('simulate');w.elapseCall(10000);assert.match(recap.textContent,/Demandes reçues \(0\)/);assert.equal(recap.querySelector('[data-recap="accept"]'),null);
+ }finally{v.dom.window.close()}
+});
+test('declared man on free plan: audio only and a fresh 15-second swipe delay for each partner',async()=>{
+ const v=await experience(true,{},false,'',{gender:'man'}),{window:w,document:d}=v;try{
+ let clock=1000,devices=0;Object.defineProperty(w.performance,'now',{value:()=>clock});Object.defineProperty(w.navigator,'mediaDevices',{value:{getUserMedia:async()=>{devices++;throw Error('denied')}}});
+ openCallWithChoices(w);w.pauseCallClock();w.callDemoStart();w.callSessionPeerArrived();const first=w.callRehearsal().personId;
+ assert.equal(d.querySelector('#callDemoMode').value,'audio');assert.ok(d.querySelector('#callDemoCam').disabled);await w.callDemoToggleDevice('video');assert.equal(devices,0);await w.callDemoToggleDevice('audio');assert.equal(devices,1);
+ clock+=14999;w.callDemoConfirmSwipe('pass');assert.equal(w.callRehearsal().personId,first);clock++;w.callDemoSwipe('pass');assert.notEqual(w.callRehearsal().personId,first);assert.ok(d.querySelector('.conversation-pass').disabled);
+ w.setCallPremium(true);w.callDemoRefresh();assert.equal(d.querySelector('#callDemoCam').disabled,false);assert.equal(d.querySelector('.conversation-pass').disabled,false);
+ }finally{v.dom.window.close()}
 });

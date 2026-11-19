@@ -1,5 +1,15 @@
 # Momento — travaux de production
 
+## Salon mobile et prolongations successives — 19 novembre 2026
+
+Dans la répétition, la salle puis l’espace à deux occupent la fenêtre mobile disponible, en portrait et en paysage compact. Le contenu long défile ; « Voir la salle » réduit le tête-à-tête sans le terminer et « Quitter » reste dans sa barre. Les avis sont affichés dans l’application. Le premier appel ne propose plus de rendez-vous de 15 minutes pendant la conversation. Après le premier accord, le demandeur peut ajouter 3 minutes à la même conversation autant de fois qu’il le souhaite avant son expiration. Chaque ajout affiche son coût et demande confirmation ; si le solde est vide, un achat explicitement fictif est possible dans l’appel. L’invité ne paie rien.
+
+Le récapitulatif de fin de tours sépare les prénoms rencontrés et les demandes reçues. Dans la répétition, le membre peut simuler la demande d’un prénom, refuser ou reprendre gratuitement avec lui pendant le temps restant. Les appareils restent éteints. Les demandes de cette visite expirent à la fermeture ; leur livraison entre deux comptes réels reste à implémenter.
+
+Dans l’essai, un profil déclaré homme en Gratuit peut utiliser son micro et passer à la personne suivante après 15 secondes avec chaque nouveau partenaire. Le délai utilise une horloge monotone indépendante du chrono de répétition. La caméra est désactivée avant la demande de permission. Bloquer et quitter restent immédiats. Pour les appels réels, contrôler également le délai et les droits de publication vidéo côté serveur avant ouverture.
+
+Validation locale : test des seuils de swipe et de la caméra selon la formule, test de la réception, du refus, de la reprise et de la clôture du salon, et parcours qui confirme six renouvellements successifs, conserve le même partenaire, vérifie chaque commande fictive et retrouve l’alerte de fin ; build Pages réussi. Le navigateur local n’a pas pu démarrer : vérifier visuellement sur un petit téléphone en portrait et en paysage, notamment la lisibilité de l’encart, la sortie et les marges système. Aucun SQL distant, achat réel, appel média ou essai sur appareils. La répétition ne valide pas les renouvellements côté serveur ; ils restent à raccorder et tester avec deux appareils sur staging avant ouverture.
+
 ## Connexion simplifiée pour mobile — 19 novembre 2026
 
 L’entrée du compte privilégie maintenant les champs et l’action : titre court, suppression des titres répétés, des séparateurs vides et de la proposition d’installation pendant la connexion. Sur petit écran, carte unique compacte, champs de 16 px, commandes tactiles de 44 à 50 px et clavier e-mail adapté. Connexion et création de compte restent distinctes ; les informations sur l’absence de récupération restent visibles. L’aide de confirmation est repliée uniquement quand cette fonction est disponible.

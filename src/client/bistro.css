@@ -140,3 +140,28 @@
 .roundtable-demo .table-call-column{order:0;width:100%}
 .roundtable-demo .table-room-column{order:1;min-width:0}
 .roundtable-demo .table-participants{margin-top:16px}
+
+.room-mobile-nav,.table-call-chrome .room-mobile-leave{display:none}
+@media(max-width:700px),(max-height:500px) and (orientation:landscape) and (max-width:980px){
+ body.roundtable-mode :is(.app-sidebar,.app-topbar,.app-statusbar,#selectedRoomBar){visibility:hidden}
+ .roundtable-demo[data-call-floating=true]:has(.table-call-column:not([hidden])) :is(.room-mobile-nav,.table-room-column,.table-toolbar,.conversation-intro){visibility:hidden}
+ body.roundtable-mode.momento-shell main#app{position:fixed;inset:0;z-index:50;width:100%;height:100dvh;box-sizing:border-box;padding:0 max(10px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));scroll-padding-top:76px;overflow:auto;background:var(--palette-paper,#fffaf7)}
+ .roundtable-demo .room-mobile-nav,.roundtable-demo .table-call-chrome:not([hidden]){position:sticky;top:0;z-index:9;background:var(--palette-paper,#fffaf7);display:flex;align-items:center;gap:8px;padding: max(6px,env(safe-area-inset-top)) 4px 6px;border-bottom:1px solid var(--palette-line)}
+ .room-mobile-nav strong,.table-call-chrome .table-call-title{flex:1;min-width:0;overflow-wrap:anywhere;font-size:15px}
+ .room-mobile-nav button,.table-call-chrome .room-mobile-leave{display:block;min-height:44px;padding:7px 10px;border:1px solid var(--palette-line);border-radius:14px;background:var(--palette-paper);color:var(--palette-ink)}
+ .roundtable-demo[data-call-floating=true] .table-call-column{position:fixed;inset:0;width:100%;height:100dvh;max-height:none;box-sizing:border-box;transform:none;animation:none;overflow:auto;border:0;border-radius:0;padding:0 max(8px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));scroll-padding-top:76px}
+ .roundtable-demo .table-call-chrome[hidden]{display:none}
+ .roundtable-demo .conversation-call-top{display:flex;flex-wrap:wrap;gap:6px}
+ .roundtable-demo .call-moment-close{min-width:44px;min-height:44px}
+ .roundtable-demo .call-moment-panel{box-sizing:border-box}
+ .roundtable-demo .call-moment-panel :is(p,small,summary,.text-button){font-size:12px}
+ body.roundtable-mode .momento-notices{z-index:110;max-height:32dvh;overflow:auto;overscroll-behavior:contain}
+}
+.table-recap:not([hidden]){display:block;padding:clamp(14px,4vw,26px);background:var(--palette-paper);border-radius:16px}
+.table-recap nav,.table-recap li{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.table-recap button{min-height:44px;white-space:normal}
+.table-recap nav button{padding:8px 12px;border:1px solid var(--palette-line);border-radius:16px;background:var(--palette-paper);color:inherit}
+.table-recap nav button[aria-pressed=true]{background:var(--palette-ink,#493447);color:white}
+.table-recap ul{list-style:none;padding:0}.table-recap li{padding:10px 0;border-bottom:1px solid var(--palette-line)}.table-recap li strong{margin-right:auto}
+
+.table-call-column:has(#tableRecap:not([hidden])) :is(.conversation-view,#callDemoInteraction){display:none!important}

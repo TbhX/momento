@@ -2,3 +2,33 @@
 .auth-email-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:5px;border-radius:14px;background:#f5edef}.auth-email-tabs button{min-width:0;min-height:44px;padding:10px;border:0;border-radius:10px;background:transparent;color:#6b4b59;font:inherit;font-size:14px;cursor:pointer}.auth-email-tabs button[aria-pressed="true"]{background:#fff;color:#84284d;box-shadow:0 2px 8px #74334b12}.auth-email-tabs button:focus-visible,.auth-email-form input:focus-visible{outline:3px solid #ba547c;outline-offset:3px}.auth-email-title{font-size:17px;margin:22px 0 14px}.auth-email-form,.auth-password-fields{display:grid;gap:10px;min-width:0}.auth-email-form input:not([type="checkbox"]){width:100%;box-sizing:border-box;min-width:0;min-height:48px;font-size:16px}.auth-email-form .micro{margin:0 0 5px}.auth-email-form .check{font-size:13px;line-height:1.5}.auth-email-form button:disabled,.auth-email-tabs button:disabled{opacity:.55;cursor:wait}.auth-password-fields[hidden],.auth-email-form [hidden],#authBackToSignin[hidden],#authForgotPassword[hidden]{display:none}.auth-status{font-size:14px;line-height:1.6;color:#365b48;overflow-wrap:anywhere}.auth-status:not(:empty){padding:12px 14px;border:1px solid #cbded0;background:#f2f8f3;border-radius:12px}.auth-email-form .text-button{min-height:44px;height:auto;white-space:normal}#authForgotPassword,#authBackToSignin{min-height:44px;max-width:100%;white-space:normal}
 
 #authResendConfirmation{min-height:44px;max-width:100%;white-space:normal}#authResendConfirmation[hidden]{display:none}
+
+/* Compact, touch-first account entry; the application keeps its internal scroll. */
+.auth-onboarding .onboarding-tabs{display:none}
+.auth-onboarding .onboarding-card{min-width:0}
+.auth-onboarding .onboarding-card h2{font-size:clamp(23px,5vw,30px);line-height:1.2;margin:0 0 8px;letter-spacing:-.6px}
+.auth-onboarding .auth-intro{margin:0 0 20px;line-height:1.5}
+.auth-email-tabs{margin-bottom:22px}
+.auth-email-tabs button:only-child{grid-column:1/-1}
+.auth-email-form{gap:8px}
+.auth-email-form label:not(.check){font-size:14px;font-weight:600;margin-top:5px}
+.auth-email-form input:not([type="checkbox"]){padding:13px 14px;border:1px solid #d9cbd2;border-radius:12px;background:#fff;color:#342833;line-height:1.4;scroll-margin-block:24px}
+.auth-email-form .check{display:flex;align-items:center;gap:9px;min-height:44px;margin:0;cursor:pointer}
+.auth-email-form .check input{width:18px;height:18px;flex:none;accent-color:#963858}
+.auth-email-form .primary{min-height:50px;border-radius:14px;margin-top:4px;font-size:16px;line-height:1.4;white-space:normal}
+.auth-inline-error:empty,.auth-status:empty{display:none}
+.auth-inline-error:not(:empty){margin:4px 0;padding:10px 12px;background:#fff1f2;border:1px solid #edc5ce;border-radius:10px;line-height:1.5}
+#authBasicNotice{margin:14px 0 4px;line-height:1.5;font-size:12px}
+.auth-help{margin:4px 0 12px;font-size:13px;color:#694d5e}
+.auth-help summary{display:list-item;cursor:pointer;padding:12px 0;min-height:44px;box-sizing:border-box;line-height:1.5}
+.auth-help summary:focus-visible{outline:3px solid #ba547c;outline-offset:3px;border-radius:6px}
+.auth-legal{border-top:1px solid #eadfe4;padding-top:14px;margin-top:18px;line-height:1.6}
+.auth-legal a{display:inline-block;padding-block:8px}
+@media(max-width:700px){
+ .momento-shell .auth-onboarding,.account-gated .auth-onboarding{display:block;max-width:440px;min-height:0;margin:0 auto}
+ .auth-onboarding .onboarding-story{display:none}
+ .momento-shell .auth-onboarding .onboarding-card,.account-gated .auth-onboarding .onboarding-card{padding:22px 16px;border-radius:20px;box-sizing:border-box;width:100%;box-shadow:0 8px 30px #61233f08}
+ .auth-onboarding .auth-intro{font-size:14px}
+ .auth-email-tabs button{font-size:14px;padding:10px 6px;min-height:46px}
+ .auth-onboarding .auth-email-form,.auth-onboarding .auth-password-fields{gap:8px}
+}

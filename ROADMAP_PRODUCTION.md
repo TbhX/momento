@@ -1,5 +1,13 @@
 # Momento — travaux de production
 
+## Connexion simplifiée pour mobile — 19 novembre 2026
+
+L’entrée du compte privilégie maintenant les champs et l’action : titre court, suppression des titres répétés, des séparateurs vides et de la proposition d’installation pendant la connexion. Sur petit écran, carte unique compacte, champs de 16 px, commandes tactiles de 44 à 50 px et clavier e-mail adapté. Connexion et création de compte restent distinctes ; les informations sur l’absence de récupération restent visibles. L’aide de confirmation est repliée uniquement quand cette fonction est disponible.
+
+Les erreurs e-mail sont placées dans le formulaire, près du bouton. L’envoi affiche « Veuillez patienter… » avec état accessible occupé et bloque les doubles soumissions. Changer de mode conserve l’adresse mais efface les mots de passe, sans ouvrir automatiquement le clavier. Les gardes Auth/MFA et les routes serveur ne sont pas modifiées.
+
+Validation locale : tests de présentation conditionnelle, clavier, progression, erreur, double soumission, récupération et réponses tardives ; 579 tests réussis et build Pages réussi. Aucun SQL distant ou réglage Auth modifié. Aucun compte créé ou utilisé. Prochaine priorité : essai sur téléphone physique, avec clavier ouvert, gestionnaire de mots de passe et double authentification par le propriétaire.
+
 ## Préférences thématiques et import Spotify — 19 novembre 2026
 
 La préparation du salon propose une ville et un rayon déclaré de 1 à 20 km, des pays de destination, un signe astrologique unique, les sports pratiqués et le métier. Culture conserve ses sujets facultatifs ; Hasard conserve le mélange des personnes admissibles dans la répétition. Ces préférences restent dans la visite courante : aucun filtre géographique réel, profil partagé ou rapprochement serveur n’est annoncé.

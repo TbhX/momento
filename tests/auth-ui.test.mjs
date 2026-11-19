@@ -88,3 +88,19 @@ test('unavailable auth retries without inline JavaScript and unknown providers n
 test('only the latest authentication configuration may control signup availability',async()=>{
  const v=await ui();const replies=[];v.window.fetch=()=>new Promise(resolve=>replies.push(resolve));const old=v.auth.init(),fresh=v.auth.init();replies[1](Response.json({mode:'supabase',configured:true,providers:[],email:true,emailSignup:false}));await fresh;replies[0](Response.json({mode:'supabase',configured:true,providers:[],email:true,emailSignup:true}));await old;assert.equal(v.auth.signupEnabled(),false);v.dom.window.close();
 });
+
+test('email-only entry removes empty alternatives and keeps recovery information beside the form',async()=>{
+ const v=await ui({providers:[],emailMode:'basic',emailRecovery:false}),d=v.document;
+ assert.equal(d.querySelector('.auth-providers'),null);assert.equal(d.querySelector('.auth-divider'),null);
+ assert.equal(d.querySelector('#authEmailTitle').hidden,true);assert.equal(d.querySelector('#authEmail').getAttribute('enterkeyhint'),'next');assert.equal(d.querySelector('#authEmailPassword').getAttribute('enterkeyhint'),'go');
+ assert.equal(d.querySelectorAll('#authError').length,1);assert.ok(d.querySelector('#authEmailForm #authError'));assert.ok(d.querySelector('#authBasicNotice'));assert.equal(d.querySelector('.auth-help').hidden,true);
+ const email=d.querySelector('#authEmail');email.value='kept@example.test';d.querySelector('[data-email-mode="signup"]').click();assert.equal(email.value,'kept@example.test');assert.equal(d.querySelector('#authEmailPassword').autocomplete,'new-password');assert.equal(d.querySelector('#authConfirmationField').hidden,false);v.dom.window.close();
+});
+test('pending submission has a visible label and busy state, ignores double submission, restores after error',async()=>{
+ let finish;const v=await ui({},()=>new Promise(r=>finish=r)),form=v.document.querySelector('#authEmailForm'),button=v.document.querySelector('#authEmailSubmit');form.elements.email.value='member@example.test';form.elements.password.value='fixture password';
+ await submit(v.window,form);assert.equal(button.textContent,'Veuillez patienter…');assert.equal(button.disabled,true);assert.equal(form.getAttribute('aria-busy'),'true');form.dispatchEvent(new v.window.Event('submit',{bubbles:true,cancelable:true}));assert.equal(v.calls.length,1);
+ finish(Response.json({error:'invalid_credentials'},{status:401}));await settle();assert.equal(button.textContent,'Se connecter');assert.equal(button.disabled,false);assert.equal(form.getAttribute('aria-busy'),'false');assert.equal(form.elements.password.value,'');assert.match(form.querySelector('[role=alert]').textContent,/incorrect/);v.dom.window.close();
+});
+test('secondary confirmation help stays collapsed while forgot-password remains directly reachable',async()=>{
+ const v=await ui(),d=v.document;assert.equal(d.querySelector('.auth-help').open,false);assert.equal(d.querySelector('#authForgotPassword').hidden,false);d.querySelector('.auth-help').open=true;d.querySelector('#authResendConfirmation').click();assert.equal(d.querySelector('.auth-help').open,false);assert.equal(d.querySelector('#authEmailTitle').hidden,false);assert.equal(d.querySelector('#authPasswordFields').hidden,true);d.querySelector('#authBackToSignin').click();assert.equal(d.querySelector('#authEmailTitle').hidden,true);assert.equal(d.querySelector('#authEmailPassword').autocomplete,'current-password');v.dom.window.close();
+});

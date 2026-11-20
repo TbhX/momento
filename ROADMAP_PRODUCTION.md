@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Lisibilité des commandes sur petit écran — 20 novembre 2026
+
+Dans le salon mobile, les choix « Accepter » et « Refuser » se disposent en une colonne quand deux boutons lisibles ne tiennent plus côte à côte. Les libellés de sortie et de prolongation suivent la taille de texte de base ; le décompte et les commandes peuvent passer à la ligne, y compris en paysage compact. Vérification visuelle sur Android et iOS avec texte agrandi encore nécessaire.
+
 ## Notifications privées du salon — 20 novembre 2026
 
 La sortie du salon efface ses avis et annule leurs minuteries. Une nouvelle notification hors salon ou dans une autre salle ne réaffiche plus un avis de la visite précédente. Test local avec deux salles successives ; validation sur téléphone encore à faire.

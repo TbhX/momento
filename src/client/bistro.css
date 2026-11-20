@@ -174,3 +174,13 @@
  .roundtable-demo .table-call-chrome,.roundtable-demo .room-mobile-nav,.roundtable-demo .call-controls{flex-wrap:wrap}
  .roundtable-demo .call-stage + .call-moment-panel{position:static;inset:auto;width:100%;min-width:0;max-width:none;max-height:none;transform:none;margin:8px 0;overflow:visible;overflow-wrap:anywhere;grid-column:1/-1}
 }
+
+/* The room controls must grow with enlarged text, even in a short landscape viewport. */
+@media(max-width:700px),(max-height:500px) and (orientation:landscape) and (max-width:980px){
+ .roundtable-demo .call-moment-top-actions{min-width:0;max-width:100%;flex:0 1 auto;flex-wrap:wrap}
+ .roundtable-demo .call-moment-mini-top{flex-wrap:wrap;font-size:.75rem;line-height:1.4}
+ .roundtable-demo .call-moment-mini-top>span{flex:1 1 8em;min-width:0;overflow-wrap:anywhere}
+ .roundtable-demo .call-moment-reply{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,9em),1fr))}
+ .roundtable-demo .call-moment-panel :is(p,small,summary,.text-button,.primary,.secondary){font-size:.875rem;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+ .roundtable-demo .table-call-chrome button,.roundtable-demo .room-mobile-nav button{max-width:100%;height:auto;font-size:.875rem;line-height:1.4;white-space:normal;overflow-wrap:anywhere}
+}

@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Préparation vidéo : contrôle natif candidat pour staging — 20 novembre 2026
+
+Le SQL déclaratif vérifie le droit Premium natif pour la préparation vidéo d’un profil homme, même entré avec le quota gratuit. L’état des deux membres et le heartbeat relisent ce droit ; une préparation audio réciproque reste possible. Essai PGlite sur deux sessions, avec réservation du binôme, expiration et départ. Delta candidat dans `supabase/pending/video_readiness.sql`, testé sur l’historique, **non appliqué à distance**. Aucun jeton ni flux média. Avant ouverture : disposer d’un staging isolé, tester la publication et la coupure effective d’une piste déjà active avec deux appareils.
+
 ## Mode commun des binômes — 20 novembre 2026
 
 Le moteur de rotation isolé tient compte de l’échéance Premium vérifiée avant de proposer une conversation vidéo réciproque à un profil homme. À défaut, seul un choix audio commun permet le binôme. Les tests couvrent la limite exacte, le renouvellement, les métadonnées ignorées et l’absence de repli audio imposé. Reste à fournir ces données depuis le serveur de staging, réserver le tour en transaction et faire respecter la publication des pistes par le serveur média.

@@ -1,3 +1,4 @@
+import {planRoomRound} from '../src/domain/room-rotation.mjs';
 import {test} from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {createSupabaseFixture} from './helpers/supabase-fixture.mjs';
 const id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0'),A=id(1),B=id(2),C=id(3),ROOM=id(10),CALL=id(20);
 const scalar=async(db,sql,args=[])=>Object.values((await db.query(sql,args)).rows[0]??{})[0];
@@ -15,6 +16,38 @@ insert into public.encounters(id,room_id,round_number,user_a,user_b,starts_at,en
 async function both(db){await actor(db,A);await action(db);await actor(db,B);const r=await action(db);assert.equal(r.state,'ready');assert.equal(r.mediaEnabled,false);await actor(db,A);return r}
 const cases=[
  ['both independent sessions must prepare and repeated preparation does not change time or money',async db=>{assert.equal((await state(db)).bothReady,false);assert.equal((await action(db)).bothReady,false);await actor(db,B);const r=await action(db);assert.equal(r.state,'ready');await action(db);await action(db,'heartbeat');assert.equal((await state(db)).endsAt,r.endsAt);await own(db);assert.equal(Number(await scalar(db,'select count(*) from private.call_participants')),2);assert.equal(Number(await scalar(db,'select count(*) from public.credit_ledger')),0);assert.equal(Number(await scalar(db,'select count(*) from public.orders')),0)}],
+ ['reserved pair uses native rights; expiry withdraws video on both sides and audio requires two new choices',async db=>{
+   await own(db);await db.query("update public.profiles set gender=case when id=$1 then 'man' else 'woman' end",[B]);
+   assert.equal(Number(await scalar(db,'select count(*) from private.round_assignments')),2);
+   await actor(db,A);await action(db);await actor(db,B);
+   await denied(db,()=>action(db),/preparation_required/);
+   await own(db);await db.query("insert into public.entitlements(user_id,environment,kind,starts_at,ends_at) values ($1,'live','premium',now(),now()+interval '1 hour'),($1,'test','premium',now()-interval '1 hour',now()+interval '1 hour')",[B]);
+   await actor(db,B);assert.equal((await action(db)).state,'ready');
+   await own(db);await db.query("update public.entitlements set ends_at=clock_timestamp()-interval '1 second' where user_id=$1 and environment='test'",[B]);
+   await actor(db,A);assert.equal((await state(db)).bothReady,false);await actor(db,B);await denied(db,()=>action(db,'heartbeat'),/preparation_required/);
+   assert.equal((await action(db,'prepare','audio')).bothReady,false);await actor(db,A);
+   const ready=await action(db,'prepare','audio');assert.equal(ready.mode,'audio');assert.equal(ready.mediaEnabled,false);
+   assert.equal((await action(db,'leave')).state,'closed');await actor(db,B);assert.equal((await state(db)).state,'ended');
+ }],
+ ['plan from native test entitlements, reserve its actual pair, prepare and withdraw',async db=>{
+   await own(db);await db.query('delete from public.encounters where id=$1',[CALL]);
+   await db.query("update public.profiles set gender=case when id=$1 then 'man' else 'woman' end",[B]);
+   await db.query("insert into public.entitlements(user_id,environment,kind,ends_at) values($1,'test','premium',clock_timestamp()+interval '1 hour')",[B]);
+   const now=Number(await scalar(db,'select floor(extract(epoch from clock_timestamp())*1000)::bigint'));
+   const rows=(await db.query(`select p.id,p.age,p.gender,(select max(t.ends_at) from public.entitlements t join private.runtime_settings cfg on cfg.singleton and cfg.billing_environment=t.environment where t.user_id=p.id and t.kind='premium' and t.revoked_at is null and t.starts_at<=clock_timestamp() and t.ends_at>clock_timestamp()) as expiry
+    from public.room_presence pr join public.profiles p on p.id=pr.user_id join auth.sessions ss on ss.user_id=p.id and ss.id=p.id where pr.room_id=$1 and pr.active and pr.expires_at>clock_timestamp() and p.status='active'`,[ROOM])).rows;
+   // Wishes and confirmations are synthetic inputs for these two local actors.
+   const participants=rows.map(p=>({...p,premiumUntil:p.expiry?new Date(p.expiry).getTime():0,active:true,confirmed:true,preferencesConfirmed:true,sessionActive:true,checkedInAt:now,unavailableUntil:0,lastMatchedRound:-1,preferences:{genders:['woman','man'],minAge:18,maxAge:100,intentions:['friendship'],modes:['video']}}));
+   const plan=planRoomRound({eventId:ROOM,opensAt:now,closesAt:now+3600000,now,roundIndex:0,capacity:20,participants,seenPairs:[],blockedPairs:[]});
+   assert.deepEqual(plan.pairs,[{members:[A,B],mode:'video'}]);const pair=plan.pairs[0];
+   await db.query("insert into public.encounters(id,room_id,round_number,user_a,user_b,starts_at,ends_at,status) values($1,$2,$3,$4,$5,$6,$7,'live')",[CALL,ROOM,plan.roundIndex,...pair.members,new Date(plan.startsAt),new Date(plan.endsAt)]);
+   assert.equal(Number(await scalar(db,'select count(*) from private.round_assignments where encounter_id=$1',[CALL])),2);
+   await actor(db,A);assert.equal((await action(db,'prepare',pair.mode)).bothReady,false);
+   await actor(db,B);assert.equal((await action(db,'prepare',pair.mode)).bothReady,true);
+   await own(db);await db.query('update public.entitlements set revoked_at=clock_timestamp() where user_id=$1',[B]);
+   await actor(db,A);assert.equal((await state(db)).bothReady,false);
+   await actor(db,B);assert.equal((await action(db,'leave')).state,'closed');
+ }],
  ['a stranger, forged metadata and direct table access cannot claim another participant',async db=>{await actor(db,C);await denied(db,()=>state(db),/encounter_unavailable/);await denied(db,()=>action(db),/encounter_unavailable/);await denied(db,()=>db.query('select * from private.call_participants'),/permission denied/);await denied(db,()=>rpc(db,'call_participant_valid',[CALL,A,new Date().toISOString(),'test']),/does not exist/);await actor(db,A);await denied(db,()=>action(db,'prepare',null),/invalid_request/)}],
  ['mode agreement is explicit and audio-only admission cannot turn on video',async db=>{await action(db);await actor(db,B);assert.equal((await action(db,'prepare','audio')).bothReady,false);assert.equal((await action(db)).state,'ready');await own(db);await db.exec("update public.room_entries set media_mode='audio' where user_id='"+B+"'");await actor(db,B);await denied(db,()=>action(db),/presence_required/);assert.equal((await action(db,'prepare','audio')).bothReady,false)}],
  ['expired readiness needs a fresh explicit preparation, not an implicit heartbeat',async db=>{await both(db);await own(db);await db.query("update private.call_participants set checked_at=clock_timestamp()-interval '46 seconds' where user_id=$1",[A]);await actor(db,A);assert.equal((await state(db)).state,'waiting');await denied(db,()=>action(db,'heartbeat'),/preparation_required/);assert.equal((await action(db)).state,'ready')}],
@@ -35,4 +68,4 @@ const cases=[
  ['an ended encounter rescheduled by an operator requires new preparation in a different encounter',async db=>{await both(db);await own(db);await db.exec("update public.encounters set status='ended';update public.encounters set status='live'");await actor(db,A);assert.equal((await state(db)).state,'closed')}],
  ['export contains only own preparation and no session, peer or entry identity',async db=>{await both(db);const output=await rpc(db,'export_call_readiness');assert.equal(output.length,1);assert.equal(output[0].encounterId,CALL);assert.deepEqual(Object.keys(output[0]).sort(),['encounterId','mode','preparedAt','checkedAt','leftAt'].sort());assert.equal(JSON.stringify(output).includes(B),false)}]
 ];
-for(const kind of ['schemas','migrations'])test('native readiness rules using '+kind,async t=>{const db=await createSupabaseFixture(kind);try{for(const [title,fn] of cases)await t.test(title,async()=>{await fixture(db);try{await fn(db)}finally{await db.exec('reset role;rollback')}});const delta=await readFile('supabase/migrations/20261117013817_call_readiness.sql','utf8');await db.exec(delta);await db.exec(delta);assert.equal(await scalar(db,"select has_function_privilege('anon','public.call_readiness_state(uuid)','execute')"),false);assert.equal(await scalar(db,"select has_function_privilege('authenticated','private.call_participant_valid(uuid,uuid,timestamptz,text)','execute')"),false)}finally{await db.close()}});
+for(const kind of ['schemas','migrations'])test('native readiness rules using '+kind,async t=>{const db=await createSupabaseFixture(kind);try{const candidate=await readFile('supabase/pending/video_readiness.sql','utf8');if(kind==='migrations'){await db.exec(candidate);await db.exec(candidate)}for(const [title,fn] of cases)await t.test(title,async()=>{await fixture(db);try{await fn(db)}finally{await db.exec('reset role;rollback')}});const delta=await readFile('supabase/migrations/20261117013817_call_readiness.sql','utf8');await db.exec(delta);await db.exec(delta);assert.equal(await scalar(db,"select has_function_privilege('anon','public.call_readiness_state(uuid)','execute')"),false);assert.equal(await scalar(db,"select has_function_privilege('authenticated','private.call_participant_valid(uuid,uuid,timestamptz,text)','execute')"),false)}finally{await db.close()}});

@@ -32,7 +32,7 @@ language sql stable security definer set search_path='' as $$
  and c.checked_at<=p_now and c.checked_at>p_now-interval '45 seconds'
  and (c.mode='audio' or n.media_mode='video') and (a.not_after is null or a.not_after>p_now) and s.active and s.expires_at>p_now
  and (c.assurance='aal2' or not exists(select 1 from auth.mfa_factors f where f.user_id=p_user and f.status='verified'))
- and (n.admission_type<>'premium' or exists(select 1 from public.entitlements t where t.user_id=p_user and t.environment=p_env and t.kind='premium' and t.starts_at<=p_now and t.ends_at>p_now and t.revoked_at is null)));
+ and ((n.admission_type<>'premium' and (c.mode<>'video' or p.gender<>'man')) or exists(select 1 from public.entitlements t where t.user_id=p_user and t.environment=p_env and t.kind='premium' and t.starts_at<=p_now and t.ends_at>p_now and t.revoked_at is null)));
 $$;
 
 create function private.call_readiness(p_encounter uuid,p_action text,p_mode text default null) returns jsonb

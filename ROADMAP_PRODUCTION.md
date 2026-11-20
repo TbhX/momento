@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Notifications privées du salon — 20 novembre 2026
+
+La sortie du salon efface ses avis et annule leurs minuteries. Une nouvelle notification hors salon ou dans une autre salle ne réaffiche plus un avis de la visite précédente. Test local avec deux salles successives ; validation sur téléphone encore à faire.
+
 ## Stabilité visuelle du salon
 
 Les notifications disposent de leur propre ligne dans la salle et le tête-à-tête. Sur téléphone, les choix de fin de tour suivent la vidéo et la commande de reprise dispose de sa place dans la salle réduite. Contrôle visuel sur appareils physiques encore nécessaire.

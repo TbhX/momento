@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Mode commun des binômes — 20 novembre 2026
+
+Le moteur de rotation isolé tient compte de l’échéance Premium vérifiée avant de proposer une conversation vidéo réciproque à un profil homme. À défaut, seul un choix audio commun permet le binôme. Les tests couvrent la limite exacte, le renouvellement, les métadonnées ignorées et l’absence de repli audio imposé. Reste à fournir ces données depuis le serveur de staging, réserver le tour en transaction et faire respecter la publication des pistes par le serveur média.
+
 ## Lisibilité des commandes sur petit écran — 20 novembre 2026
 
 Dans le salon mobile, les choix « Accepter » et « Refuser » se disposent en une colonne quand deux boutons lisibles ne tiennent plus côte à côte. Les libellés de sortie et de prolongation suivent la taille de texte de base ; le décompte et les commandes peuvent passer à la ligne, y compris en paysage compact. Vérification visuelle sur Android et iOS avec texte agrandi encore nécessaire.

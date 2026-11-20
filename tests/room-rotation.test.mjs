@@ -174,3 +174,17 @@ for (const capacity of [20, 50, 100]) test(capacity + ' version 2 seats complete
   assert.equal(seen.size, rounds * rounds);
   assert.throws(() => planRoomRound(snapshot({formatVersion: 2, capacity, roundIndex: rounds, closesAt, participants, seenPairs: history})), /invalid_round_snapshot/);
 });
+
+test('the proposed mode respects native expiry and never substitutes unrequested audio', () => {
+  const a = person('a','woman'), b = person('b','man',{premium:true,user_metadata:{premium:true}});
+  const plan = () => planRoomRound(snapshot({participants:[a,b]}));
+  for(const expiry of [undefined,null,'9999999999999',start-1,start]) {
+    b.premiumUntil=expiry;
+    b.preferences.modes=['audio','video'];
+    assert.equal(plan().pairs[0].mode,'audio');
+    b.preferences.modes=['video']; const denied=plan();assert.deepEqual(denied.pairs,[]);
+    assert.deepEqual(denied.waiting.map(p=>p.reason),['no_compatible_presence','no_compatible_presence']);
+  }
+  b.premiumUntil=start+1;assert.equal(plan().pairs[0].mode,'video');
+  a.preferences.modes=['audio'];assert.equal(plan().pairs.length,0);
+});

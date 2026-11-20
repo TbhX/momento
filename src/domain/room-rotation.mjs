@@ -17,11 +17,19 @@ function preferencesValid(p) {
     validList(q.intentions, ['friendship', 'love']) && validList(q.modes, ['audio', 'video']);
 }
 
-function compatible(a, b) {
+// Only the native entitlement's current, server-verified expiry belongs in this snapshot.
+function mutualMode(a, b, now) {
+  const allowsVideo = p => p.preferences.modes.includes('video') &&
+    (p.gender !== 'man' || (integer(p.premiumUntil) && p.premiumUntil > now));
+  if (allowsVideo(a) && allowsVideo(b)) return 'video';
+  return a.preferences.modes.includes('audio') && b.preferences.modes.includes('audio') ? 'audio' : null;
+}
+
+function compatible(a, b, now) {
   const x = a.preferences, y = b.preferences;
   return x.genders.includes(b.gender) && y.genders.includes(a.gender) &&
     b.age >= x.minAge && b.age <= x.maxAge && a.age >= y.minAge && a.age <= y.maxAge &&
-    x.intentions.some(i => y.intentions.includes(i)) && x.modes.some(m => y.modes.includes(m));
+    x.intentions.some(i => y.intentions.includes(i)) && mutualMode(a, b, now) !== null;
 }
 
 function edgeSet(pairs) {
@@ -77,7 +85,7 @@ export function planRoomRound(snapshot) {
   const priority = (a, b) => a.lastMatchedRound - b.lastMatchedRound || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   const left = eligible.filter(p => p.gender === 'woman').sort(priority);
   const right = eligible.filter(p => p.gender === 'man').sort(priority);
-  const allowed = (a, b) => compatible(a, b) && !blocked.has(pairKey(a.id, b.id)) && !seen.has(pairKey(a.id, b.id));
+  const allowed = (a, b) => compatible(a, b, now) && !blocked.has(pairKey(a.id, b.id)) && !seen.has(pairKey(a.id, b.id));
   const graph = left.map(a => right.flatMap((b, i) => allowed(a, b) ? [i] : []));
   const owner = new Map();
   // Augmenting paths give maximum cardinality; greedy first-fit can strand a compatible pair.
@@ -94,11 +102,11 @@ export function planRoomRound(snapshot) {
   for (const [j, i] of [...owner].sort((a, b) => a[1] - b[1])) {
     const a = left[i], b = right[j];
     matched.add(a.id); matched.add(b.id);
-    base.pairs.push({members: [a.id, b.id].sort(), mode: a.preferences.modes.includes('video') && b.preferences.modes.includes('video') ? 'video' : 'audio'});
+    base.pairs.push({members: [a.id, b.id].sort(), mode: mutualMode(a, b, now)});
   }
   for (const p of eligible.sort(priority)) {
     if (matched.has(p.id)) continue;
-    const peers = eligible.filter(q => q.gender !== p.gender && compatible(p, q) && !blocked.has(pairKey(p.id, q.id)));
+    const peers = eligible.filter(q => q.gender !== p.gender && compatible(p, q, now) && !blocked.has(pairKey(p.id, q.id)));
     const reason = peers.length === 0 ? 'no_compatible_presence' : peers.every(q => seen.has(pairKey(p.id, q.id))) ? 'all_met' : 'waiting_for_pair';
     base.waiting.push({id: p.id, reason});
   }

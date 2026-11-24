@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Reconnexion du binôme — 24 novembre 2026
+
+Le contrôle isolé réutilise exactement le jeton initial (micro seul) dans un nouveau client, après promotion temporaire puis retrait de la caméra et départ observé par le pair. Il exige un nouvel abonnement au micro et un nouveau refus caméra journalisé par le serveur. Le résultat est publié par GitHub Actions pour chaque révision du scénario. Cette vérification ne couvre pas les jetons de reprise renouvelés par le fournisseur ; leur cycle de vie et le raccordement aux droits natifs restent des conditions d’ouverture.
+
 ## Caméra en cours d’appel : essai de révocation — 24 novembre 2026
 
 Le [scénario média local](scripts/staging/README.md) exerce les permissions micro et caméra, puis vérifie du côté du second participant que le retrait de la caméra conserve le micro. Le [contrôle Linux du 24 novembre](https://github.com/TbhX/momento/actions/runs/45462921991) a réussi sur le commit `75091a3` : deux clients synthétiques connectés, micro seul admis, refus caméra confirmé dans le journal du serveur, puis caméra publiée après autorisation. Après retrait explicite du droit, la publication caméra disparaît chez le pair et sa republication est refusée ; la même publication micro reste souscrite. Le job sera rejoué si le scénario change sur main. L’atelier local reste bloqué par netlink. Prochaine étape : relier la mise à jour des permissions aux droits natifs Momento, tester la reconnexion avec un ancien jeton et vérifier son et image sur deux appareils de staging. Aucun appel membre ni changement aux admissions en production.

@@ -30,6 +30,8 @@ async def check(key, secret, server_log):
                                              can_publish_sources=["microphone"] if publish else []))
                 .to_jwt())
 
+    # The join credential never includes camera. Promote only the live connection.
+    original_join = token("sender", True)
     sender, peer = rtc.Room(), rtc.Room()
     async with api.LiveKitAPI(URL, key, secret) as admin:
         async def sources(values):
@@ -42,8 +44,8 @@ async def check(key, secret, server_log):
                 expected.add(rtc.TrackSource.SOURCE_CAMERA)
             await until(lambda: set(sender.local_participant.permissions.can_publish_sources) == expected)
 
-        async def connect(room, identity, publish):
-            await room.connect(URL.replace("http:", "ws:"), token(identity, publish))
+        async def connect(room, credential):
+            await room.connect(URL.replace("http:", "ws:"), credential)
 
         async def publish(track, source):
             return await sender.local_participant.publish_track(
@@ -64,7 +66,7 @@ async def check(key, secret, server_log):
             start = server_log.stat().st_size
             try:
                 await publish(camera(), rtc.TrackSource.SOURCE_CAMERA)
-            except PublishTrackError as exc:
+            except PublishTrackError:
                 # Some SDK versions time out even though the SFU explicitly refused.
                 with server_log.open("rb") as log:
                     log.seek(start)
@@ -77,8 +79,8 @@ async def check(key, secret, server_log):
                 raise RuntimeError("Denied camera visible to peer")
 
         try:
-            await connect(peer, "peer", False)
-            await connect(sender, "sender", True)
+            await connect(peer, token("peer", False))
+            await connect(sender, original_join)
             a = await publish(mic, rtc.TrackSource.SOURCE_MICROPHONE)
             await until(lambda: a.sid in remote_tracks() and remote_tracks()[a.sid].subscribed)
             await denied()
@@ -90,6 +92,17 @@ async def check(key, secret, server_log):
             await denied()
             if a.sid not in remote_tracks() or not remote_tracks()[a.sid].subscribed:
                 raise RuntimeError("Microphone subscription lost after downgrade")
+            await sender.disconnect()
+            await until(lambda: "sender" not in peer.remote_participants)
+            sender = rtc.Room()
+            await connect(sender, original_join)
+            if set(sender.local_participant.permissions.can_publish_sources) != {rtc.TrackSource.SOURCE_MICROPHONE}:
+                raise RuntimeError("Unexpected sources on fresh connection")
+            new_mic = rtc.LocalAudioTrack.create_audio_track("reconnected-mic", audio)
+            b = await publish(new_mic, rtc.TrackSource.SOURCE_MICROPHONE)
+            await until(lambda: b.sid in remote_tracks() and remote_tracks()[b.sid].subscribed)
+            await denied()
+            print("OK: original microphone-only join credential reconnects without camera")
             print("OK: microphone subscribed; camera denied, subscribed after grant, removed and denied again")
         finally:
             await asyncio.gather(sender.disconnect(), peer.disconnect())

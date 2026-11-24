@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Annonce de match pendant la répétition
+
+Le second like ouvre l’encart « C’est un match ! » dans le salon et le tête-à-tête fictifs. Il présente la prolongation de trois minutes et la demande d’amitié, sans lancer de demande ni consommer d’accès. Les appels entre comptes réels restent fermés.
+
 ## Reconnexion du binôme — 24 novembre 2026
 
 Le contrôle isolé réutilise exactement le jeton initial (micro seul) dans un nouveau client, après promotion temporaire puis retrait de la caméra et départ observé par le pair. Il exige un nouvel abonnement au micro et un nouveau refus caméra journalisé par le serveur. Le résultat est publié par GitHub Actions pour chaque révision du scénario. Cette vérification ne couvre pas les jetons de reprise renouvelés par le fournisseur ; leur cycle de vie et le raccordement aux droits natifs restent des conditions d’ouverture.

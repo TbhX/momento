@@ -726,3 +726,20 @@ test('mobile room reserves separate rows for choices, notices and returning to t
  w.elapseCall(900);w.tableFilter('all');w.callDemoStart();w.callSessionPeerArrived();w.callDemoMomentOpen();assert.equal(d.querySelector('#callDemoStage').nextElementSibling.id,'callMomentPanel');d.querySelector('[data-moment-action="dismiss"]').click();assert.equal(d.querySelector('#callMomentPanel'),null);
  }finally{v.dom.window.close()}
 });
+
+test('match popup waits for both votes in either order and stays dismissed',async()=>{
+ for(const peerFirst of [true,false]){
+  const v=await experience(true),{window,document}=v;
+  try{
+   openCallWithChoices(window);window.pauseCallClock();window.callDemoStart();window.callSessionPeerArrived();
+   const mine=()=>window.callDemoLike(),peer=()=>window.callDemoPeerLike(true);
+   (peerFirst?peer:mine)();assert.equal(document.querySelector('#callMomentPanel'),null);
+   (peerFirst?mine:peer)();const panel=document.querySelector('#callMomentPanel');
+   assert.equal(panel.querySelector('h3').textContent,'C’est un match !');
+   assert.match(panel.textContent,/3 minutes en privé/);assert.match(panel.textContent,/devenir amis/);
+   assert.equal(window.callWallet().orders.length,0);
+   panel.querySelector('[data-moment-action="dismiss"]').click();peer();window.elapseCall(1);
+   assert.equal(document.querySelector('#callMomentPanel'),null);
+  }finally{v.dom.window.close()}
+ }
+});

@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Caméra en cours d’appel : essai de révocation — 24 novembre 2026
+
+Le [scénario média local](scripts/staging/README.md) exerce les permissions micro et caméra, puis vérifie du côté du second participant que le retrait de la caméra conserve le micro. **Résultat en attente** : le binaire LiveKit a été lancé, mais la lecture des interfaces réseau via netlink a été refusée avant la connexion des clients. Aucune coupure de piste n’a donc été observée. Prochaine étape : exécuter ce scénario sur un hôte de staging compatible, puis relier la révocation aux droits natifs Momento et vérifier la reconnexion et deux appareils physiques. Aucun changement aux admissions ni aux droits de production.
+
 ## Préparation vidéo : contrôle natif candidat pour staging — 20 novembre 2026
 
 Le SQL déclaratif vérifie le droit Premium natif pour la préparation vidéo d’un profil homme, même entré avec le quota gratuit. L’état des deux membres et le heartbeat relisent ce droit ; une préparation audio réciproque reste possible. Essai PGlite sur deux sessions, avec réservation du binôme, expiration et départ. Delta candidat dans `supabase/pending/video_readiness.sql`, testé sur l’historique, **non appliqué à distance**. Aucun jeton ni flux média. Avant ouverture : disposer d’un staging isolé, tester la publication et la coupure effective d’une piste déjà active avec deux appareils.

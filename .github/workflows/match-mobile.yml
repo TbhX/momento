@@ -1,0 +1,26 @@
+name: Match sur écran mobile
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - src/client/call-moments.*
+      - src/client/call-demo.js
+      - src/client/bistro.css
+      - scripts/staging/match-mobile.py
+      - .github/workflows/match-mobile.yml
+permissions:
+  contents: read
+jobs:
+  mobile:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: |
+          python3 -m venv "$RUNNER_TEMP/mobile"
+          "$RUNNER_TEMP/mobile/bin/pip" install playwright==1.55.0
+          "$RUNNER_TEMP/mobile/bin/python" scripts/staging/match-mobile.py

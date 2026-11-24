@@ -172,7 +172,7 @@
 @media(max-width:700px),(max-height:500px) and (orientation:landscape) and (max-width:980px){
  .roundtable-demo .table-call-restore{position:static;max-width:100%;margin:8px 0}
  .roundtable-demo .table-call-chrome,.roundtable-demo .room-mobile-nav,.roundtable-demo .call-controls{flex-wrap:wrap}
- .roundtable-demo .call-stage + .call-moment-panel{position:static;inset:auto;width:100%;min-width:0;max-width:none;max-height:none;transform:none;margin:8px 0;overflow:visible;overflow-wrap:anywhere;grid-column:1/-1}
+ .conversation-view .call-stage + .call-moment-panel{position:static;inset:auto;width:100%;min-width:0;max-width:none;max-height:none;transform:none;margin:8px 0;overflow:visible;overflow-wrap:anywhere;grid-column:1/-1}
 }
 
 /* The room controls must grow with enlarged text, even in a short landscape viewport. */

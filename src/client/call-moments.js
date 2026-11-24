@@ -38,7 +38,7 @@ function callMomentSignature(c){return[c.timing.stage,c.matched,c.record.mine,c.
 function callMomentRender(c,f,manual=false){
  if($('#modal')?.open)return false;const stage=document.querySelector(c.sample?'.call-concept-sample .call-stage':'.conversation-view .call-stage');if(!stage)return false;let panel=callMomentOwn();const signature=callMomentSignature(c),focus=panel?.contains(document.activeElement)?document.activeElement.dataset.momentAction:null;
  if(!panel||panel.dataset.signature!==signature){const detailsOpen=panel?.querySelector('details')?.open;if(panel)panel.outerHTML=callMomentContent(c);else stage.insertAdjacentHTML('beforeend',callMomentContent(c));panel=callMomentOwn();panel.dataset.signature=signature;panel.dataset.cycle=c.timing.cycle;if(detailsOpen&&panel.querySelector('details'))panel.querySelector('details').open=true;const destination=focus&&panel.querySelector('[data-moment-action="'+focus+'"]');if(destination)destination.focus({preventScroll:true});else if(manual||focus)panel.querySelector('[data-moment-action="dismiss"]')?.focus({preventScroll:true})}
- const dock=stage.closest('.roundtable-demo')&&matchMedia('(max-width:700px), (max-height:500px) and (orientation:landscape) and (max-width:980px)').matches;
+ const dock=!c.sample&&matchMedia('(max-width:700px), (max-height:500px) and (orientation:landscape) and (max-width:980px)').matches;
  if(dock&&stage.nextElementSibling!==panel)stage.after(panel);else if(!dock&&panel.parentElement!==stage)stage.append(panel);
  const seconds=c.request?.status==='pending'?Math.max(0,Math.ceil((c.request.expiresAt-c.now)/1000)):c.timing.remaining;panel.querySelector('[data-moment-clock]').textContent=callMomentTime(seconds);return true;
 }

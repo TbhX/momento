@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Encart de match sur petit écran
+
+Dans la répétition en tête-à-tête comme dans le salon, les choix du match prennent place sous la vidéo sur petit écran et en paysage compact. Le contrôle navigateur utilise un compte fictif local, ouvre « Garder le lien » puis ferme l’encart. Les téléphones physiques restent à vérifier.
+
 ## Annonce de match pendant la répétition
 
 Le second like ouvre l’encart « C’est un match ! » dans le salon et le tête-à-tête fictifs. Il présente la prolongation de trois minutes et la demande d’amitié, sans lancer de demande ni consommer d’accès. Les appels entre comptes réels restent fermés.

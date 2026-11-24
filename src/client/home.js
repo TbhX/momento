@@ -19,7 +19,9 @@ function setExperiencePage(p){
  if(!experienceHistory){const hash=experienceRoutes[p],publicPath=typeof MomentoPublicSEO!=='undefined'?MomentoPublicSEO.pages[p]?.path:null,target=publicPath?publicPath+location.search:'/'+location.search+(hash?'#'+hash:'');if(hash!==undefined&&location.pathname+location.search+location.hash!==target)history.pushState(null,'',target)}
 }
 function homeSection(id){go(({'le-concept':'concept','les-envies':'salon','les-offres':'plans','bientot-en-vrai':'dates'})[id]||'home')}
-function openAccount(mode='signin'){return MomentoNavigation.run(mode,()=>{
+function openAccount(mode='signin'){
+ if(accountReady&&accountIdentity&&accountProfile&&!accountDeletionPending&&!MomentoAuth.recovering())return go('home');
+ return MomentoNavigation.run(mode,()=>{
  if(typeof leaveLiveRoom==='function')leaveLiveRoom();stop();publicView='account';page=mode;setExperiencePage(mode);renderAccountGate();
  if(!accountIdentity&&!MomentoAuth.recovering())MomentoAuth.selectMode(mode);
  app.focus({preventScroll:true});

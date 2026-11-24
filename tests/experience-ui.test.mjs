@@ -759,3 +759,19 @@ test('nearby rehearsal asks only on click, filters matching fixtures and ignores
   assert.ok(!JSON.stringify(w.localStorage).includes('48.8566'));
  }finally{v.dom.window.close()}
 });
+
+test('returning to sign-in or registration keeps a server-confirmed profile out of enrollment',async()=>{
+ for(const [hash,link] of [['#connexion','signin'],['#inscription','signup']]){
+  const v=await experience(true,{},false,hash);
+  try{
+   assert.equal(v.window.ready(),true);
+   assert.equal(v.document.querySelector('#enrollForm'),null);
+   await v.window.openAccount(link);
+   assert.equal(v.window.ready(),true);
+   assert.equal(v.document.querySelector('#enrollName'),null);
+   assert.equal(v.document.querySelector('#authEmailForm'),null);
+  }finally{v.dom.window.close()}
+ }
+ const v=await experience('incomplete',{},false,'#connexion');
+ try{assert.ok(v.document.querySelector('#enrollForm'));assert.equal(v.window.ready(),false)}finally{v.dom.window.close()}
+});

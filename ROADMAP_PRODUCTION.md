@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Reconnexion avec profil déjà enregistré
+
+Après lecture du profil serveur, les liens Connexion et Inscription ramènent le membre à l’accueil sans rouvrir le formulaire prénom, âge et ville. Un compte connecté sans profil conserve l’étape de création. Régression reproduite avec un profil fictif et les deux liens directs ; aucun compte hébergé modifié.
+
 ## Proximité : rayon géographique sur consentement
 
 Dans la répétition membre, le bouton de localisation filtre les lieux illustratifs à vol d’oiseau selon le rayon choisi (1–20 km), précision déclarée de l’appareil comprise. Aucune coordonnée n’est envoyée ni sauvegardée ; un refus, un oubli ou une position absente ne propose aucun profil. Le moteur de rotation isolé exige, pour un instantané de salon nearby, les deux consentements, deux positions récentes et les deux rayons. Avant les rencontres entre membres : collecte privée éphémère côté serveur, effacement, branchement aux réservations de binômes et validation en staging sur deux téléphones. Aucun nouvel accès aux tables ni activation publique.

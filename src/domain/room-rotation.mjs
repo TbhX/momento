@@ -1,3 +1,4 @@
+import Proximity from '../client/proximity.js';
 import RoomFormat from '../client/room-format.js';
 // Pure, server-only planning kernel. A proposal is NOT an admission or media grant.
 // See ROTATION_ENGINE.md for the transactional integration still required.
@@ -85,7 +86,10 @@ export function planRoomRound(snapshot) {
   const priority = (a, b) => a.lastMatchedRound - b.lastMatchedRound || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   const left = eligible.filter(p => p.gender === 'woman').sort(priority);
   const right = eligible.filter(p => p.gender === 'man').sort(priority);
-  const allowed = (a, b) => compatible(a, b, now) && !blocked.has(pairKey(a.id, b.id)) && !seen.has(pairKey(a.id, b.id));
+  const nearEnough=(a,b)=>snapshot.theme!=='nearby'||[a,b].every(p=>
+    p.location?.consented===true&&integer(p.location.measuredAt)&&p.location.measuredAt<=now&&now-p.location.measuredAt<PRESENCE_TTL_MS&&
+    Proximity.within(a.location,b.location,p.preferences.radiusKm));
+  const allowed = (a, b) => nearEnough(a,b) && compatible(a, b, now) && !blocked.has(pairKey(a.id, b.id)) && !seen.has(pairKey(a.id, b.id));
   const graph = left.map(a => right.flatMap((b, i) => allowed(a, b) ? [i] : []));
   const owner = new Map();
   // Augmenting paths give maximum cardinality; greedy first-fit can strand a compatible pair.

@@ -3,7 +3,8 @@ export function hardenResponse(response,request,env={}){
  const headers=new Headers(response.headers),type=headers.get('Content-Type')||'',path=new URL(request.url).pathname;
  headers.set('X-Content-Type-Options','nosniff');headers.set('X-Frame-Options','DENY');
  headers.set('Referrer-Policy','no-referrer');headers.set('Strict-Transport-Security','max-age=31536000');
- headers.set('Permissions-Policy','camera=(self), microphone=(self), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), accelerometer=(), gyroscope=(), magnetometer=(), browsing-topics=()');
+ const allowPosition=type.includes('text/html')&&response.ok&&!path.startsWith('/api/')&&path!=='/confidentialite.html';
+ headers.set('Permissions-Policy','camera=(self), microphone=(self), geolocation='+ (allowPosition?'(self)':'()') +', payment=(), usb=(), serial=(), bluetooth=(), accelerometer=(), gyroscope=(), magnetometer=(), browsing-topics=()');
  headers.set('Cross-Origin-Opener-Policy','same-origin');
  if(path.startsWith('/api/')||type.includes('text/html')){headers.set('Cache-Control','private, no-store');headers.set('Pragma','no-cache');headers.set('Cross-Origin-Resource-Policy','same-origin')}
  if(type.includes('text/html')){

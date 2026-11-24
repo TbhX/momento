@@ -188,3 +188,16 @@ test('the proposed mode respects native expiry and never substitutes unrequested
   b.premiumUntil=start+1;assert.equal(plan().pairs[0].mode,'video');
   a.preferences.modes=['audio'];assert.equal(plan().pairs.length,0);
 });
+
+test('nearby requires both fresh opt-ins and both radii including position uncertainty',()=>{
+ const s=snapshot({theme:'nearby'});const [a,b]=s.participants;
+ for(const p of [a,b]){p.location={latitude:0,longitude:0,accuracy:20,measuredAt:start,consented:true};p.preferences.radiusKm=20}
+ const count=()=>planRoomRound(s).pairs.length;
+ b.location.longitude=.17;assert.equal(count(),1);
+ b.preferences.radiusKm=10;assert.equal(count(),0);b.preferences.radiusKm=20;
+ b.location.accuracy=2000;assert.equal(count(),0);b.location.accuracy=0;
+ b.location.longitude=.19;assert.equal(count(),0);b.location.longitude=0;
+ b.location.consented=false;assert.equal(count(),0);b.location.consented=true;
+ b.location.measuredAt-=PRESENCE_TTL_MS;assert.equal(count(),0);
+ delete b.location;assert.equal(count(),0);s.theme='music';assert.equal(count(),1);
+});

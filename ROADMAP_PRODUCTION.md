@@ -2,7 +2,7 @@
 
 ## Caméra en cours d’appel : essai de révocation — 24 novembre 2026
 
-Le [scénario média local](scripts/staging/README.md) exerce les permissions micro et caméra, puis vérifie du côté du second participant que le retrait de la caméra conserve le micro. **Résultat en attente** : le binaire LiveKit a été lancé, mais la lecture des interfaces réseau via netlink a été refusée avant la connexion des clients. Aucune coupure de piste n’a donc été observée. Prochaine étape : exécuter ce scénario sur un hôte de staging compatible, puis relier la révocation aux droits natifs Momento et vérifier la reconnexion et deux appareils physiques. Aucun changement aux admissions ni aux droits de production.
+Le [scénario média local](scripts/staging/README.md) exerce les permissions micro et caméra, puis vérifie du côté du second participant que le retrait de la caméra conserve le micro. **Résultat en attente** : le binaire LiveKit a été lancé, mais la lecture des interfaces réseau via netlink a été refusée avant la connexion des clients. Aucune coupure de piste n’a donc été observée. Le scénario dispose désormais d’une exécution GitHub Actions sur Linux standard, isolée des comptes et services Momento. Le résultat du job doit être vérifié pour chaque commit. Prochaine étape : obtenir une exécution concluante, puis relier la révocation aux droits natifs Momento et vérifier la reconnexion et deux appareils physiques. Aucun changement aux admissions ni aux droits de production.
 
 ## Préparation vidéo : contrôle natif candidat pour staging — 20 novembre 2026
 

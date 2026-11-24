@@ -1,0 +1,24 @@
+name: Permissions média du binôme
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/staging/media-permissions.py
+      - scripts/staging/run-media-check.sh
+      - .github/workflows/media-permissions.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Contrôler les permissions sur la boucle locale
+        run: bash scripts/staging/run-media-check.sh

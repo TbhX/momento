@@ -22,7 +22,7 @@ async def until(predicate):
             await asyncio.sleep(0.05)
 
 
-async def check(key, secret):
+async def check(key, secret, server_log):
     def token(identity, publish):
         return (api.AccessToken(key, secret).with_identity(identity)
                 .with_grants(api.VideoGrants(room_join=True, room=ROOM, can_subscribe=True,
@@ -61,13 +61,20 @@ async def check(key, secret):
             return member.track_publications if member else {}
 
         async def denied():
+            start = server_log.stat().st_size
             try:
                 await publish(camera(), rtc.TrackSource.SOURCE_CAMERA)
             except PublishTrackError as exc:
-                if not any(word in str(exc).lower() for word in ("permission", "allowed", "denied")):
+                # Some SDK versions time out even though the SFU explicitly refused.
+                with server_log.open("rb") as log:
+                    log.seek(start)
+                    refused = any(b"no permission to publish track" in line for line in log)
+                if not refused:
                     raise
             else:
                 raise RuntimeError("Camera publication unexpectedly accepted")
+            if any(t.source == rtc.TrackSource.SOURCE_CAMERA for t in remote_tracks().values()):
+                raise RuntimeError("Denied camera visible to peer")
 
         try:
             await connect(peer, "peer", False)
@@ -105,8 +112,9 @@ rtc:
 keys:
   {key}: {secret}
 """)
-        with subprocess.Popen([binary, "--config", str(config)], env={"PATH": os.defpath},
-                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) as process:
+        server_log = Path(directory, "server.log")
+        with server_log.open("wb") as output, subprocess.Popen([binary, "--config", str(config)], env={"PATH": os.defpath},
+                              stdout=output, stderr=subprocess.STDOUT) as process:
             try:
                 for _ in range(100):
                     if process.poll() is not None:
@@ -121,7 +129,7 @@ keys:
                         break
                 else:
                     raise RuntimeError("Local LiveKit readiness timed out")
-                await asyncio.wait_for(check(key, secret), 55)
+                await asyncio.wait_for(check(key, secret, server_log), 100)
             finally:
                 process.terminate()
                 try:

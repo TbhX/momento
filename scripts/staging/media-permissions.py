@@ -15,7 +15,14 @@ from livekit.rtc.room import ConnectError
 from livekit.rtc.participant import PublishTrackError
 
 URL = "http://127.0.0.1:17880"
-ROOM = "local-pair"
+# Synthetic encounter identifiers, distinct even for calls in the same salon.
+from uuid import UUID
+
+def pair_room(encounter_id):
+    return "pair-" + UUID(encounter_id).hex
+
+ENCOUNTER = "00000000-0000-4000-8000-000000000020"
+ROOM = pair_room(ENCOUNTER)
 MIC = api.TrackSource.MICROPHONE
 CAM = api.TrackSource.CAMERA
 
@@ -38,6 +45,7 @@ async def check(key, secret, server_log):
     original_join = token("sender", True)
     peer_join = token("peer", False)
     sender, peer = rtc.Room(), rtc.Room()
+    witness, listener = rtc.Room(), rtc.Room()
     async with api.LiveKitAPI(URL, key, secret) as admin:
         async def sources(values):
             await admin.room.update_participant(api.UpdateParticipantRequest(
@@ -67,7 +75,7 @@ async def check(key, secret, server_log):
             member = peer.remote_participants.get("sender")
             return member.track_publications if member else {}
 
-        async def receive_tone(remote_track, hz):
+        async def receive_tone(remote_track, hz, source=audio):
             # A track may remain subscribed even when no audio reaches the peer.
             rate, count = 48000, 960  # one 20 ms frame, whole cycles at test tones
             phase = [2 * math.pi * hz * i / rate for i in range(count)]
@@ -79,7 +87,7 @@ async def check(key, secret, server_log):
 
             async def send():
                 while True:
-                    await audio.capture_frame(frame)
+                    await source.capture_frame(frame)
                     await asyncio.sleep(0.02)
 
             pump = asyncio.create_task(send())
@@ -179,6 +187,21 @@ async def check(key, secret, server_log):
             await until(lambda: b.sid in remote_tracks() and remote_tracks()[b.sid].subscribed)
             await denied()
             await receive_tone(remote_tracks()[b.sid].track, 900)
+            other_room = pair_room("00000000-0000-4000-8000-000000000021")
+            await admin.room.create_room(api.CreateRoomRequest(name=other_room, max_participants=2))
+            await connect(listener, token("listener", False, other_room))
+            await connect(witness, token("witness", True, other_room))
+            other_audio = rtc.AudioSource(48000, 1)
+            other_mic = rtc.LocalAudioTrack.create_audio_track("other-mic", other_audio)
+            publication = await witness.local_participant.publish_track(
+                other_mic, rtc.TrackPublishOptions(source=rtc.TrackSource.SOURCE_MICROPHONE))
+            def witness_track():
+                member = listener.remote_participants.get("witness")
+                track = member.track_publications.get(publication.sid) if member else None
+                return track.track if track and track.subscribed else None
+
+            await until(witness_track)
+            await receive_tone(witness_track(), 700, other_audio)
             # One private provider room per encounter in this isolated scenario.
             # Consume the other member's native SQL state after withdrawal.
             scenario = os.environ.get("MOMENTO_TEST_CLOSURE", "leave")
@@ -186,13 +209,16 @@ async def check(key, secret, server_log):
             reader = await asyncio.create_subprocess_exec(
                 "node", "scripts/staging/pair-departure.mjs", scenario, stdout=asyncio.subprocess.PIPE)
             output, _ = await reader.communicate()
-            if reader.returncode or json.loads(output) != {"state": expected_state, "mediaEnabled": False}:
+            notice = json.loads(output)
+            if reader.returncode or notice != {"encounterId": ENCOUNTER, "state": expected_state, "mediaEnabled": False}:
                 raise RuntimeError("Native pair withdrawal not confirmed")
             stopped = [asyncio.Event(), asyncio.Event()]
             for room, event in zip((sender, peer), stopped):
                 room.on("disconnected", lambda *args, signal=event: signal.set())
-            await admin.room.delete_room(api.DeleteRoomRequest(room=ROOM))
+            await admin.room.delete_room(api.DeleteRoomRequest(room=pair_room(notice["encounterId"])))
             await asyncio.wait_for(asyncio.gather(*(event.wait() for event in stopped)), 10)
+            await receive_tone(witness_track(), 1100, other_audio)
+            print("OK: concurrent pair decoded fresh audio on the same track after closure")
             # A fresh client must not recreate a closed room with either original
             # credential. Keep the service reachable in a distinct next round.
             next_room = ROOM + "-next"
@@ -223,7 +249,7 @@ async def check(key, secret, server_log):
             print("OK: original microphone-only join credential reconnects without camera")
             print("OK: microphone subscribed; camera denied, subscribed after grant, removed and denied again")
         finally:
-            await asyncio.gather(sender.disconnect(), peer.disconnect())
+            await asyncio.gather(sender.disconnect(), peer.disconnect(), witness.disconnect(), listener.disconnect())
 
 
 async def main(binary):

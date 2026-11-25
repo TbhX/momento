@@ -33,7 +33,7 @@ try {
     assert.deepEqual(await action(db, 'prepare', 'audio'), peer);
     assert.deepEqual(await action(db, 'heartbeat'), peer);
   }
-  console.log(JSON.stringify(peer));
+  console.log(JSON.stringify({encounterId: CALL, ...peer}));
 } finally {
   await db.close();
 }

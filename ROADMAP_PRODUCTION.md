@@ -7,6 +7,10 @@
 3. Faire le parcours complet sur deux appareils autorisés : entrée, audio/vidéo, changement de partenaire, match, prolongation consentie et sortie ; puis mesurer la charge par paliers.
 4. Avant ouverture publique : valider récupération de compte, supervision et restauration. Garder les ventes derrière une validation distincte des paiements et remboursements.
 
+## Deux binômes simultanés : cibler la bonne conversation
+
+Dans les trois scénarios isolés, la fermeture cible une salle dérivée de l’identifiant de la rencontre SQL. Un second binôme reste connecté dans une autre salle et doit décoder deux tonalités distinctes sur la même piste, avant et après la fermeture du premier. Le [contrôle précédent](https://github.com/TbhX/momento/actions/runs/45599587324) validait déjà les trois motifs de fermeture. Quatre clients synthétiques ne constituent pas un essai de charge ; le suivi continu des états sur staging et les jetons renouvelés restent à valider.
+
 ## Blocage et échéance : essais média isolés
 
 Le scénario de fermeture est décliné en trois jobs indépendants : départ, blocage par le membre via son RPC et échéance atteinte selon l’horloge de la base. Chacun exige la déconnexion des deux clients, le refus des deux jetons initiaux et une connexion témoin dans une autre salle. Le [contrôle du départ](https://github.com/TbhX/momento/actions/runs/45597727517) a déjà réussi. Le scénario pilote la fermeture à partir d’une lecture SQL locale : la propagation automatique en staging et les jetons renouvelés par le fournisseur restent à tester.

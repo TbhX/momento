@@ -7,6 +7,10 @@
 3. Faire le parcours complet sur deux appareils autorisés : entrée, audio/vidéo, changement de partenaire, match, prolongation consentie et sortie ; puis mesurer la charge par paliers.
 4. Avant ouverture publique : valider récupération de compte, supervision et restauration. Garder les ventes derrière une validation distincte des paiements et remboursements.
 
+## Transport audio après retrait caméra et reconnexion — 25 novembre 2026
+
+Le [contrôle vidéo précédent](https://github.com/TbhX/momento/actions/runs/45518897081) a réussi. Le scénario média vérifie maintenant que le pair décode une tonalité de 600 Hz après retrait de la caméra, puis une tonalité distincte de 900 Hz après reconnexion. Chaque étape exige trois trames consécutives ; un abonnement silencieux ne suffit plus. Le résultat du job du commit fait foi. La qualité de parole, les haut-parleurs sur téléphone et la reconnexion avec des droits Momento renouvelés restent à valider en staging.
+
 ## Reconnexion avec profil déjà enregistré
 
 Après lecture du profil serveur, les liens Connexion et Inscription ramènent le membre à l’accueil sans rouvrir le formulaire prénom, âge et ville. Un compte connecté sans profil conserve l’étape de création. Régression reproduite avec un profil fictif et les deux liens directs ; aucun compte hébergé modifié.

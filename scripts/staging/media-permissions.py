@@ -1,5 +1,7 @@
 """Local LiveKit integration check; see scripts/staging/README.md."""
+from array import array
 import asyncio
+import math
 import os
 import secrets
 import subprocess
@@ -62,6 +64,44 @@ async def check(key, secret, server_log):
             member = peer.remote_participants.get("sender")
             return member.track_publications if member else {}
 
+        async def receive_tone(remote_track, hz):
+            # A track may remain subscribed even when no audio reaches the peer.
+            rate, count = 48000, 960  # one 20 ms frame, whole cycles at test tones
+            phase = [2 * math.pi * hz * i / rate for i in range(count)]
+            sine, cosine = list(map(math.sin, phase)), list(map(math.cos, phase))
+            samples = array("h", (round(10000 * x) for x in sine))
+            frame = rtc.AudioFrame(samples.tobytes(), rate, 1, count)
+            stream = rtc.AudioStream(remote_track, sample_rate=rate, num_channels=1,
+                                     frame_size_ms=20)
+
+            async def send():
+                while True:
+                    await audio.capture_frame(frame)
+                    await asyncio.sleep(0.02)
+
+            pump = asyncio.create_task(send())
+            hits = 0
+            try:
+                async with asyncio.timeout(10):
+                    async for event in stream:
+                        pcm = event.frame.data
+                        if len(pcm) != count:
+                            hits = 0
+                            continue
+                        power = sum(x*x for x in pcm)
+                        re = sum(x*y for x, y in zip(pcm, cosine))
+                        im = sum(x*y for x, y in zip(pcm, sine))
+                        # Above silence and over half the energy at the expected tone.
+                        matches = power > count * 100**2 and 4*(re*re + im*im) > count*power
+                        hits = hits + 1 if matches else 0
+                        if hits >= 3:
+                            return
+                raise RuntimeError("Remote audio ended before the expected tone")
+            finally:
+                pump.cancel()
+                await asyncio.gather(pump, return_exceptions=True)
+                await stream.aclose()
+
         async def receive_picture(remote_track):
             # A subscription alone can exist even when no frame traverses the SFU.
             stream = rtc.VideoStream(remote_track, format=rtc.VideoBufferType.RGBA)
@@ -123,6 +163,7 @@ async def check(key, secret, server_log):
             await denied()
             if a.sid not in remote_tracks() or not remote_tracks()[a.sid].subscribed:
                 raise RuntimeError("Microphone subscription lost after downgrade")
+            await receive_tone(remote_tracks()[a.sid].track, 600)
             await sender.disconnect()
             await until(lambda: "sender" not in peer.remote_participants)
             sender = rtc.Room()
@@ -133,6 +174,8 @@ async def check(key, secret, server_log):
             b = await publish(new_mic, rtc.TrackSource.SOURCE_MICROPHONE)
             await until(lambda: b.sid in remote_tracks() and remote_tracks()[b.sid].subscribed)
             await denied()
+            await receive_tone(remote_tracks()[b.sid].track, 900)
+            print("OK: distinct microphone tones decoded after camera removal and reconnect")
             print("OK: original microphone-only join credential reconnects without camera")
             print("OK: microphone subscribed; camera denied, subscribed after grant, removed and denied again")
         finally:

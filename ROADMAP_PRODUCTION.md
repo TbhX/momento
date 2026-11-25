@@ -1,5 +1,12 @@
 # Momento — travaux de production
 
+## Priorités avant les premières rencontres entre membres
+
+1. Valider le transport et la révocation des médias en environnement isolé. Le contrôle Linux exige désormais qu'une image caméra synthétique soit décodée chez le pair et consigne le délai observé de retrait de la publication. Consulter le job du commit pour son résultat ; ce scénario ne mesure ni le rendu sur téléphone ni la qualité du son.
+2. Relier les permissions du fournisseur aux droits serveur du binôme sur staging, y compris départ, blocage, expiration et reconnexion avec jeton renouvelé. Valider les rotations et la reprise après interruption sans double affectation.
+3. Faire le parcours complet sur deux appareils autorisés : entrée, audio/vidéo, changement de partenaire, match, prolongation consentie et sortie ; puis mesurer la charge par paliers.
+4. Avant ouverture publique : valider récupération de compte, supervision et restauration. Garder les ventes derrière une validation distincte des paiements et remboursements.
+
 ## Reconnexion avec profil déjà enregistré
 
 Après lecture du profil serveur, les liens Connexion et Inscription ramènent le membre à l’accueil sans rouvrir le formulaire prénom, âge et ville. Un compte connecté sans profil conserve l’étape de création. Régression reproduite avec un profil fictif et les deux liens directs ; aucun compte hébergé modifié.

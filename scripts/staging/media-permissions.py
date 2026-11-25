@@ -62,6 +62,32 @@ async def check(key, secret, server_log):
             member = peer.remote_participants.get("sender")
             return member.track_publications if member else {}
 
+        async def receive_picture(remote_track):
+            # A subscription alone can exist even when no frame traverses the SFU.
+            stream = rtc.VideoStream(remote_track, format=rtc.VideoBufferType.RGBA)
+            frame = rtc.VideoFrame(16, 16, rtc.VideoBufferType.RGBA,
+                                   bytes([210, 40, 30, 255]) * (16 * 16))
+
+            async def send():
+                while True:
+                    video.capture_frame(frame)
+                    await asyncio.sleep(0.05)
+
+            pump = asyncio.create_task(send())
+            try:
+                async with asyncio.timeout(10):
+                    async for event in stream:
+                        picture = event.frame
+                        if picture.width == 16 and picture.height == 16:
+                            red, green, blue = bytes(picture.data[:3])
+                            if red > max(green, blue) + 60:
+                                return
+                raise RuntimeError("Remote video ended without the synthetic red frame")
+            finally:
+                pump.cancel()
+                await asyncio.gather(pump, return_exceptions=True)
+                await stream.aclose()
+
         async def denied():
             start = server_log.stat().st_size
             try:
@@ -87,8 +113,13 @@ async def check(key, secret, server_log):
             await sources([MIC, CAM])
             v = await publish(camera(), rtc.TrackSource.SOURCE_CAMERA)
             await until(lambda: v.sid in remote_tracks() and remote_tracks()[v.sid].subscribed)
+            await receive_picture(remote_tracks()[v.sid].track)
+            print("OK: synthetic red frame decoded by the peer")
+            clock = asyncio.get_running_loop().time
+            started = clock()
             await sources([MIC])
             await until(lambda: v.sid not in remote_tracks())
+            print(f"Camera removal observed by peer within {(clock() - started) * 1000:.0f} ms")
             await denied()
             if a.sid not in remote_tracks() or not remote_tracks()[a.sid].subscribed:
                 raise RuntimeError("Microphone subscription lost after downgrade")

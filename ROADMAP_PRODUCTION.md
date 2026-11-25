@@ -7,6 +7,10 @@
 3. Faire le parcours complet sur deux appareils autorisés : entrée, audio/vidéo, changement de partenaire, match, prolongation consentie et sortie ; puis mesurer la charge par paliers.
 4. Avant ouverture publique : valider récupération de compte, supervision et restauration. Garder les ventes derrière une validation distincte des paiements et remboursements.
 
+## Surveillance de la rencontre dans le banc média
+
+Un processus côté serveur relit périodiquement l’état de la rencontre préparée. Il ferme sa salle si l’état cesse d’être prêt ou si la lecture expire. Le scénario déclenche uniquement le départ, le blocage ou le raccourcissement du tour dans la base isolée. Le surveillant choisit lui-même le moment de la coupure. Le [test de ciblage précédent](https://github.com/TbhX/momento/actions/runs/45628230832) a réussi. Le lecteur SQL de ce banc utilise une session synthétique ; avant hébergement, il faut un lecteur serveur dédié, une reprise après panne et une validation des jetons renouvelés.
+
 ## Deux binômes simultanés : cibler la bonne conversation
 
 Dans les trois scénarios isolés, la fermeture cible une salle dérivée de l’identifiant de la rencontre SQL. Un second binôme reste connecté dans une autre salle et doit décoder deux tonalités distinctes sur la même piste, avant et après la fermeture du premier. Le [contrôle précédent](https://github.com/TbhX/momento/actions/runs/45599587324) validait déjà les trois motifs de fermeture. Quatre clients synthétiques ne constituent pas un essai de charge ; le suivi continu des états sur staging et les jetons renouvelés restent à valider.

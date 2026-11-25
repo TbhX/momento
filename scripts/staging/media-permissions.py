@@ -17,6 +17,7 @@ from livekit.rtc.participant import PublishTrackError
 URL = "http://127.0.0.1:17880"
 # Synthetic encounter identifiers, distinct even for calls in the same salon.
 from uuid import UUID
+from watch_pair import watch_pair
 
 def pair_room(encounter_id):
     return "pair-" + UUID(encounter_id).hex
@@ -205,17 +206,41 @@ async def check(key, secret, server_log):
             # One private provider room per encounter in this isolated scenario.
             # Consume the other member's native SQL state after withdrawal.
             scenario = os.environ.get("MOMENTO_TEST_CLOSURE", "leave")
-            expected_state = {"leave": "ended", "expiry": "ended", "block": "unavailable"}[scenario]
             reader = await asyncio.create_subprocess_exec(
-                "node", "scripts/staging/pair-departure.mjs", scenario, stdout=asyncio.subprocess.PIPE)
-            output, _ = await reader.communicate()
-            notice = json.loads(output)
-            if reader.returncode or notice != {"encounterId": ENCOUNTER, "state": expected_state, "mediaEnabled": False}:
-                raise RuntimeError("Native pair withdrawal not confirmed")
+                "node", "scripts/staging/pair-departure.mjs", scenario,
+                stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
             stopped = [asyncio.Event(), asyncio.Event()]
             for room, event in zip((sender, peer), stopped):
                 room.on("disconnected", lambda *args, signal=event: signal.set())
-            await admin.room.delete_room(api.DeleteRoomRequest(room=pair_room(notice["encounterId"])))
+            sampled_ready = asyncio.Event()
+
+            async def read_state():
+                reader.stdin.write(b"read\n")
+                await reader.stdin.drain()
+                notice = json.loads(await reader.stdout.readline())
+                if notice.get("state") == "ready":
+                    sampled_ready.set()
+                return notice
+
+            async def close_pair(encounter):
+                await admin.room.delete_room(api.DeleteRoomRequest(room=pair_room(encounter)))
+
+            # Let the SQL fixture initialize before starting bounded state reads.
+            try:
+                if await asyncio.wait_for(reader.stdout.readline(), 15) != b"initialized\n":
+                    raise RuntimeError("SQL fixture did not initialize")
+                async with asyncio.TaskGroup() as tasks:
+                    tasks.create_task(watch_pair(ENCOUNTER, read_state, close_pair))
+                    await asyncio.wait_for(sampled_ready.wait(), 5)
+                    reader.stdin.write(b"trigger\n")
+                    await reader.stdin.drain()
+                if await asyncio.wait_for(reader.wait(), 5) != 0:
+                    raise RuntimeError("SQL fixture did not confirm expected closure")
+            finally:
+                reader.stdin.close()
+                if reader.returncode is None:
+                    reader.kill()
+                    await reader.wait()
             await asyncio.wait_for(asyncio.gather(*(event.wait() for event in stopped)), 10)
             await receive_tone(witness_track(), 1100, other_audio)
             print("OK: concurrent pair decoded fresh audio on the same track after closure")

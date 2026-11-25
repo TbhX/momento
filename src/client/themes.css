@@ -39,3 +39,25 @@
 .table-theme-moment{min-width:0;padding:.75rem 1rem;border:1px solid var(--room-accent,#cbb4cb);border-radius:1rem;background:#fffaf8;color:#402f45}
 .table-theme-moment summary{cursor:pointer;font-weight:650}.table-theme-moment button{max-width:100%;margin:.3rem;white-space:normal}.table-theme-moment small{display:block}.table-theme-moment audio{max-width:100%;width:20rem;vertical-align:middle}
 [data-nearby-status]{display:flex;align-items:center;gap:.75rem}[data-nearby-status]::before{content:'';flex:0 0 3rem;aspect-ratio:1;border-radius:50%;background:repeating-radial-gradient(circle,#538475 0 1px,transparent 2px 7px),conic-gradient(from 10deg,#d4e8de,#eff7f2 78%,#9ec7b3)}
+
+/* Pastel room signatures: shape, label and colour travel together. */
+.theme-music{--vibe:#85486d;--wash:#f6e7ef}.theme-nearby{--vibe:#356951;--wash:#e6f1e9}
+.theme-culture{--vibe:#88573e;--wash:#f6ece1}.theme-travel{--vibe:#306a76;--wash:#e2f2f1}
+.theme-astrology{--vibe:#70508c;--wash:#efe8f8}.theme-sport{--vibe:#526b35;--wash:#edf2df}
+.theme-profession{--vibe:#4f638f;--wash:#e8edf8}.theme-random{--vibe:#805571;--wash:#f3e9f1}
+.theme-tiles{grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr))}
+.theme-tile{display:grid;grid-template-columns:1fr;align-content:start;align-items:start;gap:10px;padding:14px;min-height:0;background:linear-gradient(135deg,var(--wash),#fffafa);border-radius:18px}
+.vibe-badge{display:inline-grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:13px;background:var(--wash,#f4e7ef);border:1px solid color-mix(in srgb,var(--vibe,#804d70) 22%,white);color:var(--vibe,#804d70)}
+.vibe-badge svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.vibe-heading{min-width:0;text-align:left;overflow-wrap:anywhere}.vibe-heading strong,.vibe-heading small{display:block}.vibe-heading strong{color:#423447;font-size:14px;line-height:1.3}.vibe-heading small{font:normal 12px/1.45 Manrope,sans-serif;color:#655969;margin-top:3px}
+.theme-tile[aria-pressed=true]{outline:2px solid var(--vibe);outline-offset:-2px;background:var(--wash)}.theme-tile[aria-pressed=true] .theme-tile-arrow{font-size:0}.theme-tile[aria-pressed=true] .theme-tile-arrow:after{content:'✓';font-size:15px;color:var(--vibe)}
+.theme-tile:focus-visible,.table-theme-moment :focus-visible{outline:3px solid #634579;outline-offset:2px}
+.theme-preferences>summary,.table-theme-moment>summary{display:flex;align-items:center;gap:12px;list-style:none;padding:12px;min-height:46px}.theme-preferences>summary::-webkit-details-marker,.table-theme-moment>summary::-webkit-details-marker{display:none}
+.vibe-chevron{width:9px;height:9px;flex:0 0 9px;margin:0 6px 0 auto;border:solid var(--vibe);border-width:0 1.8px 1.8px 0;transform:rotate(45deg)}
+details[open]>summary>.vibe-chevron{transform:rotate(225deg)}
+.theme-preferences,.table-theme-moment{background:linear-gradient(130deg,var(--wash),#fffafb 85%);border-color:color-mix(in srgb,var(--vibe) 24%,white)}
+.vibe-spotify{min-width:0}.vibe-spotify>summary{font-size:13px;padding:8px 0;min-height:40px}.vibe-spotify[open]{padding-bottom:10px}
+.table-theme-moment{padding:0;overflow-wrap:anywhere}.table-theme-moment>p{margin:0 12px 9px;padding:10px 12px;background:#ffffffbf;border-inline-start:3px solid var(--vibe);font:italic 18px/1.4 Georgia,serif}
+.table-theme-moment>small,.table-theme-moment>audio{margin:8px 12px;max-width:calc(100% - 24px)}.table-theme-moment .vibe-track{display:inline-flex;align-items:center;text-align:left;gap:10px;margin:5px 0 8px 12px;min-height:44px;max-width:calc(100% - 24px)}.vibe-track strong,.vibe-track small{display:block}.vibe-play{color:var(--vibe)}
+@media(max-width:760px){.theme-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.theme-tile{padding:12px}.theme-tile-arrow{display:block}}
+.theme-selection-symbol .vibe-badge,.theme-room-symbol .vibe-badge{width:44px;height:44px}.theme-selection-symbol .vibe-badge svg,.theme-room-symbol .vibe-badge svg{width:25px;height:25px;color:var(--vibe)}

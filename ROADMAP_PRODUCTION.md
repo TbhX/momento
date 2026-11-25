@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Repères visuels des salons
+
+Les huit thèmes partagent un pictogramme et une invitation courte entre les tuiles, les envies et le tête-à-tête. Les commandes Spotify sont facultatives et repliées ; les extraits distinguent le morceau du membre de celui du partenaire fictif.
+
 ## Conversations thématiques
 
 Dans la répétition, trois extraits instrumentaux Momento sont écoutables à la demande sur son appareil. Le profil fictif a son propre morceau. Les questions accompagnent le thème et les choix de visite ; le radar conserve le rayon maximal de 20 km. Le filtre Astro permet un signe précis ou le même élément, à titre ludique. Les choix ne sont pas transmis entre membres ; une écoute synchronisée et un essai sur deux appareils restent à valider.

@@ -7,6 +7,10 @@
 3. Faire le parcours complet sur deux appareils autorisés : entrée, audio/vidéo, changement de partenaire, match, prolongation consentie et sortie ; puis mesurer la charge par paliers.
 4. Avant ouverture publique : valider récupération de compte, supervision et restauration. Garder les ventes derrière une validation distincte des paiements et remboursements.
 
+## Blocage et échéance : essais média isolés
+
+Le scénario de fermeture est décliné en trois jobs indépendants : départ, blocage par le membre via son RPC et échéance atteinte selon l’horloge de la base. Chacun exige la déconnexion des deux clients, le refus des deux jetons initiaux et une connexion témoin dans une autre salle. Le [contrôle du départ](https://github.com/TbhX/momento/actions/runs/45597727517) a déjà réussi. Le scénario pilote la fermeture à partir d’une lecture SQL locale : la propagation automatique en staging et les jetons renouvelés par le fournisseur restent à tester.
+
 ## Reconnexion après départ : salle fermée, tour suivant distinct
 
 Dans le scénario Linux isolé, seul le serveur crée les salles, limitées à deux places. Après le départ, les deux sessions demandent à nouveau la préparation et le heartbeat dans PGlite. Le test exige un état terminé, le refus des deux jetons média initiaux par la salle fermée, son absence dans la liste serveur et une connexion réussie dans une nouvelle salle avec son propre jeton. Le [contrôle précédent](https://github.com/TbhX/momento/actions/runs/45594520325) couvrait la déconnexion des deux clients. Ce scénario dépend de la non-réutilisation du nom de salle ; restent le provisionnement par rencontre, les jetons renouvelés, le blocage et l’expiration sur staging.

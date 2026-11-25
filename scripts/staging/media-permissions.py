@@ -181,10 +181,12 @@ async def check(key, secret, server_log):
             await receive_tone(remote_tracks()[b.sid].track, 900)
             # One private provider room per encounter in this isolated scenario.
             # Consume the other member's native SQL state after withdrawal.
+            scenario = os.environ.get("MOMENTO_TEST_CLOSURE", "leave")
+            expected_state = {"leave": "ended", "expiry": "ended", "block": "unavailable"}[scenario]
             reader = await asyncio.create_subprocess_exec(
-                "node", "scripts/staging/pair-departure.mjs", stdout=asyncio.subprocess.PIPE)
+                "node", "scripts/staging/pair-departure.mjs", scenario, stdout=asyncio.subprocess.PIPE)
             output, _ = await reader.communicate()
-            if reader.returncode or json.loads(output) != {"state": "ended", "mediaEnabled": False}:
+            if reader.returncode or json.loads(output) != {"state": expected_state, "mediaEnabled": False}:
                 raise RuntimeError("Native pair withdrawal not confirmed")
             stopped = [asyncio.Event(), asyncio.Event()]
             for room, event in zip((sender, peer), stopped):
@@ -216,7 +218,7 @@ async def check(key, secret, server_log):
             finally:
                 await control.disconnect()
             print("OK: neither original credential reopens the closed room; next round reachable")
-            print("OK: native pair withdrawal closed the isolated room for both connected peers")
+            print(f"OK: {scenario} closed the isolated room for both connected peers")
             print("OK: distinct microphone tones decoded after camera removal and reconnect")
             print("OK: original microphone-only join credential reconnects without camera")
             print("OK: microphone subscribed; camera denied, subscribed after grant, removed and denied again")

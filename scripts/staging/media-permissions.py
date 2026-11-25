@@ -2,6 +2,7 @@
 from array import array
 import asyncio
 import math
+import json
 import os
 import secrets
 import subprocess
@@ -175,6 +176,19 @@ async def check(key, secret, server_log):
             await until(lambda: b.sid in remote_tracks() and remote_tracks()[b.sid].subscribed)
             await denied()
             await receive_tone(remote_tracks()[b.sid].track, 900)
+            # One private provider room per encounter in this isolated scenario.
+            # Consume the other member's native SQL state after withdrawal.
+            reader = await asyncio.create_subprocess_exec(
+                "node", "scripts/staging/pair-departure.mjs", stdout=asyncio.subprocess.PIPE)
+            output, _ = await reader.communicate()
+            if reader.returncode or json.loads(output) != {"state": "ended", "mediaEnabled": False}:
+                raise RuntimeError("Native pair withdrawal not confirmed")
+            stopped = [asyncio.Event(), asyncio.Event()]
+            for room, event in zip((sender, peer), stopped):
+                room.on("disconnected", lambda *args, signal=event: signal.set())
+            await admin.room.delete_room(api.DeleteRoomRequest(room=ROOM))
+            await asyncio.wait_for(asyncio.gather(*(event.wait() for event in stopped)), 10)
+            print("OK: native pair withdrawal closed the isolated room for both connected peers")
             print("OK: distinct microphone tones decoded after camera removal and reconnect")
             print("OK: original microphone-only join credential reconnects without camera")
             print("OK: microphone subscribed; camera denied, subscribed after grant, removed and denied again")

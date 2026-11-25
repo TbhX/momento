@@ -7,6 +7,10 @@
 3. Faire le parcours complet sur deux appareils autorisés : entrée, audio/vidéo, changement de partenaire, match, prolongation consentie et sortie ; puis mesurer la charge par paliers.
 4. Avant ouverture publique : valider récupération de compte, supervision et restauration. Garder les ventes derrière une validation distincte des paiements et remboursements.
 
+## Départ du binôme et fermeture média en environnement isolé
+
+Après un échange audio entre clients synthétiques, le scénario exécute le départ du premier membre dans une base PGlite. Il relit l’état du second membre et exige que la fermeture de la salle LiveKit isolée déconnecte les deux clients. La correspondance entre rencontre et salle reste fixe dans ce banc d’essai. Avant ouverture : associer chaque salle à sa rencontre côté serveur, traiter blocage et expiration, puis empêcher la réadmission avec une ancienne autorisation. Aucun appel entre membres activé.
+
 ## Transport audio après retrait caméra et reconnexion — 25 novembre 2026
 
 Le [contrôle vidéo précédent](https://github.com/TbhX/momento/actions/runs/45518897081) a réussi. Le scénario média vérifie maintenant que le pair décode une tonalité de 600 Hz après retrait de la caméra, puis une tonalité distincte de 900 Hz après reconnexion. Chaque étape exige trois trames consécutives ; un abonnement silencieux ne suffit plus. Le résultat du job du commit fait foi. La qualité de parole, les haut-parleurs sur téléphone et la reconnexion avec des droits Momento renouvelés restent à valider en staging.

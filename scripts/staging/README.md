@@ -2,7 +2,7 @@
 
 Ce scénario démarre son propre LiveKit sur la boucle locale, avec deux identités et une clé éphémères. Il ne contacte ni le site Momento ni Supabase. Utiliser Linux avec une interface de boucle locale disponible et les ports 17880–17882 libres. Le serveur doit pouvoir lire les interfaces réseau via netlink.
 
-Depuis la racine du dépôt, avec Python 3.12 et le binaire officiel livekit-server 1.13.11 préinstallé :
+Installer les dépendances Node du dépôt avec `pnpm install --frozen-lockfile` pour la fixture PGlite du départ. Depuis la racine du dépôt, avec Python 3.12 et le binaire officiel livekit-server 1.13.11 préinstallé :
 
 ```sh
 python3.12 -m venv /tmp/momento-media-env

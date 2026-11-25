@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - scripts/staging/media-permissions.py
+      - scripts/staging/pair-departure.mjs
+      - tests/helpers/readiness-pair.mjs
+      - tests/helpers/supabase-fixture.mjs
+      - supabase/schemas/**
+      - supabase/seed.sql
       - scripts/staging/run-media-check.sh
       - .github/workflows/media-permissions.yml
 
@@ -20,5 +25,11 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
+      - name: Installer la base locale de test
+        run: |
+          mkdir -p node_modules/@electric-sql/pglite
+          curl -fsSL https://registry.npmjs.org/@electric-sql/pglite/-/pglite-0.5.10.tgz -o "$RUNNER_TEMP/pglite.tgz"
+          test "$(openssl dgst -sha512 -binary "$RUNNER_TEMP/pglite.tgz" | openssl base64 -A)" = "tXc/25U3ulOkiRQuTFdwIv+JhBqtMdAF7Gvo6CfZZWtSB4+hgC4Wr2vwK5ngvvN5PJfAAEGIsfyCVy1JhCOBYw=="
+          tar -xzf "$RUNNER_TEMP/pglite.tgz" --strip-components=1 -C node_modules/@electric-sql/pglite
       - name: Contrôler les permissions sur la boucle locale
         run: bash scripts/staging/run-media-check.sh

@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Conversations thématiques
+
+Dans la répétition, trois extraits instrumentaux Momento sont écoutables à la demande sur son appareil. Le profil fictif a son propre morceau. Les questions accompagnent le thème et les choix de visite ; le radar conserve le rayon maximal de 20 km. Le filtre Astro permet un signe précis ou le même élément, à titre ludique. Les choix ne sont pas transmis entre membres ; une écoute synchronisée et un essai sur deux appareils restent à valider.
+
 ## Film de l’accueil
 
 Le film fourni illustre le salon derrière le texte sur grand écran et garde son cadre complet sur mobile. La boucle muette conserve le logo final avec un fondu vers son début ; l’image fixe, la pause manuelle et la réduction des animations restent disponibles.

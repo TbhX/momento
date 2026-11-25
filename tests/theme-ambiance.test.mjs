@@ -59,3 +59,15 @@ test('Spotify import is explicit, limits sharing to three songs, and ignores cle
  panel.querySelector('[data-spotify-load]').click();resolve({ok:true,json:async()=>data});await settle();const boxes=panel.querySelectorAll('[data-spotify-likes] input');for(const box of boxes)box.click();assert.equal([...boxes].filter(b=>b.checked).length,3);assert.equal(copied,'');panel.querySelector('[data-spotify-likes] button').click();await settle();assert.ok(copied.includes('Song 2'));assert.ok(!copied.includes('Song 3'));
  panel.querySelector('[data-spotify-load]').click();panel.querySelector('[data-clear]').click();resolve({ok:true,json:async()=>data});await settle();assert.equal(panel.querySelector('[data-spotify-likes]').textContent,'');dom.window.close();
 });
+
+test('astro filters use fictional declared choices, never a missing sign as an affinity',()=>{
+ const prefs={choices:[['Bélier']],details:{signFilter:'Affinités par élément'}};
+ assert.ok(themes.astroAllows('demo-0',prefs));assert.ok(themes.astroAllows('demo-4',prefs));
+ assert.ok(!themes.astroAllows('demo-1',prefs));assert.ok(!themes.astroAllows('demo-0',{...prefs,choices:[[]]}));
+ assert.ok(themes.astroAllows('demo-13',{details:{signFilter:'Taureau'}}));
+});
+test('in-call music comes only from the local catalogue, and travel uses the chosen destination',()=>{
+ assert.equal(themes.themeMoment('music',{details:{track:'https://example.com'}},'demo-1').mine,null);
+ assert.deepEqual(themes.themeMoment('music',{details:{track:'soleil'}},'demo-1'),{question:'Quelle sera la musique de votre mariage et pourquoi ?',mine:'soleil',peer:'minuit'});
+ assert.match(themes.themeMoment('travel',{choices:[['Japon']]},'demo-0').question,/Japon/);
+});

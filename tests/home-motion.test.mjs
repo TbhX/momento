@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
 const source=await readFile(new URL('../src/client/home-motion.js',import.meta.url),'utf8');
 function setup(reduced=false){
- const dom=new JSDOM('<aside><img alt="Momento"><video hidden muted loop playsinline preload="none" data-src="/momento-logo-loop.mp4"></video><button hidden>Pause</button></aside>',{runScripts:'outside-only',pretendToBeVisual:true});
+ const dom=new JSDOM('<aside><img alt="Momento"><video hidden muted loop playsinline preload="none" data-src="/home-lounge.mp4"></video><button hidden>Pause</button></aside>',{runScripts:'outside-only',pretendToBeVisual:true});
  const {window}=dom,root=window.document.querySelector('aside'),video=root.querySelector('video'),button=root.querySelector('button');
  let play=0,pause=0,listener,visibility=false,intersection,disconnected=false;
  const motion={matches:reduced,addEventListener(t,fn){listener=fn},removeEventListener(t,fn){if(listener===fn)listener=null}};
@@ -16,11 +16,11 @@ function setup(reduced=false){
   intersect(value){intersection([{isIntersecting:value}])},visibility(value){visibility=value;window.document.dispatchEvent(new window.Event('visibilitychange'))},reduce(value){motion.matches=value;listener?.()}};
 }
 const tick=()=>new Promise(r=>setImmediate(r));
-test('logo animation loads only in view and plays silently in a loop with pause and resume',async()=>{
+test('home film loads only in view and plays silently in a loop with pause and resume',async()=>{
  const v=setup();try{
   assert.equal(v.video.getAttribute('src'),null);assert.equal(v.play,0);
-  v.intersect(true);await tick();assert.equal(v.video.getAttribute('src'),'/momento-logo-loop.mp4');assert.equal(v.video.muted,true);assert.equal(v.video.loop,true);assert.equal(v.video.hidden,false);
-  v.button.click();assert.equal(v.video.hidden,true);assert.match(v.button.getAttribute('aria-label'),/Animer/);
+  v.intersect(true);await tick();assert.equal(v.video.getAttribute('src'),'/home-lounge.mp4');assert.equal(v.video.muted,true);assert.equal(v.video.loop,true);assert.equal(v.video.hidden,false);
+  v.button.click();assert.equal(v.video.hidden,true);assert.match(v.button.getAttribute('aria-label'),/Lire la vidéo/);
   const count=v.play;v.intersect(false);v.intersect(true);assert.equal(v.play,count,'manual pause survives visibility changes');
   v.button.click();await tick();assert.equal(v.video.hidden,false);
   v.visibility(true);assert.equal(v.video.hidden,true);v.visibility(false);await tick();assert.equal(v.video.hidden,false);
@@ -40,9 +40,9 @@ test('late playback completion cannot revive media after leaving the page',async
   const count=v.pause;v.visibility(true);assert.equal(v.pause,count,'document listener removed');
  }finally{v.dom.window.close()}
 });
-test('autoplay refusal and media error retain a useful static logo',async()=>{
+test('autoplay refusal and media error retain a useful static poster',async()=>{
  const v=setup();try{
-  v.video.play=()=>Promise.reject(Error('autoplay blocked'));v.intersect(true);await tick();assert.equal(v.video.hidden,true);assert.match(v.button.textContent,/Animer/);
+  v.video.play=()=>Promise.reject(Error('autoplay blocked'));v.intersect(true);await tick();assert.equal(v.video.hidden,true);assert.match(v.button.textContent,/^Lire$/);
   v.video.dispatchEvent(new v.window.Event('error'));assert.equal(v.button.hidden,true);assert.equal(v.video.hidden,true);assert.ok(v.root.querySelector('img'));
  }finally{v.window.motionController.stop();v.dom.window.close()}
 });

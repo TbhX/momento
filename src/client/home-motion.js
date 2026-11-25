@@ -11,8 +11,8 @@ const MomentoHomeMotion=(()=>{
   function sync(){
    const wanted=choice===null?!reduced.matches:choice;
    const run=alive&&root.isConnected&&!document.hidden&&visible&&!failed&&wanted;
-   button.textContent=wanted&&!failed?'Pause':'Animer';
-   button.setAttribute('aria-label',wanted&&!failed?'Mettre en pause l’animation du logo':'Animer le logo Momento');
+   button.textContent=wanted&&!failed?'Pause':'Lire';
+   button.setAttribute('aria-label',wanted&&!failed?'Mettre en pause la vidéo':'Lire la vidéo du salon');
    button.disabled=failed;
    if(!run){pause();return}
    const current=++ticket;shouldPlay=true;video.autoplay=true;

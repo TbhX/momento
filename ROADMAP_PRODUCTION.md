@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Film de l’accueil
+
+Le film fourni illustre le salon derrière le texte sur grand écran et garde son cadre complet sur mobile. La boucle muette conserve le logo final avec un fondu vers son début ; l’image fixe, la pause manuelle et la réduction des animations restent disponibles.
+
 ## Priorités avant les premières rencontres entre membres
 
 1. Valider le transport et la révocation des médias en environnement isolé. Le contrôle Linux exige désormais qu'une image caméra synthétique soit décodée chez le pair et consigne le délai observé de retrait de la publication. Consulter le job du commit pour son résultat ; ce scénario ne mesure ni le rendu sur téléphone ni la qualité du son.

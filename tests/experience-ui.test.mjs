@@ -658,9 +658,9 @@ test('a local rehearsal can simulate arrival without admin access and rejects st
 
 test('homepage explains the encounter flow without fake presence or device activation',async()=>{
  const v=await experience(false,{email:true,emailSignup:true});try{const {document,window,calls}=v;
- assert.equal(document.querySelectorAll('.home-entry-steps li').length,3);assert.equal(document.querySelectorAll('.home-entry-portraits img').length,2);
+ assert.equal(document.querySelectorAll('.home-entry-steps li').length,3);assert.equal(document.querySelector('.home-film img').getAttribute('src'),'/home-lounge.jpg');
  assert.match(document.querySelector('.home-entry-availability').textContent,/démonstration/);assert.match(document.querySelector('.home-entry-illustration').textContent,/aucun appel/);
- assert.equal(document.querySelector('.home-entry video').getAttribute('data-src'),'/momento-logo-loop.mp4');assert.equal(calls.some(p=>p.includes('/rooms/enter')),false);
+ assert.equal(document.querySelector('.home-entry video').getAttribute('data-src'),'/home-lounge.mp4');assert.equal(calls.some(p=>p.includes('/rooms/enter')),false);
  document.querySelector('.home-actions .primary').click();assert.equal(document.querySelector('#authEmailSubmit').textContent,'Créer mon compte');
  }finally{v.dom.window.close()}
 });
@@ -675,7 +675,7 @@ test('modern filters retain native radio selection and reset semantics',async()=
  const v=await experience(true);try{await v.window.go('salon');const f=v.document.querySelector('#communityFilters');assert.ok(f);const audio=f.querySelector('[name=mode][value=audio]');audio.checked=true;assert.equal(new v.window.FormData(f).get('mode'),'audio');f.reset();assert.equal(new v.window.FormData(f).get('mode'),'');assert.equal(f.querySelector('details').open,false)}finally{v.dom.window.close()}
 });
 test('home explains the room, private pair and next rotation without fabricated presence',async()=>{
- const v=await experience();try{assert.equal(v.document.querySelectorAll('.rotation-seat').length,6);assert.match(v.document.querySelector('.home-rotation-map').textContent,/20 · 50 · 100/);assert.match(v.document.querySelector('.home-rotation-next').textContent,/nouvelle rencontre/);assert.match(v.document.querySelector('.home-entry-illustration').textContent,/aucun appel/)}finally{v.dom.window.close()}
+ const v=await experience();try{const video=v.document.querySelector('.home-cinema video');assert.ok(video.loop&&video.hasAttribute('muted')&&video.hasAttribute('playsinline'));assert.equal(video.preload,'none');assert.match(v.document.querySelector('.home-entry-illustration').textContent,/aucun appel/)}finally{v.dom.window.close()}
 });
 
 test('my rooms foregrounds joined reservations and keeps creation separate',async()=>{

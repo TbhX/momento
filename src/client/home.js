@@ -4,9 +4,17 @@ const experienceRoutes={table:'table-ronde',tablePreview:'apercu-table-ronde',ho
 const experienceTitles={table:'La table ronde',tablePreview:'Découvrir la table ronde',home:'Pour vous',hostedPreview:'Créer un salon',hosted:'Mes salons',invite:'Mon invitation',callDemo:'Un moment à deux',concept:'Le concept',plans:'Les formules',privacy:'Confidentialité et règles',signin:'Se connecter',signup:'Créer mon compte',salon:'Salons',friends:'Amis',videos:'Mes invitations',shop:'La boutique',profile:'Mon profil',events:'Les sessions',bookings:'Mes sessions',matches:'Mes matchs',dates:'Bientôt en vrai',audit:'Le projet',admin:'Administration',adminSetup:'Activer mon accès organisateur'};
 function normalizeExperiencePage(p){if(p==='offers')return'shop';return Object.hasOwn(experienceRoutes,p)?p:'home'}
 function experiencePageFromURL(){const hash=location.hash.slice(1);return (hash?Object.keys(experienceRoutes).find(k=>experienceRoutes[k]===hash):null)||(typeof MomentoPublicSEO!=='undefined'?MomentoPublicSEO.pageFromPath(location.pathname):null)||'home'}
+function syncRoleNavigation(authPage=document.body.classList.contains('account-gated')){
+ const status=typeof liveStatus==='undefined'?null:liveStatus;
+ document.querySelectorAll('[data-admin-nav]').forEach(el=>{el.hidden=authPage||!accountReady||!(status?.admin||status?.moderator);const label=el.querySelector('[data-role-nav-label]');if(label)label.textContent=status?.moderator&&!status?.admin?'Modération':'Administration'});
+ const plan=document.querySelector('[data-plan-nav-label]');if(plan)plan.textContent=status?.premium===true?'Mes extras':status?.premium===false?'Premium et extras':'Boutique';
+}
 function syncExperienceShell(view='member'){
  const publicPage=view==='home',authPage=view==='account';if(typeof syncPlanBadge==='function')syncPlanBadge();
- document.querySelectorAll('[data-admin-nav]').forEach(el=>el.hidden=authPage||!accountReady||!(typeof liveStatus!=='undefined'&&(liveStatus?.admin||liveStatus?.moderator)));
+ const more=document.querySelector('.sidebar-more'),audience=accountReady&&!authPage?'member':'visitor';
+ if(more&&more.dataset.audience!==audience){more.open=false;more.dataset.audience=audience}
+ document.querySelectorAll('[data-discovery-nav]').forEach(el=>el.hidden=audience==='member');
+ syncRoleNavigation(authPage);
  document.body.classList.toggle('public-view',publicPage);document.body.classList.toggle('account-gated',authPage);
  document.querySelectorAll('[data-member-nav]').forEach(el=>el.hidden=authPage||!accountReady);
  document.querySelectorAll('[data-visitor-action]').forEach(el=>el.hidden=accountReady||authPage);
@@ -15,7 +23,7 @@ function syncExperienceShell(view='member'){
 function setExperiencePage(p){
  document.body.dataset.page=p;if(typeof MomentoPublicSEO!=='undefined')MomentoPublicSEO.apply(p);else document.title='Momento — '+(experienceTitles[p]||'Vos rencontres');
  const label=document.querySelector('#shellPageLabel');if(label)label.textContent=experienceTitles[p]||'Votre espace';
- document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===p;b.classList.toggle('active',active);if(active){b.setAttribute('aria-current','page');const more=b.closest('.sidebar-more');if(more)more.open=true}else b.removeAttribute('aria-current')});
+ document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===p;b.classList.toggle('active',active);if(active){b.setAttribute('aria-current','page');const more=b.closest('.sidebar-more');if(more&&!b.closest('[hidden]'))more.open=true}else b.removeAttribute('aria-current')});
  if(!experienceHistory){const hash=experienceRoutes[p],publicPath=typeof MomentoPublicSEO!=='undefined'?MomentoPublicSEO.pages[p]?.path:null,target=publicPath?publicPath+location.search:'/'+location.search+(hash?'#'+hash:'');if(hash!==undefined&&location.pathname+location.search+location.hash!==target)history.pushState(null,'',target)}
 }
 function homeSection(id){go(({'le-concept':'concept','les-envies':'salon','les-offres':'plans','bientot-en-vrai':'dates'})[id]||'home')}

@@ -22,7 +22,7 @@ function adminSandboxSetPremium(value){
 }
 function refreshAdminNavigation(){
  syncPlanBadge();
- document.querySelectorAll('[data-admin-nav]').forEach(button=>button.hidden=!accountReady||!(liveStatus?.admin||liveStatus?.moderator));
+ if(typeof syncRoleNavigation==='function')syncRoleNavigation();
 }
 function renderAdminSetup(){
  if(typeof leaveLiveRoom==='function')leaveLiveRoom();stop();page='adminSetup';publicView='info';

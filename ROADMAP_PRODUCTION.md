@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Navigation membre
+
+Salons, Mes salons et Amis restent au premier niveau. Le profil est dans l’en-tête, les invitations dans Amis. Les raccourcis publics sont masqués après connexion ; la boutique et l’entrée de gestion suivent le forfait et le rôle relus, sans modifier les permissions.
+
 ## Repères visuels des salons
 
 Les huit thèmes partagent un pictogramme et une invitation courte entre les tuiles, les envies et le tête-à-tête. Les commandes Spotify sont facultatives et repliées ; les extraits distinguent le morceau du membre de celui du partenaire fictif.

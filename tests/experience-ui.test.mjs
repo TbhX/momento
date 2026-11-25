@@ -629,10 +629,17 @@ test('copy failure selects only its current link and native cancellation stays s
 
 test('simple member navigation keeps essentials first and secondary routes accessible',async()=>{
  const v=await experience(true);try{const {document,window}=v,nav=document.querySelector('.sidebar-nav');
- assert.deepEqual([...nav.querySelectorAll('[data-page]')].filter(el=>!el.closest('details')&&!el.closest('[hidden]')).map(el=>el.dataset.page),['salon','friends','profile']);
+ assert.deepEqual([...nav.querySelectorAll('[data-page]')].filter(el=>!el.closest('details')&&!el.closest('[hidden]')).map(el=>el.dataset.page),['salon','hosted','friends']);
  assert.equal(nav.querySelector('.sidebar-more').open,false);
  await window.go('friends');assert.equal(document.querySelector('#shellPageLabel').textContent,'Amis');assert.match(document.querySelector('#communityContent').textContent,/Voir mes invitations/);
- await window.go('hosted');assert.equal(nav.querySelector('.sidebar-more').open,true);
+ await window.go('hosted');assert.equal(nav.querySelector('.sidebar-more').open,false);
+ assert.equal(nav.querySelector('[data-discovery-nav]').hidden,true);
+ assert.equal(nav.querySelector('[data-page="videos"],[data-page="profile"]'),null);
+ assert.ok(document.querySelector('.header-actions [data-page="profile"]'));
+ const original=window.fetch;for(const [status,label,role] of [[{premium:true,moderator:true},'Mes extras','Modération'],[{premium:false,admin:true},'Premium et extras','Administration'],[{premium:false},'Premium et extras',null]]){
+ window.fetch=(path,opt)=>path==='/api/service/status'?Promise.resolve(Response.json(status)):original(path,opt);await window.go('salon');
+ assert.equal(nav.querySelector('[data-plan-nav-label]').textContent,label);assert.equal(nav.querySelector('[data-admin-nav]').hidden,!role);if(role)assert.equal(nav.querySelector('[data-role-nav-label]').textContent,role);
+ }
  }finally{v.dom.window.close()}
 });
 test('salon preparation is immediately available without selecting an illustrative seat',async()=>{

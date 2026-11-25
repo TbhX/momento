@@ -7,6 +7,10 @@
 3. Faire le parcours complet sur deux appareils autorisés : entrée, audio/vidéo, changement de partenaire, match, prolongation consentie et sortie ; puis mesurer la charge par paliers.
 4. Avant ouverture publique : valider récupération de compte, supervision et restauration. Garder les ventes derrière une validation distincte des paiements et remboursements.
 
+## Reconnexion après départ : salle fermée, tour suivant distinct
+
+Dans le scénario Linux isolé, seul le serveur crée les salles, limitées à deux places. Après le départ, les deux sessions demandent à nouveau la préparation et le heartbeat dans PGlite. Le test exige un état terminé, le refus des deux jetons média initiaux par la salle fermée, son absence dans la liste serveur et une connexion réussie dans une nouvelle salle avec son propre jeton. Le [contrôle précédent](https://github.com/TbhX/momento/actions/runs/45594520325) couvrait la déconnexion des deux clients. Ce scénario dépend de la non-réutilisation du nom de salle ; restent le provisionnement par rencontre, les jetons renouvelés, le blocage et l’expiration sur staging.
+
 ## Départ du binôme et fermeture média en environnement isolé
 
 Après un échange audio entre clients synthétiques, le scénario exécute le départ du premier membre dans une base PGlite. Il relit l’état du second membre et exige que la fermeture de la salle LiveKit isolée déconnecte les deux clients. La correspondance entre rencontre et salle reste fixe dans ce banc d’essai. Avant ouverture : associer chaque salle à sa rencontre côté serveur, traiter blocage et expiration, puis empêcher la réadmission avec une ancienne autorisation. Aucun appel entre membres activé.

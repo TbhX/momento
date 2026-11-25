@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 
 from livekit import api, rtc
+from livekit.rtc.room import ConnectError
 from livekit.rtc.participant import PublishTrackError
 
 URL = "http://127.0.0.1:17880"
@@ -26,15 +27,16 @@ async def until(predicate):
 
 
 async def check(key, secret, server_log):
-    def token(identity, publish):
+    def token(identity, publish, room_name=ROOM):
         return (api.AccessToken(key, secret).with_identity(identity)
-                .with_grants(api.VideoGrants(room_join=True, room=ROOM, can_subscribe=True,
+                .with_grants(api.VideoGrants(room_join=True, room=room_name, can_subscribe=True,
                                              can_publish=publish, can_publish_data=False,
                                              can_publish_sources=["microphone"] if publish else []))
                 .to_jwt())
 
     # The join credential never includes camera. Promote only the live connection.
     original_join = token("sender", True)
+    peer_join = token("peer", False)
     sender, peer = rtc.Room(), rtc.Room()
     async with api.LiveKitAPI(URL, key, secret) as admin:
         async def sources(values):
@@ -146,7 +148,8 @@ async def check(key, secret, server_log):
                 raise RuntimeError("Denied camera visible to peer")
 
         try:
-            await connect(peer, token("peer", False))
+            await admin.room.create_room(api.CreateRoomRequest(name=ROOM, max_participants=2))
+            await connect(peer, peer_join)
             await connect(sender, original_join)
             a = await publish(mic, rtc.TrackSource.SOURCE_MICROPHONE)
             await until(lambda: a.sid in remote_tracks() and remote_tracks()[a.sid].subscribed)
@@ -188,6 +191,31 @@ async def check(key, secret, server_log):
                 room.on("disconnected", lambda *args, signal=event: signal.set())
             await admin.room.delete_room(api.DeleteRoomRequest(room=ROOM))
             await asyncio.wait_for(asyncio.gather(*(event.wait() for event in stopped)), 10)
+            # A fresh client must not recreate a closed room with either original
+            # credential. Keep the service reachable in a distinct next round.
+            next_room = ROOM + "-next"
+            await admin.room.create_room(api.CreateRoomRequest(name=next_room, max_participants=2))
+            async def reject_old(credential):
+                client = rtc.Room()
+                try:
+                    try:
+                        await asyncio.wait_for(connect(client, credential), 12)
+                    except ConnectError:
+                        return
+                    raise RuntimeError("Closed encounter admitted an old join credential")
+                finally:
+                    await client.disconnect()
+
+            await asyncio.gather(reject_old(original_join), reject_old(peer_join))
+            rooms = await admin.room.list_rooms(api.ListRoomsRequest())
+            if ROOM in {room.name for room in rooms.rooms}:
+                raise RuntimeError("Old encounter room was recreated")
+            control = rtc.Room()
+            try:
+                await connect(control, token("sender", True, next_room))
+            finally:
+                await control.disconnect()
+            print("OK: neither original credential reopens the closed room; next round reachable")
             print("OK: native pair withdrawal closed the isolated room for both connected peers")
             print("OK: distinct microphone tones decoded after camera removal and reconnect")
             print("OK: original microphone-only join credential reconnects without camera")
@@ -202,6 +230,8 @@ async def main(binary):
         config = Path(directory, "local.yaml")
         config.write_text(f"""port: 17880
 bind_addresses: ["127.0.0.1"]
+room:
+  auto_create: false
 rtc:
   node_ip: 127.0.0.1
   interfaces:

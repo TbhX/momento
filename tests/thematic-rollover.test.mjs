@@ -26,6 +26,19 @@ test('a running pair and waiting visitor keep their admission across the Paris 2
    for(const v of [before,after]){assert.equal(v.entryId,user);assert.equal(v.encounterId,encounter);assert.equal(v.queuePosition,position);assert.equal(v.endsAt,encounter?hour+240000:null)}
    assert.equal(await read(hour+30000),null,'expired presence is never renewed by the rollover');
   }
+  const readA=()=>readThematicVisit(db,{entryId:A,roomId:ROOM,now:hour});
+  await db.query('update public.room_presence set active=false where user_id=$1',[B]);
+  assert.equal((await readA()).encounterId,null);
+  assert.equal((await readA()).queuePosition,1);
+  await db.query('update public.room_presence set active=true,expires_at=$2 where user_id=$1',[B,at(0)]);
+  assert.equal((await readA()).encounterId,null,'peer heartbeat expired');
+  await db.query('update public.room_presence set expires_at=$2 where user_id=$1',[B,at(30000)]);
+  for(const pair of [[A,B],[B,A]]){
+   await db.query('insert into public.blocks(actor_id,target_id) values($1,$2)',pair);
+   assert.equal((await readA()).encounterId,null);
+   await db.query('delete from public.blocks where actor_id=$1 and target_id=$2',pair);
+  }
+  assert.equal(Number(await scalar(db,'select count(*) from private.introduced_pairs')),1);
   assert.equal(Number(await scalar(db,'select count(*) from public.room_entries')),3);
   assert.equal(Number(await scalar(db,'select count(*) from public.credit_ledger')),0);
  }finally{await db.close()}

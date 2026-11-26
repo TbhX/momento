@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Départ du partenaire pendant un créneau
+
+Dans le modèle de développement, la visite retourne en file si le partenaire est parti, si sa présence a expiré ou si un blocage existe dans un sens ou dans l’autre. L’historique de la paire est conservé. Ces cas sont couverts sur PostgreSQL isolé via PGlite. Le retrait effectif du média et la reprise sur deux appareils restent à valider.
+
 ## Passage à l’heure suivante
 
 Le modèle de lecture de développement sépare la visite du créneau affiché : une présence valide garde son entrée, le binôme commencé son échéance et la file son ordre d’arrivée. À 21 h, une lecture ne crée ni entrée ni crédit et ne renouvelle aucune présence expirée. Scénario PGlite à horloge contrôlée avec trois participants synthétiques. Le raccordement au transport et la validation sur deux téléphones restent à faire.

@@ -16,8 +16,12 @@ export async function readThematicVisit(db,{entryId,roomId,now}) {
    select p.*,e.id as encounter,e.ends_at from present p left join lateral (
      select e.id,e.ends_at from public.encounters e
      join private.introduced_pairs i on i.first_encounter=e.id
+     join present peer on peer.user_id=case when e.user_a=p.user_id then e.user_b else e.user_a end
+       and peer.created_at<=e.starts_at
      where e.room_id=$2 and p.user_id in(e.user_a,e.user_b) and e.status='live'
      and e.starts_at>=p.created_at and e.starts_at<=$3 and e.ends_at>$3
+     and not exists (select 1 from public.blocks b where
+       (b.actor_id,b.target_id) in ((e.user_a,e.user_b),(e.user_b,e.user_a)))
      order by e.starts_at desc,e.id limit 1
    ) e on true
  ), queued as (

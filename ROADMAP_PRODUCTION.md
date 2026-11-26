@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Salons thématiques continus : développement isolé
+
+Un créneau horaire identifie le thème sans créer de salon ni de débit. Un adaptateur PostgreSQL de développement relit les paires déjà introduites indépendamment du salon, conserve les réservations du tour et refuse un second démarrage automatique pour la même paire. Test PGlite : deux salons, changement d’heure, réservation seule et rejeu. Aucun raccordement au site ni migration hébergée. Restent le signal de démarrage fiable du transport, la file continue et sa reprise sans nouvelle entrée, la validation des droits sur deux appareils et le format privé sur invitation.
+
 ## Navigation membre
 
 Salons, Mes salons et Amis restent au premier niveau. Le profil est dans l’en-tête, les invitations dans Amis. Les raccourcis publics sont masqués après connexion ; la boutique et l’entrée de gestion suivent le forfait et le rôle relus, sans modifier les permissions.

@@ -8,6 +8,7 @@ on:
       - scripts/staging/watch_pair.py
       - scripts/staging/media-permissions.py
       - scripts/staging/pair-departure.mjs
+      - development/thematic/**
       - tests/helpers/readiness-pair.mjs
       - tests/helpers/supabase-fixture.mjs
       - supabase/schemas/**
@@ -24,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        closure: [leave, block, expiry]
+        closure: [leave, block, expiry, presence]
     env:
       MOMENTO_TEST_CLOSURE: ${{ matrix.closure }}
     runs-on: ubuntu-24.04

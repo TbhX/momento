@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Retour en file et coupure du média dans le banc isolé
+
+Le scénario Linux « presence » expire la présence d’un membre synthétique. Le banc lit le retour en file de l’autre membre dans le modèle thématique et demande la fermeture de la salle média du binôme surveillé. Le job mesure la déconnexion, vérifie qu’un appel voisin continue et refuse les anciens identifiants de connexion. Consulter le job du commit pour le résultat du transport ; la validation sur deux téléphones reste nécessaire.
+
 ## Départ du partenaire pendant un créneau
 
 Dans le modèle de développement, la visite retourne en file si le partenaire est parti, si sa présence a expiré ou si un blocage existe dans un sens ou dans l’autre. L’historique de la paire est conservé. Ces cas sont couverts sur PostgreSQL isolé via PGlite. Le retrait effectif du média et la reprise sur deux appareils restent à valider.

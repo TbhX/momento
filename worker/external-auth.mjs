@@ -11,6 +11,8 @@ import {activateAdministrator} from './admin-setup.mjs';
 // Only the standalone build imports this adapter. Sites keeps its platform identity.
 const OAUTH_PROVIDERS=['google','apple','facebook'];
 const AUTH_COOKIE='__Host-momento-auth';
+const REMEMBER_COOKIE='__Host-momento-remember';
+const REMEMBER_SECONDS=30*24*60*60;
 const PHONE_COOKIE='__Host-momento-phone';
 const EMAIL_FLOW_COOKIE='__Host-momento-email-flow';
 const RECOVERY_COOKIE='__Host-momento-recovery';
@@ -42,14 +44,31 @@ export function externalAuthConfiguration(env){
 function cookieContext(request,config){
  const jar=new Map(parseCookieHeader(request.headers.get('Cookie')||'').map(c=>[c.name,c.value]));
  const outgoing=new Map();
- const put=(name,value,options={})=>{jar.set(name,value);outgoing.set(name,serializeCookieHeader(name,value,{...options,...COOKIE_OPTIONS,...(options.maxAge===0?{maxAge:0,expires:new Date(0)}:{})}))};
+ const put=(name,value,options={})=>{jar.set(name,value);outgoing.set(name,{value,options})};
+ const sessionCookie=name=>name===AUTH_COOKIE||/^__Host-momento-auth\.\d+$/.test(name);
+ function remember(enabled){
+  const until=Math.floor(Date.now()/1000)+REMEMBER_SECONDS;
+  // The SDK can skip identical chunks; reissue them when persistence changes.
+  for(const [name,value] of jar)if(value&&sessionCookie(name)&&!outgoing.has(name))put(name,value);
+  put(REMEMBER_COOKIE,enabled?String(until):'',{maxAge:enabled?REMEMBER_SECONDS:0});
+ }
+ function serialize(name,{value,options}){
+  const attrs={...options,...COOKIE_OPTIONS};
+  if(attrs.maxAge===0)attrs.expires=new Date(0);
+  else if(sessionCookie(name)){
+   const remaining=Number(jar.get(REMEMBER_COOKIE))-Math.floor(Date.now()/1000);
+   delete attrs.expires;delete attrs.maxAge;
+   if(Number.isSafeInteger(remaining)&&remaining>0&&remaining<=REMEMBER_SECONDS)attrs.maxAge=remaining;
+  }
+  return serializeCookieHeader(name,value,attrs);
+ }
  const supabase=createServerClient(config.url,config.key,{
   db:{retry:false},
   cookieOptions:{name:AUTH_COOKIE,...COOKIE_OPTIONS},
   global:{fetch:(input,init={})=>fetch(input,{...init,signal:AbortSignal.timeout(10000)})},
   cookies:{getAll:()=>[...jar].map(([name,value])=>({name,value})),setAll(cookies){for(const c of cookies)put(c.name,c.value,{...c.options,...(c.name.includes('code-verifier')&&c.options?.maxAge!==0?{maxAge:600}:{})})}}
  });
- return{supabase,jar,put,finish(response){const headers=new Headers(response.headers);for(const value of outgoing.values())headers.append('Set-Cookie',value);for(const [key,value] of Object.entries(AUTH_HEADERS))headers.set(key,value);return new Response(response.body,{status:response.status,statusText:response.statusText,headers})}};
+ return{supabase,jar,put,remember,finish(response){const headers=new Headers(response.headers);for(const [name,cookie] of outgoing)headers.append('Set-Cookie',serialize(name,cookie));for(const [key,value] of Object.entries(AUTH_HEADERS))headers.set(key,value);return new Response(response.body,{status:response.status,statusText:response.statusText,headers})}};
 }
 
 async function limitedJSON(request,limit=4096){
@@ -73,7 +92,7 @@ function normalizedEmail(value){if(typeof value!=='string')throw authFailure('in
 function validPassword(value,{newPassword=false}={}){if(typeof value!=='string'||value.length<1||value.length>1024)throw authFailure('invalid_password');if(newPassword&&([...value].length<12||[...value].length>64||new TextEncoder().encode(value).length>72))throw authFailure('invalid_password');return value}
 async function verifierFingerprint(context,env){const values=[...context.jar].filter(([name,value])=>name.startsWith(AUTH_COOKIE)&&name.includes('code-verifier')&&value).sort(([a],[b])=>a.localeCompare(b));if(!values.length)throw authFailure('recovery_expired',401);return hmac(env.AUTH_COOKIE_SECRET,JSON.stringify(values))}
 function sessionId(session){try{const payload=JSON.parse(atob(session.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return typeof payload.session_id==='string'&&/^[0-9a-f-]{36}$/i.test(payload.session_id)?payload.session_id:null}catch{return null}}
-function clearIdentityCookies(context){for(const name of context.jar.keys())if(name.startsWith(AUTH_COOKIE)||[PHONE_COOKIE,EMAIL_FLOW_COOKIE,RECOVERY_COOKIE,...SPOTIFY_COOKIES].includes(name))context.put(name,'',{maxAge:0})}
+function clearIdentityCookies(context){for(const name of context.jar.keys())if(name.startsWith(AUTH_COOKIE)||[REMEMBER_COOKIE,PHONE_COOKIE,EMAIL_FLOW_COOKIE,RECOVERY_COOKIE,...SPOTIFY_COOKIES].includes(name))context.put(name,'',{maxAge:0})}
 async function recoveryGrant(context,env){
  const grant=await readEmailRecord(env,context.jar.get(RECOVERY_COOKIE),'password',900000);
  const {data,error}=await context.supabase.auth.getUser();if(error||!verifiedIdentity(data?.user)||data.user.id!==grant.user)throw authFailure('recovery_expired',401);
@@ -205,6 +224,7 @@ async function authenticationRoute(request,env,config,context){
    if(error?.status===429)throw authFailure('too_many_attempts',429);
    if(error&&error.status>=500)throw authFailure('email_unavailable',503);
    if(error||!verifiedIdentity(data?.user)||!data.user.email_confirmed_at){if(data?.session)clearIdentityCookies(context);throw authFailure('invalid_credentials',401)}
+   context.remember(body.rememberMe===true);
    context.put(EMAIL_FLOW_COOKIE,'',{maxAge:0});context.put(RECOVERY_COOKIE,'',{maxAge:0});return responseJSON({authenticated:true});
   }
   if(path==='/api/auth/email/resend'){

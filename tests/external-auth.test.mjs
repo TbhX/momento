@@ -130,6 +130,22 @@ test('password signin returns only a verified identity cookie and generic invali
  const success=await worker.fetch(request('/api/auth/email/signin',{email:user.email,password}),env);assert.equal(success.status,200);assert.deepEqual(await success.json(),{authenticated:true});browser.apply(success);const own=await worker.fetch(request('/api/me',undefined,browser.header()),env);assert.equal((await own.json()).id,'supabase:'+uuid);
  assert.doesNotMatch(JSON.stringify(first),/member@example|token|password/);assert.match(success.headers.get('cache-control'),/no-store/);
 }));
+test('only explicit remember-me makes password session cookies persistent; signing out clears the choice',async()=>withFixture(async()=>{
+ const env=emailSetup(),browser=jar();
+ const login=async rememberMe=>worker.fetch(request('/api/auth/email/signin',{email:user.email,password,rememberMe},browser.header()),env);
+ for(const choice of [true,false,'true',undefined]){
+  const response=await login(choice);assert.equal(response.status,200);
+  const cookies=response.headers.getSetCookie();
+  const auth=cookies.find(c=>c.startsWith('__Host-momento-auth='));
+  assert.ok(auth);assert.match(auth,/HttpOnly/);
+  if(choice===true){const age=Number(/Max-Age=(\d+)/.exec(auth)?.[1]);assert.ok(age>=2591998&&age<=2592000)}
+  else assert.doesNotMatch(auth,/Max-Age|Expires/i);
+  browser.apply(response);
+ }
+ browser.apply(await login(true));
+ const out=await worker.fetch(request('/api/auth/logout',{},browser.header()),env);
+ assert.ok(out.headers.getSetCookie().some(c=>c.startsWith('__Host-momento-remember=')&&c.includes('Max-Age=0')));
+}));
 test('email budgets and address limits stop sends and brute force; stored counters contain only HMAC identifiers',async()=>withFixture(async f=>{
  const env=emailSetup();env.AUTH_EMAIL_DAILY_BUDGET='1';assert.equal((await worker.fetch(request('/api/auth/email/signup',{email:user.email,password}),env)).status,200);assert.equal((await worker.fetch(request('/api/auth/email/recover',{email:'other@example.test'}),env)).status,429);assert.equal(f.calls.filter(c=>c.path==='/auth/v1/recover').length,0);
  for(let i=0;i<10;i++)assert.equal((await worker.fetch(request('/api/auth/email/signin',{email:user.email,password:'wrong'}),env)).status,401);assert.equal((await worker.fetch(request('/api/auth/email/signin',{email:user.email,password}),env)).status,429);

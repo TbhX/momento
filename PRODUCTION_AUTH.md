@@ -1,5 +1,7 @@
 # Comptes utilisateurs Momento
 
+La connexion par mot de passe propose « Se souvenir de moi sur cet appareil », décoché par défaut. Sans ce choix, les cookies de connexion sont des cookies de session du navigateur. Avec ce choix, ils persistent au maximum 30 jours à compter de la connexion ; le renouvellement ne repousse pas cette échéance. La déconnexion efface ce choix.
+
 Supabase Auth assure les comptes e-mail/mot de passe et les sessions ; les profils et médias privés sont associés à l’utilisateur. Aucun compte ChatGPT ou Cloudflare n’est requis pour les membres.
 
 Le site suit l’activation du fournisseur e-mail et l’autorisation native de créer des comptes dans Supabase. Le double interrupteur historique de l’hébergement a été retiré pour cette cible. Une fermeture des nouvelles inscriptions n’interrompt pas la connexion des membres existants.

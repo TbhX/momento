@@ -104,3 +104,16 @@ test('pending submission has a visible label and busy state, ignores double subm
 test('secondary confirmation help stays collapsed while forgot-password remains directly reachable',async()=>{
  const v=await ui(),d=v.document;assert.equal(d.querySelector('.auth-help').open,false);assert.equal(d.querySelector('#authForgotPassword').hidden,false);d.querySelector('.auth-help').open=true;d.querySelector('#authResendConfirmation').click();assert.equal(d.querySelector('.auth-help').open,false);assert.equal(d.querySelector('#authEmailTitle').hidden,false);assert.equal(d.querySelector('#authPasswordFields').hidden,true);d.querySelector('#authBackToSignin').click();assert.equal(d.querySelector('#authEmailTitle').hidden,true);assert.equal(d.querySelector('#authEmailPassword').autocomplete,'current-password');v.dom.window.close();
 });
+
+test('remember-me is opt-in on sign-in and is reset on switching modes',async()=>{
+ const v=await ui({},()=>Response.json({error:'invalid_credentials'},{status:401}));
+ try{
+  const form=v.document.querySelector('#authEmailForm'),field=v.document.querySelector('#authRememberField');
+  assert.equal(form.elements.rememberMe.checked,false);
+  form.elements.email.value='member@example.test';form.elements.password.value='fixture';
+  form.elements.rememberMe.click();await submit(v.window,form);
+  assert.equal(v.calls[0].body.rememberMe,true);
+  v.auth.selectMode('signup');assert.equal(field.hidden,true);
+  v.auth.selectMode('signin');assert.equal(field.hidden,false);assert.equal(form.elements.rememberMe.checked,false);
+ }finally{v.dom.window.close()}
+});

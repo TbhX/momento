@@ -246,7 +246,7 @@ async def check(key, secret, server_log):
             print("OK: concurrent pair decoded fresh audio on the same track after closure")
             # A fresh client must not recreate a closed room with either original
             # credential. Keep the service reachable in a distinct next round.
-            next_room = ROOM + "-next"
+            next_room = pair_room("00000000-0000-4000-8000-000000000021")
             await admin.room.create_room(api.CreateRoomRequest(name=next_room, max_participants=2))
             async def reject_old(credential):
                 client = rtc.Room()
@@ -263,12 +263,28 @@ async def check(key, secret, server_log):
             rooms = await admin.room.list_rooms(api.ListRoomsRequest())
             if ROOM in {room.name for room in rooms.rooms}:
                 raise RuntimeError("Old encounter room was recreated")
-            control = rtc.Room()
+            returning, newcomer = rtc.Room(), rtc.Room()
             try:
-                await connect(control, token("sender", True, next_room))
+                # The peer who remained in the queue now hears a different partner.
+                await connect(returning, token("peer", False, next_room))
+                await connect(newcomer, token("newcomer", True, next_room))
+                source = rtc.AudioSource(48000, 1)
+                microphone = rtc.LocalAudioTrack.create_audio_track("new-partner-mic", source)
+                next_pub = await newcomer.local_participant.publish_track(
+                    microphone, rtc.TrackPublishOptions(source=rtc.TrackSource.SOURCE_MICROPHONE))
+
+                def next_track():
+                    member = returning.remote_participants.get("newcomer")
+                    publication = member.track_publications.get(next_pub.sid) if member else None
+                    return publication.track if publication and publication.subscribed else None
+
+                await until(next_track)
+                await receive_tone(next_track(), 1500, source)
+                if set(returning.remote_participants) != {"newcomer"}:
+                    raise RuntimeError("Unexpected participant in the next encounter")
             finally:
-                await control.disconnect()
-            print("OK: neither original credential reopens the closed room; next round reachable")
+                await asyncio.gather(returning.disconnect(), newcomer.disconnect())
+            print("OK: returning peer decoded the new partner's tone after both old clients disconnected")
             print(f"OK: {scenario} closed the isolated room for both connected peers")
             print("OK: distinct microphone tones decoded after camera removal and reconnect")
             print("OK: original microphone-only join credential reconnects without camera")

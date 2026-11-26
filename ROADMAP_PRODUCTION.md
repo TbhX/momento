@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Premier son du partenaire suivant
+
+Après la fermeture de la salle précédente, le banc Linux reconnecte le membre restant avec une nouvelle personne synthétique dans une salle distincte. Il vérifie que le membre décode le nouveau signal audio et ne voit que ce partenaire. Voir le résultat du job média du commit. La paire suivante est préparée par le banc : attribution automatique et essai sur téléphones restent à valider.
+
 ## Retour en file et coupure du média dans le banc isolé
 
 Le scénario Linux « presence » expire la présence d’un membre synthétique. Le banc lit le retour en file de l’autre membre dans le modèle thématique et demande la fermeture de la salle média du binôme surveillé. Le job mesure la déconnexion, vérifie qu’un appel voisin continue et refuse les anciens identifiants de connexion. Consulter le job du commit pour le résultat du transport ; la validation sur deux téléphones reste nécessaire.

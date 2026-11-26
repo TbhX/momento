@@ -1,5 +1,9 @@
 # Momento — travaux de production
 
+## Passage à l’heure suivante
+
+Le modèle de lecture de développement sépare la visite du créneau affiché : une présence valide garde son entrée, le binôme commencé son échéance et la file son ordre d’arrivée. À 21 h, une lecture ne crée ni entrée ni crédit et ne renouvelle aucune présence expirée. Scénario PGlite à horloge contrôlée avec trois participants synthétiques. Le raccordement au transport et la validation sur deux téléphones restent à faire.
+
 ## Salons thématiques continus : développement isolé
 
 Un créneau horaire identifie le thème sans créer de salon ni de débit. Un adaptateur PostgreSQL de développement relit les paires déjà introduites indépendamment du salon, conserve les réservations du tour et refuse un second démarrage automatique pour la même paire. Test PGlite : deux salons, changement d’heure, réservation seule et rejeu. Aucun raccordement au site ni migration hébergée. Restent le signal de démarrage fiable du transport, la file continue et sa reprise sans nouvelle entrée, la validation des droits sur deux appareils et le format privé sur invitation.

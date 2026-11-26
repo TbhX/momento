@@ -246,7 +246,8 @@ async def check(key, secret, server_log):
             print("OK: concurrent pair decoded fresh audio on the same track after closure")
             # A fresh client must not recreate a closed room with either original
             # credential. Keep the service reachable in a distinct next round.
-            next_room = pair_room("00000000-0000-4000-8000-000000000021")
+            next_room = pair_room("00000000-0000-4000-8000-000000000022")
+            assert len({ROOM, other_room, next_room}) == 3
             await admin.room.create_room(api.CreateRoomRequest(name=next_room, max_participants=2))
             async def reject_old(credential):
                 client = rtc.Room()
